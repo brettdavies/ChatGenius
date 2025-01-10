@@ -1,6 +1,6 @@
 # Requirements: ChatGenius
 
-This document outlines the requirements for ChatGenius. It serves as a reference for developers, testers, and stakeholders to ensure that the project meets its objectives and constraints.
+This document outlines the requirements for ChatGenius, a Slack clone project. It serves as a reference for developers, testers, and stakeholders to ensure that the project meets its objectives and constraints.
 
 ---
 
@@ -19,113 +19,209 @@ The following are the core functionalities that the system must implement to mee
 ### User Authentication
 
 - The system must allow users to:
-  - [P0] Register using OAuth (e.g., Google, Microsoft)
-    - Critical for initial user onboarding
-  - [P0] Login with valid credentials
-    - Required for basic system access
-  - [P1] Recover their account through email-based password reset
-    - Important but not blocking for MVP
+  - [P0] Register and login using Auth0
+    - Social logins (Google, GitHub)
+    - Email/password authentication
+  - [P0] Maintain user sessions securely
+  - [P1] Support user profile management
 
 ### Messaging
 
 - Users must be able to:
-  - [P0] Send and receive messages in real-time
-    - Core messaging functionality
-  - [P1] Edit and delete their own messages within a configurable timeframe (e.g., 5 minutes)
-    - Quality of life feature
-  - [P2] React to messages with emojis
-    - Nice to have engagement feature
-  - [P1] Create and respond to message threads
-    - Important for conversation organization
+  - [P0] Send and receive messages in real-time using SSE
+    - Support rich text formatting
+    - Support emoji and Unicode characters
+  - [P0] Create and participate in message threads
+  - [P0] Edit and delete their own messages
+  - [P0] React to messages with emojis
+  - [P0] See typing indicators in real-time
+  - [P0] Track message read states
+  - [P1] Mark any message as "unread from here"
+    - Updates read state to mark all newer messages as unread
+    - Updates unread indicators accordingly
 
 ### Channels and Direct Messages
 
 - The system must support:
-  - [P0] Public and private channels
-    - Essential for team communication
-  - [P0] Direct messaging between two users
-    - Critical for private communications
-  - [P1] Channel creation and user management (add/remove participants)
-    - Important for team organization
+  - [P0] Public channels
+    - Creation and basic management
+    - Member management
+  - [P0] Private channels
+    - Invitation-only access
+    - Member visibility controls
+  - [P0] Direct messages (1:1)
+  - [P0] Group direct messages
+  - [P0] Channel/conversation sidebar
+  - [P0] Unread indicators
 
 ### File Sharing
 
 - Users must be able to:
-  - [P1] Upload and share files in messages
-    - Important collaboration feature
-  - [P1] Download shared files
-    - Required companion to file upload
-  - [P2] Search for files using keywords
-    - Nice to have for file management
+  - [P0] Upload files in messages
+    - Support common file types
+    - Show previews for images and documents
+  - [P0] Download shared files
+  - [P0] View file metadata
+  - [P0] Comment on files
 
-### Notifications
+### User Experience
 
-- The system must:
-  - [P0] Notify users of new messages, mentions, and reactions
-    - Critical for user engagement
-  - [P1] Allow users to customize notification preferences
-    - Important for user experience
+- The system must provide:
+  - [P0] Exact Slack UI replication
+    - Identical component layout
+    - Matching styles and animations
+  - [P0] Dark/light theme support
+  - [P0] All standard Slack keyboard shortcuts
+  - [P0] Responsive design matching Slack
+  - [P0] Loading states and animations
+  - [P0] Context menus and tooltips
+
+### Progressive Web App
+
+- The system must support:
+  - [P1] Installation as a PWA
+    - Web app manifest
+    - Service worker registration
+    - Install prompts
+  - [P1] Offline functionality
+    - Cache messages and reactions
+      - All messages in active channels
+      - All reactions to cached messages
+      - Message edit history
+    - Cache files within sync window
+      - Default sync window: 7 days
+      - User-configurable sync period
+      - Respect device storage limits
+    - Queue outgoing messages
+    - Sync when back online
+  - [P1] Push notifications
+    - Message notifications
+    - Mention alerts
+    - DM notifications
+  - [P1] Background sync
+    - Message delivery
+    - Read state updates
+    - Status updates
+  - [P1] Storage management
+    - Show storage usage statistics
+    - Allow manual cache clearing
+    - Auto-cleanup of old cached files
+    - Respect device storage quotas
 
 Priority Levels:
 
-- P0: Must have for MVP launch
-- P1: Important but not blocking for initial release
-- P2: Nice to have features for future iterations
+- P0: Must have for 2-day MVP launch
+- P1: Important but can be added after initial release
 
 ---
 
 ## Non-Functional Requirements
 
-These requirements define the operational qualities of the system, such as performance, security, and maintainability.
+These requirements define the operational qualities of the system.
 
 ### Performance
 
-- The system must handle at least 1,000 concurrent users with minimal latency (<500ms for message delivery).
-- Real-time updates (e.g., typing indicators, new messages) must propagate within 1 second.
+- Message delivery latency < 100ms
+- Real-time updates (typing, presence) < 100ms
+- Page load time < 2s
+- Smooth scrolling and animations (60fps)
+- PWA performance metrics:
+  - Time to Interactive < 3s
+  - Lighthouse PWA score > 90
+  - Offline capability within 500ms
 
 ### Scalability
 
-- The backend architecture must support scaling to 10,000 users with additional infrastructure.
+- Support for initial user base (development/testing)
+- Database design ready for future scaling
 
 ### Security
 
-- All user data must be encrypted in transit (TLS) and at rest (AES-256).
-- Authentication tokens must comply with the OAuth2 standard.
-- User sessions must time out after 30 minutes of inactivity by default.
+- Auth0-based authentication
+- HTTPS/TLS for all communications
+- Secure session management
+- PostgreSQL security best practices
 
-### Usability
+### UI/UX
 
-- The user interface must follow accessibility standards (WCAG 2.1).
-- The system must provide a responsive design for use on desktops, tablets, and smartphones.
+- Pixel-perfect match with Slack
+- WCAG 2.1 accessibility compliance
+- Responsive from 320px to 4K
+- Support for all modern desktop browsers
+- Offline mode indicators
+- File sync status indicators
+- Storage usage indicators
 
 ### Reliability
 
-- The system must achieve 99.9% uptime over a calendar month.
-- Database recovery must occur within 10 minutes in the event of a failure.
+- Graceful error handling
+- Automatic reconnection for SSE
+- Data consistency across components
 
 ### Maintainability
 
-- The codebase must follow consistent coding standards (see `.cursorrules`).
-- The system must include automated tests for at least 80% of critical paths.
+- TypeScript throughout
+- Comprehensive documentation
+- Component-based architecture
+- Automated testing setup
 
 ---
 
 ## Acceptance Criteria
 
-These criteria define when the system or individual features are considered complete.
+These criteria define when features are considered complete.
 
-### General Criteria
+### UI Matching
 
-- Features must pass all associated test cases as defined in the **Testing Plan**.
-- Documentation (feature templates, changelogs, and user-facing guides) must be up-to-date.
+- Component layout matches Slack exactly
+- Colors, typography, and spacing are identical
+- Animations and transitions match Slack
+- Responsive behavior matches Slack
+- All interactive elements work as in Slack
 
-### Example Feature: Messaging
+### Messaging
 
-- Users can send a message, and it appears in the recipient's chat window within 1 second.
-- Messages can be edited or deleted only within the allowed timeframe.
-- Real-time message updates (typing indicators, new messages) are visible to all participants.
+- Messages appear in real-time
+- Rich text formatting works correctly
+- Emoji reactions function properly
+- Thread views match Slack exactly
+- Read states update correctly
+- "Unread from here" functions correctly
+  - Updates read state immediately
+  - Shows correct unread counts
+  - Persists across sessions
 
-### Example Feature: User Authentication
+### Channels/DMs
 
-- Users can successfully register, login, and reset their password.
-- OAuth integration supports at least two providers (e.g., Google, Microsoft).
+- Channel creation works as in Slack
+- Member management functions properly
+- Sidebar organization matches Slack
+- Unread states work correctly
+
+### Files
+
+- Upload/download works reliably
+- Previews display correctly
+- Comments work as in Slack
+- File list view matches Slack
+
+### Authentication
+
+- Auth0 login flow works smoothly
+- Sessions persist appropriately
+- Profile management works correctly
+
+### Progressive Web App
+
+- Installs successfully on supported platforms
+- Works offline for recent content
+  - Messages and reactions available offline
+  - Files within sync window accessible
+  - Sync window preferences respected
+- Syncs correctly when online
+- Push notifications delivered reliably
+- Background tasks execute as expected
+- Storage management works correctly
+  - Shows accurate usage statistics
+  - Cleanup functions work properly
+  - Respects device storage limits

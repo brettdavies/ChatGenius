@@ -1,173 +1,196 @@
 # Project Structure: ChatGenius
 
-This document describes the organization of the codebase for ChatGenius. It provides an overview of the directory structure, naming conventions, and best practices for maintaining a scalable and maintainable project.
-
----
-
-## Table of Contents
-
-- [Project Structure: ChatGenius](#project-structure-chatgenius)
-  - [Table of Contents](#table-of-contents)
-  - [Directory Structure](#directory-structure)
-  - [Directory Overview](#directory-overview)
-  - [File Naming Conventions](#file-naming-conventions)
-  - [Component Organization](#component-organization)
-    - [Shared Components](#shared-components)
-    - [One-Off Components](#one-off-components)
-    - [Guidelines for Component Organization](#guidelines-for-component-organization)
-    - [Best Practices](#best-practices)
-    - [Scalability Guidelines](#scalability-guidelines)
-  - [Highlights of This Template](#highlights-of-this-template)
+This document describes the organization of the ChatGenius codebase, a Slack clone project. It provides an overview of the directory structure, naming conventions, and best practices for maintaining a scalable and maintainable application that matches Slack's functionality and appearance exactly.
 
 ---
 
 ## Directory Structure
 
-Below is the standard directory structure ChatGenius:
+Below is the directory structure for ChatGenius:
 
 ```plaintext
 src/
-├── actions/           # Server-side actions
-│   ├── db/            # Database-related actions
-│   ├── other-actions/ # Other server-side actions
-├── app/               # App router (e.g., React Router or Next.js)
-│   ├── api/           # API routes
-│   ├── route/         # Example route
-│       ├── _components/ # One-off components for the route
-│       ├── layout.tsx   # Layout for the route
-│       ├── page.tsx     # Page for the route
-├── components/        # Shared components
-│   ├── ui/            # Reusable UI components
-│   ├── utilities/     # Utility components
-├── db/                # Database schema and migrations
-│   ├── schema/        # Database schemas
-├── lib/               # Libraries for custom logic
+├── actions/              # Server-side actions
+│   ├── db/               # Database actions (PostgreSQL)
+│   ├── auth/             # Auth0 integration
+│   ├── messages/         # Message handling
+│   ├── channels/         # Channel management
+│   ├── files/           # File handling
+├── app/                 # Next.js app router
+│   ├── api/             # API routes
+│   │   ├── auth/        # Auth0 endpoints
+│   │   ├── channels/    # Channel endpoints
+│   │   ├── messages/    # Message endpoints
+│   │   ├── files/       # File endpoints
+│   │   ├── events/      # SSE endpoints
+│   ├── (routes)/        # Page routes
+│       ├── _components/ # Route-specific components
+│       ├── layout.tsx   # Main layout
+│       ├── page.tsx     # Main chat interface
+├── components/          # Shared components
+│   ├── ui/              # Base UI components
+│   │   ├── slack/       # Slack-specific components
+│   ├── channel/         # Channel components
+│   ├── message/         # Message components
+│   ├── file/           # File handling components
+│   ├── auth/           # Auth components
+├── db/                 # Database
+│   ├── migrations/     # PostgreSQL migrations
+│   ├── schema/         # Database schemas
+│   ├── queries/        # SQL queries
+├── lib/               # Shared libraries
 │   ├── hooks/         # Custom hooks
-├── public/            # Static assets (images, fonts)
-├── styles/            # Global and modular stylesheets
-├── types/             # TypeScript type definitions
-├── tests/             # Unit and integration tests
+│   │   ├── channel/   # Channel hooks
+│   │   ├── message/   # Message hooks
+│   │   ├── auth/      # Auth hooks
+│   │   ├── sse/       # SSE hooks
+│   ├── offline/       # Offline functionality
+│   │   ├── sync/      # Data sync
+│   │   ├── storage/   # IndexedDB management
+│   │   ├── cache/     # Cache strategies
+│   ├── sse/          # SSE implementation
+│   ├── utils/        # Utility functions
+├── public/           # Static assets
+│   ├── sw.js        # Service Worker
+│   ├── manifest.json # PWA manifest
+│   ├── icons/       # App icons
+├── styles/          # Global styles
+│   ├── slack/       # Slack-matching styles
+├── types/           # TypeScript types
+├── tests/          # Test suites
+    ├── unit/       # Unit tests
+    ├── integration/ # Integration tests
+    ├── e2e/        # End-to-end tests
 ```
 
 ## Directory Overview
 
-- actions/: Server-side logic, separated into database and other server actions.
-- app/: Handles routing and layouts for the application.
-- components/: Contains reusable and utility components for the frontend.
-- db/: Manages database schemas and related logic.
-- lib/: Houses shared libraries such as custom hooks or utility functions.
-- public/: Stores static assets like images, icons, and fonts.
-- styles/: Includes global CSS or SCSS files and theme definitions.
-- types/: Centralized location for TypeScript types and interfaces.
-- tests/: Contains automated tests for quality assurance.
+- actions/: Server-side logic
+  - db/: PostgreSQL database operations
+  - auth/: Auth0 authentication logic
+  - messages/: Message handling with SSE
+  - channels/: Channel and DM management
+  - files/: File upload and management
+
+- app/: Next.js application structure
+  - api/: RESTful and SSE endpoints
+  - (routes)/: Page components and layouts
+
+- components/: React components
+  - ui/slack/: Pixel-perfect Slack UI components
+  - channel/: Channel and DM components
+  - message/: Message and thread components
+  - file/: File preview and upload components
+
+- lib/: Shared functionality
+  - hooks/: React hooks for features
+  - offline/: PWA and offline features
+  - sse/: Server-Sent Events implementation
+  - utils/: Shared utilities
 
 ## File Naming Conventions
 
-To maintain consistency:
-
-- Folders: Use kebab-case (e.g., shared-components, user-profile).
-- Files: Use PascalCase for React components (e.g., UserCard.tsx).
-- Utilities and Hooks: Use camelCase (e.g., useFetch.ts, formatDate.ts).
-- TypeScript Types:
-  - Use a suffix like -types (e.g., user-types.ts).
-  - Export all types through types/index.ts.
+- Components: Match Slack's component names where possible
+  - Example: `MessageInput.tsx`, `ThreadView.tsx`
+- Styles: Use CSS modules with Slack-matching class names
+  - Example: `p-message__input`, `c-thread_view`
+- Tests: Name files to match their implementation
+  - Example: `MessageInput.test.tsx`
 
 ## Component Organization
 
 ### Shared Components
 
-Place reusable components in the components/ folder. Examples:
+Organize UI components to match Slack's structure:
 
-- components/ui/Button.tsx: A shared button component used across the app.
-- components/ui/Modal.tsx: A reusable modal dialog.
-
-### One-Off Components
-
-Components specific to a single route or feature go in the _components folder under the respective route. Examples:
-
-- app/route/_components/FeatureCard.tsx: A card used only for the route page.
-
-### Guidelines for Component Organization
-
-- Avoid duplicating shared components in multiple locations.
-- Keep one-off components close to their usage to minimize confusion.
+```plaintext
+components/ui/slack/
+├── message/
+│   ├── MessageInput.tsx
+│   ├── MessageActions.tsx
+│   ├── MessageReactions.tsx
+├── thread/
+│   ├── ThreadView.tsx
+│   ├── ThreadHeader.tsx
+├── channel/
+│   ├── ChannelHeader.tsx
+│   ├── ChannelList.tsx
+```
 
 ### Best Practices
 
-1. Keep Files Modular:
-   - Limit each file to a single responsibility (e.g., a single React component or utility function).
+1. Slack UI Matching:
+   - Use exact class names and structure
+   - Match component hierarchy
+   - Implement all keyboard shortcuts
 
-2. Use Index Files:
-   - Export components, hooks, or utilities from index.ts to simplify imports.
-   - Example:
+2. Real-time Features:
+   - SSE for all real-time updates
+   - Typing indicators
+   - Presence updates
+   - Read states
 
-    ```ts
-    // components/ui/index.ts
-    export { default as Button } from './Button';
-    export { default as Modal } from './Modal';
-    ```
+3. Offline Support:
+   - PWA installation
+   - Message caching
+   - File sync
+   - Background updates
 
-3. Avoid Deep Nesting:
-   - Limit directory depth to three levels to ensure navigability.
-   - Example:
-
-    ```ts
-    src/components/ui/Button.tsx (✅)
-    src/components/ui/buttons/primary/large/Button.tsx (❌)
-    ```
-
-4. Document as You Go:
-   - Add comments or markdown documentation for complex structures.
+4. Testing Requirements:
+   - Visual regression tests
+   - Real-time feature tests
+   - Offline capability tests
 
 ### Scalability Guidelines
 
-1. Group by Feature When Needed:
-   - If a feature grows complex, group all related files into a single folder.
-   - Example:
+1. Feature Organization:
 
-    ```plaintext
-    features/chat/
-    ├── components/
-    ├── hooks/
-    ├── ChatPage.tsx
-    ```
+   ```plaintext
+   features/
+   ├── channels/
+   │   ├── components/
+   │   ├── hooks/
+   │   ├── utils/
+   ├── messages/
+   ├── threads/
+   ├── files/
+   ```
 
-2. Adopt Lazy Loading:
-   - Use lazy loading for routes and components to improve performance.
-   - Example:
+2. Performance Optimization:
+   - Route-based code splitting
+   - Image optimization
+   - SSE connection management
+   - IndexedDB optimization
 
-    ```ts
-    const UserProfile = React.lazy(() => import('./UserProfile'));
-    ```
+3. State Management:
+   - Real-time sync state
+   - Offline state
+   - UI state matching Slack
 
-3. Monitor Shared Components:
-   - Periodically review components/ to identify overused or outdated components.
+4. Error Handling:
+   - Network errors
+   - Auth failures
+   - Offline conflicts
+   - File upload issues
 
-4. Future Enhancements
-   - Introduce a `features/` directory to organize feature-specific files as the project grows.
-   - Modularize shared components by domain (e.g., `components/auth/`).
+## Highlights
 
-5. Deprecated Components:
-   - Move deprecated components to a `deprecated/` folder.
-   - Add a `README.md` in `deprecated/` explaining why components were retired and their replacements.
+1. **Exact Slack Clone**:
+   - Pixel-perfect UI components
+   - Identical feature set
+   - Matching performance
 
----
+2. **Real-time First**:
+   - SSE implementation
+   - Real-time state management
+   - Presence handling
 
-Reminder: This document is a living resource. Update it as the project grows, especially when introducing new structures or conventions.
+3. **Offline Capable**:
+   - PWA support
+   - Sync management
+   - File caching
 
----
-
-## Highlights of This Template
-
-1. **Clear Structure**:
-   - Provides a high-level and detailed view of how the codebase is organized.
-   - Ensures contributors can quickly locate and work on files.
-
-2. **Scalability Focus**:
-   - Includes guidelines to accommodate growing features and avoid file sprawl.
-
-3. **Consistency Through Naming**:
-   - Defines naming conventions to ensure uniformity across the codebase.
-
-4. **Encourages Modularization**:
-   - Promotes keeping files small and focused, supporting maintainability.
+4. **Developer Experience**:
+   - Clear structure
+   - Type safety
+   - Comprehensive testing

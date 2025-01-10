@@ -14,7 +14,7 @@ This document provides a high-level introduction to the ChatGenius project, incl
     - [Secondary Objectives](#secondary-objectives)
   - [Scope](#scope)
     - [In-Scope](#in-scope)
-    - [Out-of-Scope](#out-of-scope)
+    - [Out-of-Scope (MVP Phase)](#out-of-scope-mvp-phase)
   - [Key Milestones](#key-milestones)
   - [Tech Stack Overview](#tech-stack-overview)
   - [Key Risks and Mitigations](#key-risks-and-mitigations)
@@ -22,16 +22,14 @@ This document provides a high-level introduction to the ChatGenius project, incl
     - [Key Stakeholders](#key-stakeholders)
     - [Development Team](#development-team)
     - [External Dependencies](#external-dependencies)
-  - [Key Features of This Template](#key-features-of-this-template)
 
 ---
 
 ## Project Vision
 
-[[Describe the overarching purpose of ChatGenius...]]
+ChatGenius aims to create an exact replica of Slack's functionality and user interface. The project will focus on creating a complete clone of Slack with identical features and user experience.
 
-Example:  
-The goal of ChatGenius is to replicate Slack's functionality...
+Our goal is to develop a communication platform that is indistinguishable from Slack in its base functionality, providing users with a familiar and robust workplace communication tool.
 
 ---
 
@@ -39,13 +37,34 @@ The goal of ChatGenius is to replicate Slack's functionality...
 
 ### Primary Objectives
 
-- [[Objective 1: e.g., Deliver a fully functional Slack clone with core features such as messaging, channels, file sharing, and threads.]]
-- [[Objective 2: e.g., Build a scalable architecture for integrating AI-powered features in subsequent phases.]]
+1. Create a Slack clone with:
+   - Identical user interface and experience
+   - Real-time messaging with SSE technology
+   - Complete feature parity including:
+     - Channel-based communication
+     - Direct messaging
+     - Thread support
+     - File sharing
+     - Emoji reactions
+     - User presence indicators
+     - Search functionality
 
 ### Secondary Objectives
 
-- [[Objective 3: e.g., Ensure the user interface closely matches Slack's design standards.]]
-- [[Objective 4: e.g., Provide a foundation for efficient development workflows and team collaboration.]]
+1. User Experience Excellence:
+   - Match Slack's UI precisely
+   - Ensure responsive design matching Slack's behavior
+   - Implement all keyboard shortcuts and accessibility features
+   - Support all languages and alphabets
+   - Maintain real-time performance matching Slack's standards
+   - Support PWA installation and offline usage
+   - Provide seamless offline/online transitions
+
+2. Developer Experience:
+   - Establish clear documentation and coding standards
+   - Implement efficient development workflows using Cursor AI
+   - Create automated testing and deployment pipelines
+   - Maintain modular architecture for future enhancements
 
 ---
 
@@ -53,29 +72,81 @@ The goal of ChatGenius is to replicate Slack's functionality...
 
 ### In-Scope
 
-- [[List features, functionalities, or components that are part of the project's first phase. For example:]]
-  - Real-time messaging with WebSocket-based communication.
-  - User authentication via OAuth2 and Auth0.
-  - Channel and direct message organization.
-  - File sharing with basic search functionality.
-  - Slack-like threading and emoji reactions.
+MVP Phase (2 Day Delivery):
 
-### Out-of-Scope
+- User Management
+  - Auth0-based authentication with:
+    - Social logins (Google, GitHub)
+    - Email/password
+  - User profiles matching Slack's format
+  - Real-time presence indicators
+  - Custom status messages
+  - User preferences and settings
 
-- [[List what the project will explicitly NOT include in this phase. For example:]]
-  - AI-powered features such as digital twins and advanced analytics (reserved for Phase 2).
-  - Enterprise-level compliance features like SSO or multi-tenancy.
+- Messaging Core
+  - Real-time messaging via SSE
+  - Full Unicode support for all languages
+  - Rich text formatting
+  - Markdown support
+  - Emoji reactions (full parity with Slack)
+  - Message editing and deletion with history
+  - Typing indicators
+  - Read states
+  - Thread support with full functionality
+  - Message search with Slack-like operators
+
+- Channels & Direct Messages
+  - Public and private channels
+  - Direct messages (1:1)
+  - Group direct messages
+  - Channel creation and management
+  - User invitations
+  - Channel/conversation sidebar
+  - Unread indicators
+  - Channel/conversation search
+
+- File Sharing
+  - Upload and share files (images, documents)
+  - File preview for common formats
+  - Drag-and-drop support
+  - File search functionality
+  - File comment threads
+  - Storage limits and file type restrictions
+
+- UI/UX
+  - Pixel-perfect Slack clone
+  - Dark/light theme support
+  - All keyboard shortcuts
+  - Responsive design matching Slack
+  - Loading states and animations
+  - Error states and notifications
+  - Context menus
+  - Tooltips and help text
+
+### Out-of-Scope (MVP Phase)
+
+- Mobile native applications
+- Video/audio calls
+- Screen sharing
+- Third-party integrations (except Auth0)
+- Custom emoji support
+- Message scheduling
+- Workflow builder
+- Advanced search operators
+- Analytics and insights
+- User groups and org structure
+- Compliance exports
+- Custom retention policies
 
 ---
 
 ## Key Milestones
 
-| Milestone                | Description                                   | Target Date    | Status       |
-|--------------------------|-----------------------------------------------|----------------|--------------|
-| Project Initiation       | Kickoff, team alignment, and resource setup.  | [[Date]]       | Completed    |
-| MVP Delivery             | Deliver core Slack-like functionality.        | [[Date]]       | Planned      |
-| Phase 2 Scoping          | Define AI-powered enhancements.               | [[Date]]       | Planned      |
-| Final Release            | Deploy the full application.                  | [[Date]]       | Planned      |
+| Milestone           | Description                                        | Target Date    | Status       |
+|--------------------|----------------------------------------------------|----------------|--------------|
+| Project Initiation | Setup repository, documentation, and infrastructure | Jan 10, 2024   | Completed    |
+| Day 1 Development  | Core messaging, channels, and auth implementation   | Jan 11, 2024   | In Progress  |
+| Day 2 Development  | UI polish, testing, and deployment                 | Jan 12, 2024   | Planned      |
 
 ---
 
@@ -83,21 +154,30 @@ The goal of ChatGenius is to replicate Slack's functionality...
 
 | Layer        | Technology                          | Rationale                                   |
 |--------------|-------------------------------------|--------------------------------------------|
-| Frontend     | React, MUI, Vite                   | Fast, modular UI development               |
-| Backend      | Node.js with Express               | Scalable, non-blocking architecture        |
-| Realtime     | WebSocket, Feather.js              | Real-time communication                    |
-| Database     | Postgres, Supabase                 | Robust relational data storage             |
-| Auth         | Auth0                              | Secure, scalable authentication            |
-| Deployment   | Vercel                             | Reliable hosting with CI/CD capabilities   |
+| Frontend     | React, TypeScript, MUI, Vite       | Type-safe, fast development                |
+| State        | Redux Toolkit                      | Centralized state management               |
+| Backend      | Node.js, TypeScript, Express       | Type-safe, efficient message handling      |
+| Realtime     | Server-Sent Events (SSE)           | Simple, reliable one-way real-time updates |
+| Database     | PostgreSQL                         | Robust, scalable data storage              |
+| Auth         | Auth0                              | Secure, multi-provider authentication      |
+| Testing      | Jest, React Testing Library        | Comprehensive test coverage                |
+| Deployment   | Vercel                             | Zero-config deployment, edge functions     |
+| Development  | Cursor AI                          | AI-powered development assistance          |
+| PWA          | Service Workers, IndexedDB         | Offline support, native-like experience    |
 
 ---
 
 ## Key Risks and Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| Scalability issues under high user load | Implement caching (e.g., Redis) and load testing |
-| Delayed feature development | Use clear feature prioritization and regular progress tracking |
+| Risk                                    | Mitigation                                        |
+|----------------------------------------|--------------------------------------------------|
+| Tight 2-day timeline                    | Focus on core features first, clear prioritization|
+| WebSocket scalability                   | Implement proper connection pooling and sharding  |
+| UI matching complexity                  | Use component-driven development with strict specs|
+| Real-time performance at scale          | Implement efficient PostgreSQL querying and indexing |
+| Auth0 integration complexity            | Start with basic auth flow, expand features later |
+| Offline data consistency                | Implement robust sync mechanisms and conflict resolution |
+| Storage limitations                     | Smart caching strategies and cleanup policies     |
 
 ---
 
@@ -105,40 +185,21 @@ The goal of ChatGenius is to replicate Slack's functionality...
 
 ### Key Stakeholders
 
-- **Product Manager**: [[Name]]  
-  [[Responsible for defining project goals, tracking milestones, and ensuring alignment with business objectives.]]
-- **Tech Lead**: [[Name]]  
-  [[Responsible for architectural decisions and technical direction.]]
+- **Project Lead**: Brett Davies
+  Responsible for overall project direction, technical decisions, and delivery
 
 ### Development Team
 
 | Role               | Name           | Responsibilities                        |
 |--------------------|----------------|----------------------------------------|
-| Frontend Developer | [[Name]]       | UI/UX implementation                   |
-| Backend Developer  | [[Name]]       | API and database development           |
-| QA Engineer        | [[Name]]       | Testing and quality assurance          |
+| Full Stack Dev     | Brett Davies   | End-to-end implementation              |
 
 ### External Dependencies
 
-- [[Vendor/Library Name]]: [[Responsibility/Integration Role]]  
-- [[Vendor/Library Name]]: [[Responsibility/Integration Role]]  
+- **Auth0**: Authentication provider
+- **PostgreSQL**: Database hosting
+- **Vercel**: Deployment and hosting
 
 ---
 
 **Reminder**: This document is a living resource. Update it as the project evolves, particularly the scope, milestones, and team sections.
-
----
-
-## Key Features of This Template
-
-1. Centralized Context:
-   - Provides a clear picture of the project's vision, objectives, and scope.
-   - Useful for aligning all stakeholders and contributors.
-2. Scope Management:
-   - Clearly distinguishes between what is in-scope and out-of-scope to prevent scope creep.
-3. Tech Stack Justification:
-   - Explains the reasoning behind tech choices, aiding onboarding and architectural discussions.
-4. Milestone Tracking:
-   - High-level view of progress and key deliverables.
-5. Stakeholders and Teams:
-   - Clarifies roles and responsibilities to avoid confusion during the project.
