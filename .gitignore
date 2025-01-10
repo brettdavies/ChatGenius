@@ -1,77 +1,76 @@
 # Dependencies
-node_modules/
-.pnp/
+node_modules
+.pnp
 .pnp.js
-.yarn/
-.yarnrc.yml
 
 # Testing
-coverage/
-__tests__/coverage/
-*.lcov
+coverage
 
 # Production
-build/
-dist/
-dist-ssr/
-out/
+build
+dist
+dist-ssr
 *.local
 
-# Environment Variables
-.env
-.env.local
-.env.development
-.env.development.local
-.env.test
-.env.test.local
-.env.production
-.env.production.local
-
-# Logs
-logs/
-*.log
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+.pnpm-debug.log*
 
-# Vite
-.vite/
-*.timestamp-*.mjs
+# Local env files
+.env*.local
+!.env.example
 
-# React / MUI
-.cache/
-.next/
-storybook-static/
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IDE - JetBrains
+.idea/
+
+# IDE - Eclipse
+.project
+.classpath
+.settings/
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# TypeScript
 *.tsbuildinfo
 
-# Database
-*.sqlite
-*.sqlite3
-*.db
-postgres-data/
+# Logs
+logs
+*.log
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*.sublime-workspace
-*.sublime-project
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# OS
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Desktop.ini
+# Optional npm cache directory
+.npm
 
-# Auth0
-auth0.config.json
-auth_config.json
+# Optional eslint cache
+.eslintcache
 
-# Misc
-*.pem
-.vercel
-.netlify
-context/
+# Optional stylelint cache
+.stylelintcache
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
