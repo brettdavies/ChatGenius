@@ -1,0 +1,64 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Login snapshots matches snapshot when authenticated 1`] = `
+<div>
+  <div
+    data-testid="location-display"
+  >
+    /
+  </div>
+</div>
+`;
+
+exports[`Login snapshots matches snapshot when loading 1`] = `
+<div>
+  <div
+    class="min-h-screen flex items-center justify-center"
+  >
+    <div
+      aria-label="Loading"
+      class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"
+      data-testid="loading-spinner"
+      role="status"
+    >
+      <span
+        class="sr-only"
+      >
+        Loading...
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Login snapshots matches snapshot when not authenticated 1`] = `
+<div>
+  <div
+    class="min-h-screen flex items-center justify-center bg-gray-50"
+  >
+    <div
+      class="max-w-md w-full space-y-8"
+    >
+      <div>
+        <h2
+          class="mt-6 text-center text-3xl font-extrabold text-gray-900"
+        >
+          Welcome to ChatGenius
+        </h2>
+        <p
+          class="mt-2 text-center text-sm text-gray-600"
+        >
+          Please sign in to continue
+        </p>
+      </div>
+      <div>
+        <button
+          class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Sign in
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Home snapshots matches snapshot when authenticated with full user info 1`] = `
+<div>
+  <div
+    class="prose lg:prose-xl mx-auto"
+  >
+    <h1>
+      Welcome to ChatGenius
+    </h1>
+    <div>
+      <p>
+        Welcome, 
+        Test User
+      </p>
+      <p>
+        You are now authenticated
+      </p>
+      <p>
+        test@example.com
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Home snapshots matches snapshot when authenticated without user name 1`] = `
+<div>
+  <div
+    class="prose lg:prose-xl mx-auto"
+  >
+    <h1>
+      Welcome to ChatGenius
+    </h1>
+    <div>
+      <p>
+        Welcome, 
+        User
+      </p>
+      <p>
+        You are now authenticated
+      </p>
+      <p>
+        test@example.com
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Home snapshots matches snapshot when not authenticated 1`] = `
+<div>
+  <div
+    class="prose lg:prose-xl mx-auto"
+  >
+    <h1>
+      Welcome to ChatGenius
+    </h1>
+    <div>
+      <p>
+        Please log in to continue
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Home snapshots matches snapshot with authentication error 1`] = `
+<div>
+  <div
+    class="prose lg:prose-xl mx-auto"
+  >
+    <h1>
+      Welcome to ChatGenius
+    </h1>
+    <div>
+      <p>
+        Please log in to continue
+      </p>
+    </div>
+    <p
+      class="text-red-500"
+    >
+      Error: 
+      Authentication failed
+    </p>
+  </div>
+</div>
+`;
