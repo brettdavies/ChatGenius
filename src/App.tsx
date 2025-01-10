@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import ErrorPage from './pages/ErrorPage';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
+import SessionManager from './components/SessionManager';
 
 const App = () => {
   return (
@@ -20,20 +21,28 @@ const App = () => {
         useRefreshTokens={true}
         cacheLocation="localstorage"
       >
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <RootLayout />
-              </ProtectedRoute>
-            }
-            errorElement={<ErrorPage />}
-          >
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <SessionManager 
+          timeoutMinutes={authConfig.sessionTimeoutMinutes}
+          warningMinutes={authConfig.sessionWarningMinutes}
+        >
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <RootLayout />
+                </ProtectedRoute>
+              }
+              errorElement={<ErrorPage />}
+            >
+              <Route
+                index
+                element={<Home />}
+              />
+            </Route>
+          </Routes>
+        </SessionManager>
       </Auth0Provider>
     </BrowserRouter>
   );

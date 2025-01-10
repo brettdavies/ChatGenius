@@ -37,9 +37,17 @@ const Home = () => {
   return (
     <div className="prose lg:prose-xl mx-auto">
       <h1>Welcome to ChatGenius</h1>
-      <p>
-        {isAuthenticated ? 'LOGGED IN YAY!' : 'LOGGED OUT'}
-      </p>
+      {isAuthenticated ? (
+        <div>
+          <p>Welcome, {user?.name || 'User'}</p>
+          <p>You are now authenticated</p>
+          {user?.email && <p>{user.email}</p>}
+        </div>
+      ) : (
+        <div>
+          <p>Please log in to continue</p>
+        </div>
+      )}
       {error && (
         <p className="text-red-500">
           Error: {error.message}
