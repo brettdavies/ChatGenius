@@ -1,63 +1,50 @@
-# ChatGenius
+# React + TypeScript + Vite
 
-## Overview
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-ChatGenius is an intelligent chat application that...
+Currently, two official plugins are available:
 
-## Documentation
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- [Project Overview](project_docs/project_overview.md)
-- [Project Structure](project_docs/project_structure.md)
-- [Requirements](project_docs/requirements.md)
-- [Contribution Guidelines](project_docs/workflow_contribution_guidelines.md)
+## Expanding the ESLint configuration
 
-## Getting Started
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-### Prerequisites
+- Configure the top-level `parserOptions` property like this:
 
-[List of prerequisites will be added based on tech stack]
-
-### Installation
-
-```bash
-# Installation steps will be added
+```js
+export default tseslint.config({
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
 ```
 
-### Development Setup
+- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
+- Optionally add `...tseslint.configs.stylisticTypeChecked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
 
-1. Clone the repository
-2. Copy the environment template:
+```js
+// eslint.config.js
+import react from 'eslint-plugin-react'
 
-   ```bash
-   cp .env.example .env
-   ```
-
-3. [Additional setup steps will be added]
-
-## Development Workflow
-
-See our [Contribution Guidelines](project_docs/workflow_contribution_guidelines.md) for detailed information about:
-
-- Coding standards
-- Git workflow
-- Pull request process
-- Testing requirements
-
-## Project Structure
-
-```plaintext
-.
-├── project_docs/          # Project documentation
-├── src/                   # Source code
-└── tests/                 # Test files
+export default tseslint.config({
+  // Set the react version
+  settings: { react: { version: '18.3' } },
+  plugins: {
+    // Add the react plugin
+    react,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended rules
+    ...react.configs.recommended.rules,
+    ...react.configs['jsx-runtime'].rules,
+  },
+})
 ```
-
-See [Project Structure](project_docs/project_structure.md) for detailed information.
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for all notable changes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
