@@ -281,4 +281,4 @@ interface Metrics {
 
 | Date | Author | Description | PR |
 |------|--------|-------------|-------|
-| 2024-01-10 | System | Initial event types implementation | - | 
+| 2024-01-10 | System | Initial event types implementation | - |

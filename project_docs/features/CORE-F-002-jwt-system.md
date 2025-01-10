@@ -277,4 +277,4 @@ interface Metrics {
 
 | Date | Author | Description | PR |
 |------|--------|-------------|-------|
-| 2024-03-14 | Brett | Initial implementation of JWT token system with Auth0 | #1 | 
+| 2024-03-14 | Brett | Initial implementation of JWT token system with Auth0 | #1 |

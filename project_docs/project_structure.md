@@ -135,13 +135,13 @@ components/
    - Presence updates
    - Read states
 
-3. Offline Support:
+4. Offline Support:
    - PWA installation
    - Message caching
    - File sync
    - Background updates
 
-4. Testing Requirements:
+5. Testing Requirements:
    - Unit tests for all components
    - Snapshot tests for UI consistency
    - Integration tests for auth flow

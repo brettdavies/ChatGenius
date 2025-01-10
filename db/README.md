@@ -92,6 +92,7 @@ The module uses a singleton pattern for SSH tunnel management, ensuring:
 #### Connection Pooling
 
 The tunnel maintains a pool of connections with the following features:
+
 - Maximum pool size of 10 connections
 - Automatic connection reuse
 - Dead connection cleanup
@@ -100,6 +101,7 @@ The tunnel maintains a pool of connections with the following features:
 #### Health Monitoring
 
 Automatic health checks are performed to ensure connection stability:
+
 - Regular connection status verification
 - Automatic reconnection attempts on failure
 - Exponential backoff for retry attempts
@@ -143,6 +145,7 @@ npm run test
 ```
 
 The test suite includes:
+
 - Singleton pattern verification
 - Connection management tests
 - Connection pooling tests
@@ -172,6 +175,7 @@ npm run verify
 ## Monitoring
 
 The tunnel provides monitoring capabilities:
+
 - Connection status tracking
 - Health check results
 - Connection pool statistics
@@ -180,6 +184,7 @@ The tunnel provides monitoring capabilities:
 ## Error Handling
 
 Comprehensive error handling includes:
+
 - Automatic reconnection with exponential backoff
 - Connection pool management
 - Detailed error classification
@@ -190,4 +195,4 @@ Comprehensive error handling includes:
 1. Create a feature branch
 2. Make your changes
 3. Run tests
-4. Submit a pull request 
+4. Submit a pull request

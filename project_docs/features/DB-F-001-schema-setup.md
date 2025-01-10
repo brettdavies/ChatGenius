@@ -189,6 +189,7 @@ SSH_KEY_PATH=~/.ssh/your_key
 The following tables are implemented:
 
 1. `users`
+
    ```sql
    CREATE TABLE users (
        id VARCHAR(26) PRIMARY KEY,
@@ -204,6 +205,7 @@ The following tables are implemented:
    ```
 
 2. `channels`
+
    ```sql
    CREATE TABLE channels (
        id VARCHAR(26) PRIMARY KEY,
@@ -216,6 +218,7 @@ The following tables are implemented:
    ```
 
 3. `messages`
+
    ```sql
    CREATE TABLE messages (
        id VARCHAR(26) PRIMARY KEY,
@@ -230,6 +233,7 @@ The following tables are implemented:
    ```
 
 4. `channel_members`
+
    ```sql
    CREATE TABLE channel_members (
        channel_id VARCHAR(26) NOT NULL REFERENCES channels(id),
@@ -241,6 +245,7 @@ The following tables are implemented:
    ```
 
 5. `reactions`
+
    ```sql
    CREATE TABLE reactions (
        id VARCHAR(26) PRIMARY KEY,
@@ -253,6 +258,7 @@ The following tables are implemented:
    ```
 
 6. `files`
+
    ```sql
    CREATE TABLE files (
        id VARCHAR(26) PRIMARY KEY,
@@ -266,6 +272,7 @@ The following tables are implemented:
    ```
 
 7. `user_settings`
+
    ```sql
    CREATE TABLE user_settings (
        user_id VARCHAR(26) PRIMARY KEY REFERENCES users(id),
@@ -276,6 +283,7 @@ The following tables are implemented:
    ```
 
 8. `user_status`
+
    ```sql
    CREATE TABLE user_status (
        user_id VARCHAR(26) PRIMARY KEY REFERENCES users(id),
@@ -286,6 +294,7 @@ The following tables are implemented:
    ```
 
 9. `message_reads`
+
    ```sql
    CREATE TABLE message_reads (
        message_id VARCHAR(26) NOT NULL REFERENCES messages(id),
@@ -296,6 +305,7 @@ The following tables are implemented:
    ```
 
 10. `sync_state`
+
     ```sql
     CREATE TABLE sync_state (
         id VARCHAR(26) PRIMARY KEY,
@@ -309,93 +319,97 @@ The following tables are implemented:
 ### Error Handling
 
 1. SSH Tunnel Errors
-```typescript
-try {
-  const tunnel = SSHTunnel.initializeFromEnv();
-  await tunnel.connect();
-} catch (error) {
-  if (error instanceof SSHTunnelError) {
-    switch (error.code) {
-      case 'ECONNREFUSED':
-        console.error('SSH connection refused. Check host and port.');
-        break;
-      case 'ENOTFOUND':
-        console.error('SSH host not found. Check DNS or host address.');
-        break;
-      case 'ENOENT':
-        console.error('SSH key file not found. Check SSH_KEY_PATH.');
-        break;
-      default:
-        console.error('SSH tunnel error:', error.message);
+
+    ```typescript
+    try {
+    const tunnel = SSHTunnel.initializeFromEnv();
+    await tunnel.connect();
+    } catch (error) {
+    if (error instanceof SSHTunnelError) {
+        switch (error.code) {
+        case 'ECONNREFUSED':
+            console.error('SSH connection refused. Check host and port.');
+            break;
+        case 'ENOTFOUND':
+            console.error('SSH host not found. Check DNS or host address.');
+            break;
+        case 'ENOENT':
+            console.error('SSH key file not found. Check SSH_KEY_PATH.');
+            break;
+        default:
+            console.error('SSH tunnel error:', error.message);
+        }
+        process.exit(1);
     }
-    process.exit(1);
-  }
-}
-```
+    }
+    ```
 
 2. Database Setup Errors
-```typescript
-try {
-  await setupDatabase();
-} catch (error) {
-  if (error instanceof DatabaseError) {
-    switch (error.code) {
-      case '42P04':
-        console.error('Database already exists');
-        break;
-      case '42P07':
-        console.error('Schema already exists');
-        break;
-      case '42501':
-        console.error('Insufficient privileges');
-        break;
-      case '3D000':
-        console.error('Database does not exist');
-        break;
-      default:
-        console.error('Database error:', error.message);
+
+    ```typescript
+    try {
+    await setupDatabase();
+    } catch (error) {
+    if (error instanceof DatabaseError) {
+        switch (error.code) {
+        case '42P04':
+            console.error('Database already exists');
+            break;
+        case '42P07':
+            console.error('Schema already exists');
+            break;
+        case '42501':
+            console.error('Insufficient privileges');
+            break;
+        case '3D000':
+            console.error('Database does not exist');
+            break;
+        default:
+            console.error('Database error:', error.message);
+        }
     }
-  }
-}
-```
+    }
+    ```
 
 3. Schema Execution Errors
-```typescript
-try {
-  await executeSchemaFile(filePath);
-} catch (error) {
-  if (error instanceof DatabaseError) {
-    if (error.code === '23505') {
-      console.error('Unique constraint violation');
-    } else if (error.code === '23503') {
-      console.error('Foreign key constraint violation');
-    } else {
-      console.error('Schema execution error:', error.message);
+
+    ```typescript
+    try {
+    await executeSchemaFile(filePath);
+    } catch (error) {
+    if (error instanceof DatabaseError) {
+        if (error.code === '23505') {
+        console.error('Unique constraint violation');
+        } else if (error.code === '23503') {
+        console.error('Foreign key constraint violation');
+        } else {
+        console.error('Schema execution error:', error.message);
+        }
     }
-  }
-}
-```
+    }
+    ```
 
 4. Recovery Strategies
-```typescript
-// Retry logic for transient errors
-async function executeWithRetry(operation: () => Promise<void>, maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      await operation();
-      return;
-    } catch (error) {
-      if (attempt === maxRetries) throw error;
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-    }
-  }
-}
 
-// Usage
-await executeWithRetry(async () => {
-  await setupDatabase();
-});
-```
+    ```typescript
+    // Retry logic for transient errors
+    async function executeWithRetry(operation: () => Promise<void>, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+        await operation();
+        return;
+        } catch (error) {
+        if (attempt === maxRetries) throw error;
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+    }
+    }
+
+    // Usage
+    await executeWithRetry(async () => {
+    await setupDatabase();
+    });
+    ```
 
 ## Testing Requirements
 

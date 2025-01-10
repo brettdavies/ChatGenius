@@ -281,4 +281,4 @@ interface Metrics {
 
 | Date | Author | Description | PR |
 |------|--------|-------------|-------|
-| 2024-01-10 | System | Initial API security specification | - | 
+| 2024-01-10 | System | Initial API security specification | - |

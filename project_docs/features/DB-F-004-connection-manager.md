@@ -257,6 +257,7 @@ POSTGRES_IDLE_TIMEOUT=30000
 ### Connection Lifecycle
 
 1. Initialization
+
    ```typescript
    // Always initialize tunnel first
    const tunnel = SSHTunnel.initializeFromEnv();
@@ -267,6 +268,7 @@ POSTGRES_IDLE_TIMEOUT=30000
    ```
 
 2. Connection Pool Management
+
    ```typescript
    // The connection pool is managed automatically
    // Connections are created on demand up to the max pool size
@@ -286,6 +288,7 @@ POSTGRES_IDLE_TIMEOUT=30000
    ```
 
 3. Health Checks
+
    ```typescript
    // Health checks run automatically every minute
    // You can monitor them:
@@ -303,6 +306,7 @@ POSTGRES_IDLE_TIMEOUT=30000
    ```
 
 4. Cleanup
+
    ```typescript
    // Proper cleanup order
    await manager.shutdown();  // Closes all pool connections
@@ -320,101 +324,105 @@ POSTGRES_IDLE_TIMEOUT=30000
 ### Error Handling
 
 1. SSH Tunnel Errors
-```typescript
-tunnel.on('error', async (error: Error) => {
-  switch (error.code) {
-    case 'ECONNRESET':
-      console.error('SSH connection reset by peer');
-      await tunnel.connect();  // Auto-reconnect
-      break;
-    case 'ETIMEDOUT':
-      console.error('SSH connection timed out');
-      await tunnel.connect();  // Auto-reconnect
-      break;
-    default:
-      console.error('SSH error:', error.message);
-      // Emit event for application handling
-      tunnel.emit('tunnelError', error);
-  }
-});
-```
+
+    ```typescript
+    tunnel.on('error', async (error: Error) => {
+    switch (error.code) {
+        case 'ECONNRESET':
+        console.error('SSH connection reset by peer');
+        await tunnel.connect();  // Auto-reconnect
+        break;
+        case 'ETIMEDOUT':
+        console.error('SSH connection timed out');
+        await tunnel.connect();  // Auto-reconnect
+        break;
+        default:
+        console.error('SSH error:', error.message);
+        // Emit event for application handling
+        tunnel.emit('tunnelError', error);
+    }
+    });
+    ```
 
 2. Connection Pool Errors
-```typescript
-// Pool error handling
-pool.on('error', (err: Error, client: PoolClient) => {
-  console.error('Unexpected error on idle client', err);
-  client.release(true);  // Force release with error
-});
 
-// Connection timeout handling
-try {
-  const client = await pool.connect();
-} catch (error) {
-  if (error.code === 'ECONNREFUSED') {
-    console.error('Database connection refused');
-  } else if (error.code === 'ETIMEDOUT') {
-    console.error('Connection timeout');
-  }
-}
-```
+    ```typescript
+    // Pool error handling
+    pool.on('error', (err: Error, client: PoolClient) => {
+    console.error('Unexpected error on idle client', err);
+    client.release(true);  // Force release with error
+    });
+
+    // Connection timeout handling
+    try {
+    const client = await pool.connect();
+    } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+        console.error('Database connection refused');
+    } else if (error.code === 'ETIMEDOUT') {
+        console.error('Connection timeout');
+    }
+    }
+    ```
 
 3. Health Check Recovery
-```typescript
-private async handleHealthCheckFailure(error: Error) {
-  console.error('Health check failed:', error);
-  
-  if (!this.tunnel.isConnectedToTunnel()) {
-    try {
-      await this.tunnel.connect();
-    } catch (error) {
-      console.error('Failed to reconnect tunnel:', error);
-      this.emit('healthCheckFailed', error);
-      return;
-    }
-  }
 
-  try {
-    // Test database connection
-    const client = await this.pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    console.log('Database connection recovered');
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    this.emit('healthCheckFailed', error);
-  }
-}
-```
+    ```typescript
+    private async handleHealthCheckFailure(error: Error) {
+    console.error('Health check failed:', error);
+    
+    if (!this.tunnel.isConnectedToTunnel()) {
+        try {
+        await this.tunnel.connect();
+        } catch (error) {
+        console.error('Failed to reconnect tunnel:', error);
+        this.emit('healthCheckFailed', error);
+        return;
+        }
+    }
+
+    try {
+        // Test database connection
+        const client = await this.pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+        console.log('Database connection recovered');
+    } catch (error) {
+        console.error('Database connection failed:', error);
+        this.emit('healthCheckFailed', error);
+    }
+    }
+    ```
 
 4. Resource Management
-```typescript
-// Proper resource cleanup
-async function cleanup() {
-  // 1. Stop accepting new connections
-  this.pool.end();
-  
-  // 2. Wait for active queries to finish (with timeout)
-  const timeout = setTimeout(() => {
-    console.warn('Force closing remaining connections');
-    this.forceCleanup();
-  }, 5000);
-  
-  try {
-    await Promise.race([
-      this.waitForQueries(),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
-      )
-    ]);
-  } finally {
-    clearTimeout(timeout);
-  }
-  
-  // 3. Close SSH tunnel
-  await this.tunnel.disconnect();
-}
-```
+
+    ```typescript
+    // Proper resource cleanup
+    async function cleanup() {
+    // 1. Stop accepting new connections
+    this.pool.end();
+    
+    // 2. Wait for active queries to finish (with timeout)
+    const timeout = setTimeout(() => {
+        console.warn('Force closing remaining connections');
+        this.forceCleanup();
+    }, 5000);
+    
+    try {
+        await Promise.race([
+        this.waitForQueries(),
+        new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 5000)
+        )
+        ]);
+    } finally {
+        clearTimeout(timeout);
+    }
+    
+    // 3. Close SSH tunnel
+    await this.tunnel.disconnect();
+    }
+    ```
 
 ## Testing Requirements
 
@@ -520,4 +528,4 @@ interface Metrics {
 | 2024-01-10 | System | Initial connection manager implementation | - |
 | 2024-01-10 | System | Added SSH tunnel singleton pattern | - |
 | 2024-01-10 | System | Added connection pooling | - |
-| 2024-01-10 | System | Added comprehensive documentation | - | 
+| 2024-01-10 | System | Added comprehensive documentation | - |

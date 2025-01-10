@@ -257,4 +257,4 @@ interface Metrics {
 
 | Date | Author | Description | PR |
 |------|--------|-------------|-------|
-| 2024-01-10 | System | Initial API routes specification | - | 
+| 2024-01-10 | System | Initial API routes specification | - |
