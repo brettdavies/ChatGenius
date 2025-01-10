@@ -261,7 +261,7 @@ interface Metrics {
 - External services:
   - Auth0: Token provider and manager
 - Internal dependencies:
-  - Features: CORE-F-001 (Auth0 Social Login)
+  - [CORE-F-001: Auth0 Social Login](./CORE-F-001-auth-social-login.md)
 - Third-party packages:
   - @auth0/auth0-react@2.2.4: Auth0 React SDK
 

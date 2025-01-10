@@ -256,7 +256,7 @@ interface Metrics {
   - Google OAuth: Social login
   - GitHub OAuth: Social login
 - Internal dependencies:
-  - Features: CORE-F-002 (JWT Token System)
+  - [CORE-F-002: JWT Token System](./CORE-F-002-jwt-system.md)
 - Third-party packages:
   - @auth0/auth0-react@2.2.4: Auth0 React SDK
 
