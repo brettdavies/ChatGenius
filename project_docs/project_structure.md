@@ -1,6 +1,6 @@
 # Project Structure: ChatGenius
 
-This document describes the organization of the ChatGenius codebase, a Slack clone project. It provides an overview of the directory structure, naming conventions, and best practices for maintaining a scalable and maintainable application that matches Slack's functionality and appearance exactly.
+This document describes the organization of the ChatGenius codebase. It provides an overview of the directory structure, naming conventions, and best practices for maintaining a scalable and maintainable application.
 
 ---
 
@@ -9,122 +9,114 @@ This document describes the organization of the ChatGenius codebase, a Slack clo
 Below is the directory structure for ChatGenius:
 
 ```plaintext
-src/
-├── actions/              # Server-side actions
-│   ├── db/               # Database actions (PostgreSQL)
-│   ├── auth/             # Auth0 integration
-│   ├── messages/         # Message handling
-│   ├── channels/         # Channel management
-│   ├── files/           # File handling
-├── app/                 # Next.js app router
-│   ├── api/             # API routes
-│   │   ├── auth/        # Auth0 endpoints
-│   │   ├── channels/    # Channel endpoints
-│   │   ├── messages/    # Message endpoints
-│   │   ├── files/       # File endpoints
-│   │   ├── events/      # SSE endpoints
-│   ├── (routes)/        # Page routes
-│       ├── _components/ # Route-specific components
-│       ├── layout.tsx   # Main layout
-│       ├── page.tsx     # Main chat interface
-├── components/          # Shared components
-│   ├── ui/              # Base UI components
-│   │   ├── slack/       # Slack-specific components
-│   ├── channel/         # Channel components
-│   ├── message/         # Message components
-│   ├── file/           # File handling components
-│   ├── auth/           # Auth components
-├── db/                 # Database
-│   ├── migrations/     # PostgreSQL migrations
-│   ├── schema/         # Database schemas
-│   ├── queries/        # SQL queries
-├── lib/               # Shared libraries
-│   ├── hooks/         # Custom hooks
-│   │   ├── channel/   # Channel hooks
-│   │   ├── message/   # Message hooks
-│   │   ├── auth/      # Auth hooks
-│   │   ├── sse/       # SSE hooks
-│   ├── offline/       # Offline functionality
-│   │   ├── sync/      # Data sync
-│   │   ├── storage/   # IndexedDB management
-│   │   ├── cache/     # Cache strategies
-│   ├── sse/          # SSE implementation
-│   ├── utils/        # Utility functions
-├── public/           # Static assets
-│   ├── sw.js        # Service Worker
-│   ├── manifest.json # PWA manifest
-│   ├── icons/       # App icons
-├── styles/          # Global styles
-│   ├── slack/       # Slack-matching styles
-├── types/           # TypeScript types
-├── tests/          # Test suites
-    ├── unit/       # Unit tests
-    ├── integration/ # Integration tests
-    ├── e2e/        # End-to-end tests
+.
+├── src/
+│   ├── __tests__/                    # Test suites
+│   │   ├── components/               # Component tests
+│   │   │   ├── __snapshots__/       # Component snapshots
+│   │   │   ├── ProtectedRoute.test.tsx
+│   │   │   ├── SessionManager.test.tsx
+│   │   │   └── SessionWarningModal.test.tsx
+│   │   ├── layouts/                  # Layout tests
+│   │   │   └── RootLayout.test.tsx
+│   │   └── pages/                    # Page tests
+│   │       ├── __snapshots__/       # Page snapshots
+│   │       ├── ErrorPage.test.tsx
+│   │       ├── Home.test.tsx
+│   │       └── Login.test.tsx
+│   ├── assets/                      # Static assets
+│   │   └── react.svg
+│   ├── components/                  # Shared components
+│   │   ├── ProtectedRoute.tsx
+│   │   ├── SessionManager.tsx
+│   │   └── SessionWarningModal.tsx
+│   ├── hooks/                      # Custom React hooks
+│   ├── layouts/                    # Layout components
+│   │   └── RootLayout.tsx
+│   ├── pages/                      # Page components
+│   │   ├── ErrorPage.tsx
+│   │   ├── Home.tsx
+│   │   └── Login.tsx
+│   ├── utils/                      # Utility functions
+│   ├── App.css                     # App-level styles
+│   ├── App.tsx                     # Root App component
+│   ├── auth.config.ts             # Auth0 configuration
+│   ├── index.css                  # Global styles
+│   ├── main.tsx                   # Entry point
+│   ├── setupTests.ts              # Test setup
+│   └── vite-env.d.ts             # Vite type declarations
+├── package.json                   # Project dependencies and scripts
+├── tsconfig.json                 # TypeScript configuration
+├── vite.config.ts               # Vite configuration
+└── README.md                    # Project documentation
 ```
 
 ## Directory Overview
 
-- actions/: Server-side logic
-  - db/: PostgreSQL database operations
-  - auth/: Auth0 authentication logic
-  - messages/: Message handling with SSE
-  - channels/: Channel and DM management
-  - files/: File upload and management
+- __tests__/: Test suites organized by component type
+  - components/: Tests for shared components
+  - layouts/: Tests for layout components
+  - pages/: Tests for page components
 
-- app/: Next.js application structure
-  - api/: RESTful and SSE endpoints
-  - (routes)/: Page components and layouts
+- assets/: Static assets like images and icons
+  - Currently contains React logo
 
-- components/: React components
-  - ui/slack/: Pixel-perfect Slack UI components
-  - channel/: Channel and DM components
-  - message/: Message and thread components
-  - file/: File preview and upload components
+- components/: Shared React components
+  - ProtectedRoute: Authentication route wrapper
+  - SessionManager: Handles session timeouts
+  - SessionWarningModal: Session expiration warning
 
-- lib/: Shared functionality
-  - hooks/: React hooks for features
-  - offline/: PWA and offline features
-  - sse/: Server-Sent Events implementation
-  - utils/: Shared utilities
+- hooks/: Custom React hooks
+  - Currently empty, ready for custom hooks
+
+- layouts/: Layout components
+  - RootLayout: Main application layout
+
+- pages/: Page components
+  - ErrorPage: Error display page
+  - Home: Main home page
+  - Login: Authentication page
+
+- utils/: Utility functions
+  - Currently empty, ready for shared utilities
 
 ## File Naming Conventions
 
-- Components: Match Slack's component names where possible
-  - Example: `MessageInput.tsx`, `ThreadView.tsx`
-- Styles: Use CSS modules with Slack-matching class names
-  - Example: `p-message__input`, `c-thread_view`
-- Tests: Name files to match their implementation
-  - Example: `MessageInput.test.tsx`
+- Components: PascalCase for component files
+  - Example: `ProtectedRoute.tsx`, `SessionManager.tsx`
+- Tests: Component name with `.test.tsx` suffix
+  - Example: `ProtectedRoute.test.tsx`
+- Styles: Component name with `.css` suffix
+  - Example: `App.css`
+- Configuration: kebab-case for config files
+  - Example: `vite-env.d.ts`
 
 ## Component Organization
 
 ### Shared Components
 
-Organize UI components to match Slack's structure:
+Components are organized by their role in the application:
 
 ```plaintext
-components/ui/slack/
-├── message/
-│   ├── MessageInput.tsx
-│   ├── MessageActions.tsx
-│   ├── MessageReactions.tsx
-├── thread/
-│   ├── ThreadView.tsx
-│   ├── ThreadHeader.tsx
-├── channel/
-│   ├── ChannelHeader.tsx
-│   ├── ChannelList.tsx
+components/
+├── ProtectedRoute.tsx    # Auth protection
+├── SessionManager.tsx    # Session handling
+└── SessionWarningModal.tsx # Session UI
 ```
 
 ### Best Practices
 
-1. Slack UI Matching:
-   - Use exact class names and structure
-   - Match component hierarchy
-   - Implement all keyboard shortcuts
+1. Component Structure:
+   - Keep components focused and single-responsibility
+   - Use TypeScript for type safety
+   - Include proper prop types and documentation
 
-2. Real-time Features:
+2. Authentication Features:
+   - Protected route handling
+   - Session management
+   - Login flow
+
+3. Real-time Features:
    - SSE for all real-time updates
    - Typing indicators
    - Presence updates
@@ -137,9 +129,9 @@ components/ui/slack/
    - Background updates
 
 4. Testing Requirements:
-   - Visual regression tests
-   - Real-time feature tests
-   - Offline capability tests
+   - Unit tests for all components
+   - Snapshot tests for UI consistency
+   - Integration tests for auth flow
 
 ### Scalability Guidelines
 
@@ -194,3 +186,57 @@ components/ui/slack/
    - Clear structure
    - Type safety
    - Comprehensive testing
+
+## Testing Organization
+
+### Test File Structure
+
+```typescript
+// Example test file structure
+import { render, screen, fireEvent } from '@testing-library/react';
+import { useAuth0 } from '@auth0/auth0-react';
+import ComponentName from '../../components/ComponentName';
+
+// Mock external dependencies
+jest.mock('@auth0/auth0-react');
+const mockUseAuth0 = useAuth0 as jest.Mock;
+
+describe('ComponentName', () => {
+  // Setup and teardown
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // Snapshot tests
+  describe('snapshots', () => {
+    it('matches snapshot for default state', () => {
+      const { container } = render(<ComponentName />);
+      expect(container).toMatchSnapshot();
+    });
+  });
+
+  // Functionality tests
+  it('handles user interaction', () => {
+    // Test implementation
+  });
+});
+```
+
+### Test Conventions
+
+1. **File Organization**:
+   - Test files mirror source structure
+   - Snapshots in `__snapshots__` directories
+   - Clear test descriptions
+   - Consistent mock patterns
+
+2. **Coverage Requirements**:
+   - Components: 85% minimum
+   - Pages: 85% minimum
+   - Utils: 95% minimum
+
+3. **Testing Patterns**:
+   - Mock Auth0 hooks consistently
+   - Test error states
+   - Verify user interactions
+   - Check component rendering

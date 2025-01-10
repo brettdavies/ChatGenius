@@ -58,10 +58,9 @@ The feature list serves as a centralized reference for:
 | Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
 |------------|--------------|-------------|---------|-----------------|------------------|--------------|
 | CORE-F-001 | Auth0 Social Login | Implement Auth0-based authentication with Google and GitHub login options, including email/password fallback | 🟦 Planned | [Details](./features/CORE-F-001-auth-social-login.md) | - | 2024-01-10 |
-| CORE-F-002 | JWT Token System | Implement secure JWT token management with refresh logic and token rotation | 🟦 Planned | [Details](./features/CORE-F-002-jwt-system.md) | - | 2024-01-10 |
-| CORE-F-003 | Session Handler | Create secure session management system with persistence and timeout handling | 🟦 Planned | [Details](./features/CORE-F-003-session-handler.md) | - | 2024-01-10 |
-| CORE-F-004 | Profile Manager | Enable users to manage profiles including avatars, status messages, and preferences | 🟦 Planned | [Details](./features/CORE-F-004-profile-manager.md) | - | 2024-01-10 |
-| CORE-F-005 | RBAC System | Implement role-based access control system with proper permission management | 🟦 Planned | [Details](./features/CORE-F-005-rbac-system.md) | - | 2024-01-10 |
+| CORE-F-002 | Session Handler | Create secure session management system with persistence and timeout handling | 🟦 Planned | [Details](./features/CORE-F-002-session-handler.md) | - | 2024-01-10 |
+| CORE-F-003 | Profile Manager | Enable users to manage profiles including avatars, status messages, and preferences | 🟦 Planned | [Details](./features/CORE-F-003-profile-manager.md) | - | 2024-01-10 |
+| CORE-F-004 | RBAC System | Implement role-based access control system with proper permission management | 🟦 Planned | [Details](./features/CORE-F-004-rbac-system.md) | - | 2024-01-10 |
 
 ### Database Foundation
 
