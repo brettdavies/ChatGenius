@@ -1,0 +1,75 @@
+# .cursorrules
+
+## General Rules
+
+1. **Follow Best Practices**:
+   - Use type hints, logging, and docstrings as per global instructions.
+   - Ensure your environment variables are managed securely.
+2. **Naming Conventions**:
+   - Use kebab-case for files and folders unless otherwise specified.
+   - Prefix environment variables accessible to the frontend with `NEXT_PUBLIC_`.
+3. **Environment Variables**:
+   - Update `.env.example` when new environment variables are introduced.
+   - Store actual values in `.env.local` and never expose sensitive variables to the frontend.
+4. **File Structure**:
+   - Organize components, hooks, and utilities based on the provided project structure.
+   - Keep shared and one-off components separate (e.g., `/components` vs. `/_components`).
+
+---
+
+## Git Rules
+
+- Use lowercase for commit messages.
+- Write concise summaries for commit messages.
+- Include descriptions for non-obvious changes.
+- Include **Feature ID(s)** in the commit description for all features included in the commit.
+  - Format: `type(scope): message [Feature ID(s): ID-001, ID-002]`.
+  - Example:
+
+    ```plaintext
+    feat(auth): added OAuth login functionality [Feature ID(s): ID-003]
+    ```
+
+---
+
+## Documentation Rules
+
+- Update relevant markdown files as you work on features.
+- Maintain evergreen documents by marking incomplete sections with `[[TODO]]` or notes for follow-up.
+- Document API interactions, data flows, and any permissions required for functionality.
+- Ensure `manifest.json` and other key configuration files are well-documented.
+
+---
+
+## Frontend-Specific Rules
+
+1. **Component Rules**:
+   - Always declare whether a component is `use server` or `use client` at the top.
+   - Maintain visual spacing in JSX with extra blank lines for readability.
+2. **Data Fetching**:
+   - Fetch data in server components and pass it as props to client components.
+   - Use `/actions` for server actions and ensure they return ActionState.
+
+---
+
+## Backend-Specific Rules
+
+1. **Database Schema**:
+   - Include `createdAt` and `updatedAt` columns in all tables.
+   - Use enums for limited value sets (e.g., `membership: ["free", "pro"]`).
+2. **Actions**:
+   - CRUD actions should follow the pattern:
+     - Create
+     - Read
+     - Update
+     - Delete
+   - Always include meaningful error handling and logging.
+
+---
+
+## Development Workflow
+
+- Use proper version control with branching and commit conventions.
+- Ensure all code passes tests in local and staging environments before deployment.
+- Follow semantic versioning (`MAJOR.MINOR.PATCH`) for releases.
+- Maintain a clear changelog in `CHANGELOG.md`.
