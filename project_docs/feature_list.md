@@ -11,11 +11,16 @@ This document provides an overview of all features in the ChatGenius project. Ea
   - [Feature List Overview](#feature-list-overview)
   - [Feature Status Legend](#feature-status-legend)
   - [Feature List](#feature-list)
-    - [ID-001](#id-001)
-    - [ID-002](#id-002)
-    - [ID-003](#id-003)
-    - [ID-004](#id-004)
-    - [ID-005](#id-005)
+    - [Core Infrastructure](#core-infrastructure)
+    - [Database Foundation](#database-foundation)
+    - [Channel System](#channel-system)
+    - [Message System](#message-system)
+    - [Interaction System](#interaction-system)
+    - [File System](#file-system)
+    - [User System](#user-system)
+    - [PWA System](#pwa-system)
+    - [Offline System](#offline-system)
+    - [System Optimization](#system-optimization)
   - [Workflow for Updates](#workflow-for-updates)
     - [Adding a New Feature](#adding-a-new-feature)
     - [Updating Feature Status](#updating-feature-status)
@@ -48,35 +53,112 @@ The feature list serves as a centralized reference for:
 
 ## Feature List
 
-### ID-001
+### Core Infrastructure
 
-| Feature ID | Feature Name             | Description                           | Status      | Assigned To  | Link to Details            | Commit Reference                                         | Last Updated |
-|------------|--------------------------|---------------------------------------|-------------|--------------|---------------------------|---------------------------------------------------|
-| [[ID-001]] | Feature A                | [[Brief Description]]                | 🟦 Planned  | [[Assignee]] | [Details](./[[feature-doc]]) | [Commit Hash](https://github.com/repo/commit/[[commit-id]]) | 2025-01-10 |
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| CORE-F-001 | Auth0 Social Login | Implement Auth0-based authentication with Google and GitHub login options, including email/password fallback | 🟦 Planned | [Details](./features/CORE-F-001-auth-social-login.md) | - | 2024-01-10 |
+| CORE-F-002 | JWT Token System | Implement secure JWT token management with refresh logic and token rotation | 🟦 Planned | [Details](./features/CORE-F-002-jwt-system.md) | - | 2024-01-10 |
+| CORE-F-003 | Session Handler | Create secure session management system with persistence and timeout handling | 🟦 Planned | [Details](./features/CORE-F-003-session-handler.md) | - | 2024-01-10 |
+| CORE-F-004 | Profile Manager | Enable users to manage profiles including avatars, status messages, and preferences | 🟦 Planned | [Details](./features/CORE-F-004-profile-manager.md) | - | 2024-01-10 |
+| CORE-F-005 | RBAC System | Implement role-based access control system with proper permission management | 🟦 Planned | [Details](./features/CORE-F-005-rbac-system.md) | - | 2024-01-10 |
 
-### ID-002
+### Database Foundation
 
-| Feature ID | Feature Name             | Description                           | Status      | Assigned To  | Link to Details            | Commit Reference                                         | Last Updated |
-|------------|--------------------------|---------------------------------------|-------------|--------------|---------------------------|---------------------------------------------------|
-| [[ID-002]] | Feature B                | [[Brief Description]]                | 🟨 In Progress | [[Assignee]] | [Details](./[[feature-doc]]) | [Commit Hash](https://github.com/repo/commit/[[commit-id]]) | 2025-01-10 |
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| DB-F-001 | Schema Setup | Implement complete PostgreSQL schema with all tables, indexes, and relationships | 🟦 Planned | [Details](./features/DB-F-001-schema-setup.md) | - | 2024-01-10 |
+| DB-F-002 | SSE Infrastructure | Set up Server-Sent Events infrastructure for real-time communication | 🟦 Planned | [Details](./features/DB-F-002-sse-infrastructure.md) | - | 2024-01-10 |
+| DB-F-003 | Event System | Implement PostgreSQL LISTEN/NOTIFY system for real-time events | 🟦 Planned | [Details](./features/DB-F-003-event-system.md) | - | 2024-01-10 |
+| DB-F-004 | Connection Manager | Create connection pool management with automatic reconnection handling | 🟦 Planned | [Details](./features/DB-F-004-connection-manager.md) | - | 2024-01-10 |
+| DB-F-005 | Event Types | Implement comprehensive event type system with proper handlers | 🟦 Planned | [Details](./features/DB-F-005-event-types.md) | - | 2024-01-10 |
 
-### ID-003
+### Channel System
 
-| Feature ID | Feature Name             | Description                           | Status      | Assigned To  | Link to Details            | Commit Reference                                         | Last Updated |
-|------------|--------------------------|---------------------------------------|-------------|--------------|---------------------------|---------------------------------------------------|
-| [[ID-003]] | Feature C                | [[Brief Description]]                | 🟩 Completed | [[Assignee]] | [Details](./[[feature-doc]]) | [Commit Hash](https://github.com/repo/commit/[[commit-id]]) | 2025-01-10 |
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| CH-F-001 | Channel Creator | Enable creation of public and private channels with proper validation | 🟦 Planned | [Details](./features/CH-F-001-channel-creator.md) | - | 2024-01-10 |
+| CH-F-002 | Member Manager | Implement channel membership system with roles and permissions | 🟦 Planned | [Details](./features/CH-F-002-member-manager.md) | - | 2024-01-10 |
+| CH-F-003 | DM System | Create direct message system for one-on-one and group conversations | 🟦 Planned | [Details](./features/CH-F-003-dm-system.md) | - | 2024-01-10 |
+| CH-F-004 | Settings Manager | Implement channel settings with proper permission controls | 🟦 Planned | [Details](./features/CH-F-004-settings-manager.md) | - | 2024-01-10 |
+| CH-F-005 | Channel Search | Create channel search and filtering system with proper indexing | 🟦 Planned | [Details](./features/CH-F-005-channel-search.md) | - | 2024-01-10 |
+| CH-F-006 | Sidebar Manager | Implement channel sidebar with unread indicators and organization | 🟦 Planned | [Details](./features/CH-F-006-sidebar-manager.md) | - | 2024-01-10 |
 
-### ID-004
+### Message System
 
-| Feature ID | Feature Name             | Description                           | Status      | Assigned To  | Link to Details            | Commit Reference                                         | Last Updated |
-|------------|--------------------------|---------------------------------------|-------------|--------------|---------------------------|---------------------------------------------------|
-| [[ID-004]] | Feature D                | [[Brief Description]]                | 🟥 Blocked  | [[Assignee]] | [Details](./[[feature-doc]]) | [Commit Hash](https://github.com/repo/commit/[[commit-id]]) | 2025-01-10 |
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| MSG-F-001 | Real-time Core | Create real-time message sending/receiving system using SSE | 🟦 Planned | [Details](./features/MSG-F-001-realtime-core.md) | - | 2024-01-10 |
+| MSG-F-002 | Rich Text | Implement rich text and markdown formatting for messages | 🟦 Planned | [Details](./features/MSG-F-002-rich-text.md) | - | 2024-01-10 |
+| MSG-F-003 | Message Actions | Enable message editing, deletion with proper permission checks | 🟦 Planned | [Details](./features/MSG-F-003-message-actions.md) | - | 2024-01-10 |
+| MSG-F-004 | Thread System | Implement threaded conversations with proper navigation | 🟦 Planned | [Details](./features/MSG-F-004-thread-system.md) | - | 2024-01-10 |
+| MSG-F-005 | History Manager | Create message history system with efficient pagination | 🟦 Planned | [Details](./features/MSG-F-005-history-manager.md) | - | 2024-01-10 |
+| MSG-F-006 | Typing Indicator | Implement real-time typing indicators with proper throttling | 🟦 Planned | [Details](./features/MSG-F-006-typing-indicator.md) | - | 2024-01-10 |
+| MSG-F-007 | Read Tracker | Create read state tracking system with proper sync | 🟦 Planned | [Details](./features/MSG-F-007-read-tracker.md) | - | 2024-01-10 |
+| MSG-F-008 | Message Search | Implement message search with proper indexing and filtering | 🟦 Planned | [Details](./features/MSG-F-008-message-search.md) | - | 2024-01-10 |
 
-### ID-005
+### Interaction System
 
-| Feature ID | Feature Name             | Description                           | Status      | Assigned To  | Link to Details            | Commit Reference                                         | Last Updated |
-|------------|--------------------------|---------------------------------------|-------------|--------------|---------------------------|---------------------------------------------------|
-| [[ID-005]] | Feature E                | [[Brief Description]]                | 🟧 Deferred | [[Assignee]] | [Details](./[[feature-doc]]) | [Commit Hash](https://github.com/repo/commit/[[commit-id]]) | 2025-01-10 |
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| INT-F-001 | Reaction Manager | Enable emoji reactions with real-time updates and sync | 🟦 Planned | [Details](./features/INT-F-001-reaction-manager.md) | - | 2024-01-10 |
+| INT-F-002 | Bookmark System | Implement message bookmarking with organization features | 🟦 Planned | [Details](./features/INT-F-002-bookmark-system.md) | - | 2024-01-10 |
+| INT-F-003 | Share Manager | Create message sharing system between channels | 🟦 Planned | [Details](./features/INT-F-003-share-manager.md) | - | 2024-01-10 |
+| INT-F-004 | Mention System | Implement user mentions with notifications | 🟦 Planned | [Details](./features/INT-F-004-mention-system.md) | - | 2024-01-10 |
+| INT-F-005 | Link Preview | Create link preview system with proper caching | 🟦 Planned | [Details](./features/INT-F-005-link-preview.md) | - | 2024-01-10 |
+| INT-F-006 | Code Formatter | Implement code snippet formatting with syntax highlighting | 🟦 Planned | [Details](./features/INT-F-006-code-formatter.md) | - | 2024-01-10 |
+
+### File System
+
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| FILE-F-001 | Upload Core | Create secure file upload system with progress tracking | 🟦 Planned | [Details](./features/FILE-F-001-upload-core.md) | - | 2024-01-10 |
+| FILE-F-002 | Storage Manager | Implement file storage with proper organization and limits | 🟦 Planned | [Details](./features/FILE-F-002-storage-manager.md) | - | 2024-01-10 |
+| FILE-F-003 | Preview System | Create file preview system for common file types | 🟦 Planned | [Details](./features/FILE-F-003-preview-system.md) | - | 2024-01-10 |
+| FILE-F-004 | Share System | Implement file sharing with proper permission checks | 🟦 Planned | [Details](./features/FILE-F-004-share-system.md) | - | 2024-01-10 |
+| FILE-F-005 | Version Control | Create file versioning system with history tracking | 🟦 Planned | [Details](./features/FILE-F-005-version-control.md) | - | 2024-01-10 |
+| FILE-F-006 | File Search | Implement file search with metadata indexing | 🟦 Planned | [Details](./features/FILE-F-006-file-search.md) | - | 2024-01-10 |
+
+### User System
+
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| USR-F-001 | Presence Core | Create real-time user presence system with status | 🟦 Planned | [Details](./features/USR-F-001-presence-core.md) | - | 2024-01-10 |
+| USR-F-002 | Status Manager | Implement custom status messages with emoji support | 🟦 Planned | [Details](./features/USR-F-002-status-manager.md) | - | 2024-01-10 |
+| USR-F-003 | Profile System | Create user profile system with customization options | 🟦 Planned | [Details](./features/USR-F-003-profile-system.md) | - | 2024-01-10 |
+| USR-F-004 | Settings Manager | Implement user preferences and settings system | 🟦 Planned | [Details](./features/USR-F-004-settings-manager.md) | - | 2024-01-10 |
+| USR-F-005 | Theme System | Create theme management with light/dark mode support | 🟦 Planned | [Details](./features/USR-F-005-theme-system.md) | - | 2024-01-10 |
+| USR-F-006 | Accessibility | Implement accessibility features and keyboard shortcuts | 🟦 Planned | [Details](./features/USR-F-006-accessibility.md) | - | 2024-01-10 |
+
+### PWA System
+
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| PWA-F-001 | PWA Core | Set up PWA infrastructure with service worker and manifest | 🟦 Planned | [Details](./features/PWA-F-001-pwa-core.md) | - | 2024-01-10 |
+| PWA-F-002 | Install Flow | Create PWA installation flow with proper prompts | 🟦 Planned | [Details](./features/PWA-F-002-install-flow.md) | - | 2024-01-10 |
+| PWA-F-003 | Cache Strategy | Implement efficient caching strategy for assets | 🟦 Planned | [Details](./features/PWA-F-003-cache-strategy.md) | - | 2024-01-10 |
+| PWA-F-004 | Update System | Create PWA update system with proper notifications | 🟦 Planned | [Details](./features/PWA-F-004-update-system.md) | - | 2024-01-10 |
+
+### Offline System
+
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| OFF-F-001 | Offline Core | Implement core offline functionality detection | 🟦 Planned | [Details](./features/OFF-F-001-offline-core.md) | - | 2024-01-10 |
+| OFF-F-002 | Message Queue | Create offline message queue with sync system | 🟦 Planned | [Details](./features/OFF-F-002-message-queue.md) | - | 2024-01-10 |
+| OFF-F-003 | File Queue | Implement offline file upload/download queue | 🟦 Planned | [Details](./features/OFF-F-003-file-queue.md) | - | 2024-01-10 |
+| OFF-F-004 | Conflict Resolution | Create conflict resolution system for offline changes | 🟦 Planned | [Details](./features/OFF-F-004-conflict-resolution.md) | - | 2024-01-10 |
+| OFF-F-005 | State Manager | Implement offline state management system | 🟦 Planned | [Details](./features/OFF-F-005-state-manager.md) | - | 2024-01-10 |
+
+### System Optimization
+
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| SYS-F-001 | Performance Core | Implement performance monitoring and optimization | 🟦 Planned | [Details](./features/SYS-F-001-performance-core.md) | - | 2024-01-10 |
+| SYS-F-002 | Message Virtual | Create message virtualization for large channels | 🟦 Planned | [Details](./features/SYS-F-002-message-virtual.md) | - | 2024-01-10 |
+| SYS-F-003 | Cache Manager | Implement intelligent caching system | 🟦 Planned | [Details](./features/SYS-F-003-cache-manager.md) | - | 2024-01-10 |
+| SYS-F-004 | Error System | Create comprehensive error handling system | 🟦 Planned | [Details](./features/SYS-F-004-error-system.md) | - | 2024-01-10 |
+| SYS-F-005 | Analytics Core | Implement performance and usage analytics | 🟦 Planned | [Details](./features/SYS-F-005-analytics-core.md) | - | 2024-01-10 |
+| SYS-F-006 | Load Optimizer | Create dynamic load optimization system | 🟦 Planned | [Details](./features/SYS-F-006-load-optimizer.md) | - | 2024-01-10 |
 
 ---
 

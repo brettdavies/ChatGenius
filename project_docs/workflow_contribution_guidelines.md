@@ -16,6 +16,12 @@ This document outlines the standard workflows and contribution practices for Cha
   - [Documentation Updates](#documentation-updates)
   - [Workflow for Features](#workflow-for-features)
   - [General Best Practices](#general-best-practices)
+  - [PWA Development Workflow](#pwa-development-workflow)
+  - [Real-time Feature Development](#real-time-feature-development)
+  - [Feature-Specific Guidelines](#feature-specific-guidelines)
+    - [Authentication Features](#authentication-features)
+    - [Message Features](#message-features)
+    - [File Operations](#file-operations)
 
 ---
 
@@ -173,3 +179,62 @@ This document outlines the standard workflows and contribution practices for Cha
 
 4. **Documentation**:
    - Treat documentation as part of the codebase—keep it up-to-date.
+
+---
+
+## PWA Development Workflow
+
+1. **Service Worker Changes**:
+   - Create a dedicated branch: `feature/pwa-<feature-description>`.
+   - Test offline functionality thoroughly before submitting PR.
+   - Update the service worker version appropriately.
+
+2. **Offline Feature Development**:
+   - Document sync strategies in the feature template.
+   - Include conflict resolution approaches.
+   - Test on multiple devices and network conditions.
+
+3. **PWA Testing Checklist**:
+   - Verify manifest.json updates.
+   - Test installation flow.
+   - Validate offline functionality.
+   - Check background sync.
+   - Test push notifications.
+
+## Real-time Feature Development
+
+1. **SSE Implementation Guidelines**:
+   - Document event types in the feature template.
+   - Include reconnection strategy.
+   - Test with network throttling.
+
+2. **Real-time Testing Requirements**:
+   - Test concurrent connections.
+   - Validate message ordering.
+   - Check presence updates.
+   - Verify typing indicators.
+
+3. **Performance Considerations**:
+   - Monitor memory usage.
+   - Track connection stability.
+   - Measure message latency.
+
+## Feature-Specific Guidelines
+
+### Authentication Features
+
+- Implement proper token management
+- Include refresh token logic
+- Test session persistence
+
+### Message Features
+
+- Include offline queue handling
+- Implement retry mechanisms
+- Test message ordering
+
+### File Operations
+
+- Implement chunked uploads
+- Include progress tracking
+- Test resume capability
