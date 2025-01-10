@@ -10,6 +10,12 @@ Below is the directory structure for ChatGenius:
 
 ```plaintext
 .
+├── db/                           # Database management
+│   ├── migrations/              # Database migration files
+│   ├── schema/                 # Schema definitions and documentation
+│   ├── scripts/                # Database utility scripts
+│   ├── seeds/                  # Seed data scripts
+│   └── backups/                # Backup-related scripts
 ├── src/
 │   ├── __tests__/                    # Test suites
 │   │   ├── components/               # Component tests
@@ -52,6 +58,13 @@ Below is the directory structure for ChatGenius:
 ```
 
 ## Directory Overview
+
+- db/: Database management and related files
+  - migrations/: Database migration files with timestamps
+  - schema/: Database schema definitions and ERD diagrams
+  - scripts/: Database utility and maintenance scripts
+  - seeds/: Data seeding scripts for different environments
+  - backups/: Backup configuration and verification scripts
 
 - __tests__/: Test suites organized by component type
   - components/: Tests for shared components

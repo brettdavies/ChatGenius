@@ -22,13 +22,44 @@
 - Use lowercase for commit messages.
 - Write concise summaries for commit messages.
 - Include descriptions for non-obvious changes.
-- Include **Feature ID(s)** in the commit description for all features included in the commit.
-  - Format: `type(scope): message [Feature ID(s): ID-001, ID-002]`.
+- Include **Feature ID(s)** in the commit summary for all features included in the commit.
+  - Format: `type(scope): message [Feature ID(s): ID-001, ID-002]`
   - Example:
-
     ```plaintext
     feat(auth): added OAuth login functionality [Feature ID(s): ID-003]
     ```
+
+- For commits with multiple features or significant changes, use this extended format:
+  ```plaintext
+  type(scope): summary message [Feature ID(s): ID-001, ID-002]
+
+  [ID-001] Feature Name:
+  - Change 1
+  - Change 2
+  - Change 3
+
+  [ID-002] Feature Name:
+  - Change 1
+  - Change 2
+  - Change 3
+
+  Breaking changes:
+  - List any breaking changes here
+  - One per line
+
+  Additional notes:
+  - Any other relevant information
+  - Migration steps if needed
+  ```
+
+- Commit types:
+  - `feat`: New feature
+  - `fix`: Bug fix
+  - `docs`: Documentation only changes
+  - `style`: Changes that do not affect the meaning of the code
+  - `refactor`: Code change that neither fixes a bug nor adds a feature
+  - `test`: Adding missing tests or correcting existing tests
+  - `chore`: Changes to the build process or auxiliary tools
 
 ---
 
@@ -38,6 +69,7 @@
 - Maintain evergreen documents by marking incomplete sections with `[[TODO]]` or notes for follow-up.
 - Document API interactions, data flows, and any permissions required for functionality.
 - Ensure `manifest.json` and other key configuration files are well-documented.
+- When writing feature documentation, do not remove any headers or subheaders. If a header or subheader is not relevant to the feature, write "[[ Not relevant to this feature ]]".
 
 ---
 

@@ -13,6 +13,7 @@ This document provides an overview of all features in the ChatGenius project. Ea
   - [Feature List](#feature-list)
     - [Core Infrastructure](#core-infrastructure)
     - [Database Foundation](#database-foundation)
+    - [Backend Infrastructure](#backend-infrastructure)
     - [Channel System](#channel-system)
     - [Message System](#message-system)
     - [Interaction System](#interaction-system)
@@ -66,11 +67,24 @@ The feature list serves as a centralized reference for:
 
 | Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
 |------------|--------------|-------------|---------|-----------------|------------------|--------------|
-| DB-F-001 | Schema Setup | Implement complete PostgreSQL schema with all tables, indexes, and relationships | 🟦 Planned | [Details](./features/DB-F-001-schema-setup.md) | - | 2024-01-10 |
-| DB-F-002 | SSE Infrastructure | Set up Server-Sent Events infrastructure for real-time communication | 🟦 Planned | [Details](./features/DB-F-002-sse-infrastructure.md) | - | 2024-01-10 |
-| DB-F-003 | Event System | Implement PostgreSQL LISTEN/NOTIFY system for real-time events | 🟦 Planned | [Details](./features/DB-F-003-event-system.md) | - | 2024-01-10 |
-| DB-F-004 | Connection Manager | Create connection pool management with automatic reconnection handling | 🟦 Planned | [Details](./features/DB-F-004-connection-manager.md) | - | 2024-01-10 |
-| DB-F-005 | Event Types | Implement comprehensive event type system with proper handlers | 🟦 Planned | [Details](./features/DB-F-005-event-types.md) | - | 2024-01-10 |
+| DB-F-001 | Schema Setup | Implement complete PostgreSQL schema with all tables, indexes, and relationships | 🟦 Completed | [Details](./features/DB-F-001-schema-setup.md) | [30bb9df](https://github.com/brettdavies/ChatGenius/commit/30bb9df6cee0cf60bb9b44359cc01e5be9677708) | 2024-01-10 |
+| DB-F-002 | SSE Infrastructure | Set up Server-Sent Events infrastructure for real-time communication | 🟦 In Progress | [Details](./features/DB-F-002-sse-infrastructure.md) | - | 2024-01-10 |
+| DB-F-003 | Event System | Implement PostgreSQL LISTEN/NOTIFY system for real-time events | 🟦 In Progress | [Details](./features/DB-F-003-event-system.md) | - | 2024-01-10 |
+| DB-F-004 | Connection Manager | Create connection pool management with automatic reconnection handling | 🟦 Completed | [Details](./features/DB-F-004-connection-manager.md) | [30bb9df](https://github.com/brettdavies/ChatGenius/commit/30bb9df6cee0cf60bb9b44359cc01e5be9677708) | 2024-01-10 |
+| DB-F-005 | Event Types | Implement comprehensive event type system with proper handlers | 🟦 In Progress | [Details](./features/DB-F-005-event-types.md) | - | 2024-01-10 |
+
+### Backend Infrastructure
+
+| Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
+|------------|--------------|-------------|---------|-----------------|------------------|--------------|
+| API-F-001 | API Routes & Controllers | Implement comprehensive REST API endpoints with proper controllers | 🟦 Planned | [Details](./features/API-F-001-routes-controllers.md) | - | 2024-01-10 |
+| SEC-F-001 | API Security | Implement rate limiting, validation, and security measures for API endpoints | 🟧 Deferred | [Details](./features/SEC-F-001-api-security.md) | - | 2024-01-10 |
+| MQ-F-001 | Message Queue System | Implement message queue for handling asynchronous operations | 🟧 Deferred | [Details](./features/MQ-F-001-message-queue.md) | - | 2024-01-10 |
+| CACHE-F-001 | Caching Layer | Implement Redis-based caching system for performance optimization | 🟧 Deferred | [Details](./features/CACHE-F-001-caching-layer.md) | - | 2024-01-10 |
+| SEARCH-F-002 | Search Enhancements | Implement Elasticsearch-based full-text search capabilities | 🟧 Deferred | [Details](./features/SEARCH-F-002-search-enhancements.md) | - | 2024-01-10 |
+| STORAGE-F-001 | File Storage System | Implement S3-compatible object storage system for files | 🟧 Deferred | [Details](./features/STORAGE-F-001-file-storage.md) | - | 2024-01-10 |
+| MON-F-001 | Metrics & Monitoring | Implement comprehensive system monitoring and alerting | 🟧 Deferred | [Details](./features/MON-F-001-metrics-monitoring.md) | - | 2024-01-10 |
+| JOBS-F-001 | Background Jobs | Implement system for handling scheduled and maintenance tasks | 🟧 Deferred | [Details](./features/JOBS-F-001-background-jobs.md) | - | 2024-01-10 |
 
 ### Channel System
 
@@ -192,11 +206,9 @@ The feature list serves as a centralized reference for:
 
 ## Changelog
 
-| Date       | Change Made                                     | Made By     |
+| Date | Change Made | Made By |
 |------------|------------------------------------------------|-------------|
-| [[Date]]   | Added [Feature A](#id-001) to "Planned" section | [[Name]]    |
-| [[Date]]   | Moved [Feature B](#id-002) to "In Progress" section | [[Name]]    |
-| [[Date]]   | Updated Git Commit ID for [Feature C](#id-003)     | [[Name]]    |
+| 2024-01-10 | Completed Database Schema Setup (DB-F-001) and Connection Manager (DB-F-004) | System |
 
 ---
 
