@@ -17,6 +17,7 @@ const App = () => {
         authorizationParams={{
           redirect_uri: window.location.origin,
           scope: 'openid profile email offline_access',
+          audience: `https://${authConfig.domain}/api/v2/`
         }}
         useRefreshTokens={true}
         cacheLocation="localstorage"

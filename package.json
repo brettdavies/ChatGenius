@@ -8,9 +8,21 @@
     "db"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=frontend",
-    "build": "npm run build --workspace=frontend",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:db": "npm run dev --workspace=db",
+
+    "build": "npm run build --workspaces --if-present",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:server": "npm run build --workspace=server",
+    "build:db": "npm run build --workspace=db",
+
     "test": "npm run test --workspaces",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:server": "npm run test --workspace=server",
+    "test:db": "npm run test --workspace=db",
+
     "lint": "npm run lint --workspaces"
   }
 }

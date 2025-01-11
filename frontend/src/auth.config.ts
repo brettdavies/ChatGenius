@@ -5,6 +5,12 @@ interface AuthConfig {
   sessionWarningMinutes: number;
 }
 
+// Debug logging
+console.log('Auth0 Environment Variables:', {
+  domain: import.meta.env.VITE_AUTH0_DOMAIN,
+  clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+});
+
 export const authConfig: AuthConfig = {
   domain: import.meta.env.VITE_AUTH0_DOMAIN || '',
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID || '',
