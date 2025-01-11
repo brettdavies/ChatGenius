@@ -5,13 +5,13 @@ ChatGenius is a Slack clone that aims to replicate Slack's functionality and use
 ## 🚀 Quick Start
 
 ```bash
-# Install dependencies
+# Install dependencies for all workspaces
 npm install
 
 # Set up environment variables
 cp .env.example .env.local
 
-# Start development
+# Start all development servers
 npm run dev
 ```
 
@@ -43,18 +43,63 @@ See the README in each directory for specific details:
 
 ## 🛠️ Development
 
-This is a monorepo managed with npm workspaces. Main commands:
+This is a monorepo managed with npm workspaces. Available commands:
+
+### Development Servers
 
 ```bash
-# Start frontend development
-npm run dev
-
-# Run all tests
-npm test
-
-# Build for production
-npm run build
+npm run dev              # Start all workspaces
+npm run dev:frontend     # Start frontend only
+npm run dev:server       # Start server only
+npm run dev:db          # Start database service only
 ```
+
+### Building
+
+```bash
+npm run build           # Build all workspaces
+npm run build:frontend  # Build frontend only
+npm run build:server    # Build server only
+npm run build:db       # Build database service only
+```
+
+### Testing
+
+```bash
+npm run test           # Test all workspaces
+npm run test:frontend  # Test frontend only
+npm run test:server    # Test server only
+npm run test:db       # Test database service only
+```
+
+### Other Commands
+
+```bash
+npm run lint          # Lint all workspaces
+```
+
+## 🔧 Workspace-Specific Features
+
+### Frontend
+
+- Vite dev server with HMR
+- Jest + React Testing Library
+- TypeScript + ESLint
+- Tailwind CSS
+
+### Server
+
+- Express with TypeScript
+- Hot reload in development
+- Jest + Supertest
+- API documentation
+
+### Database
+
+- PostgreSQL management
+- Migration tools
+- Connection pooling
+- SSH tunneling support
 
 ## 🤝 Contributing
 
