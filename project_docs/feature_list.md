@@ -67,11 +67,12 @@ The feature list serves as a centralized reference for:
 
 | Feature ID | Feature Name | Description | Status | Link to Details | Commit Reference | Last Updated |
 |------------|--------------|-------------|---------|-----------------|------------------|--------------|
-| DB-F-001 | Schema Setup | Implement complete PostgreSQL schema with all tables, indexes, and relationships | 🟦 Completed | [Details](./features/DB-F-001-schema-setup.md) | [30bb9df](https://github.com/brettdavies/ChatGenius/commit/30bb9df6cee0cf60bb9b44359cc01e5be9677708) | 2024-01-10 |
-| DB-F-002 | SSE Infrastructure | Set up Server-Sent Events infrastructure for real-time communication | 🟦 In Progress | [Details](./features/DB-F-002-sse-infrastructure.md) | - | 2024-01-10 |
-| DB-F-003 | Event System | Implement PostgreSQL LISTEN/NOTIFY system for real-time events | 🟦 In Progress | [Details](./features/DB-F-003-event-system.md) | - | 2024-01-10 |
-| DB-F-004 | Connection Manager | Create connection pool management with automatic reconnection handling | 🟦 Completed | [Details](./features/DB-F-004-connection-manager.md) | [30bb9df](https://github.com/brettdavies/ChatGenius/commit/30bb9df6cee0cf60bb9b44359cc01e5be9677708) | 2024-01-10 |
-| DB-F-005 | Event Types | Implement comprehensive event type system with proper handlers | 🟦 In Progress | [Details](./features/DB-F-005-event-types.md) | - | 2024-01-10 |
+| DB-F-001 | Schema Setup | Implement complete PostgreSQL schema with all tables, indexes, and relationships | 🟩 Completed | [Details](./features/DB-F-001-schema-setup.md) | [30bb9df](https://github.com/brettdavies/ChatGenius/commit/30bb9df6cee0cf60bb9b44359cc01e5be9677708) | 2024-01-10 |
+| DB-F-002 | SSE Infrastructure | Set up Server-Sent Events infrastructure for real-time communication | 🟨 In Progress | [Details](./features/DB-F-002-sse-infrastructure.md) | - | 2024-01-10 |
+| DB-F-003 | Event System | Implement PostgreSQL LISTEN/NOTIFY system for real-time events | 🟨 In Progress | [Details](./features/DB-F-003-event-system.md) | - | 2024-01-10 |
+| DB-F-004 | Connection Manager | Create connection pool management with automatic reconnection handling | 🟩 Completed | [Details](./features/DB-F-004-connection-manager.md) | [30bb9df](https://github.com/brettdavies/ChatGenius/commit/30bb9df6cee0cf60bb9b44359cc01e5be9677708) | 2024-01-10 |
+| DB-F-005 | Event Types | Implement comprehensive event type system with proper handlers | 🟨 In Progress | [Details](./features/DB-F-005-event-types.md) | - | 2024-01-10 |
+| DB-F-006 | ULID System | Implement ULID-based primary key system for all database tables | 🟩 Completed | [Details](./features/DB-F-006-ulid-system.md) | - | 2024-03-20 |
 
 ### Backend Infrastructure
 
@@ -209,6 +210,7 @@ The feature list serves as a centralized reference for:
 | Date | Change Made | Made By |
 |------------|------------------------------------------------|-------------|
 | 2024-01-10 | Completed Database Schema Setup (DB-F-001) and Connection Manager (DB-F-004) | System |
+| 2024-03-20 | Completed ULID System Implementation (DB-F-006) | System |
 
 ---
 

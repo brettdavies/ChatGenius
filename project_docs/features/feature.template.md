@@ -6,17 +6,17 @@
 - **Feature Name**: [[Name]] <!-- Clear, descriptive name of the feature -->
 - **Priority**: [[High/Medium/Low]] <!-- Based on business value and dependencies -->
 - **Status**: [[🟦 Planned/🟨 In Progress/🟩 Completed/🟥 Blocked]] <!-- Current state with emoji -->
+- **Last Updated**: [[YYYY-MM-DD]] <!-- Date of last update -->
 
 ## Overview
 
-<!-- 
-Provide a clear, concise description of the feature that answers:
-- What is this feature?
-- Why is it needed?
-- How does it benefit users?
-- What are the key capabilities?
-Keep to 2-3 paragraphs maximum.
--->
+<!-- Provide a clear, concise description of the feature -->
+[[Feature description including:
+
+- Purpose and benefits
+- Key functionality
+- Impact on system
+- Main technical components involved]]
 
 ## User Stories & Acceptance Criteria
 
@@ -28,133 +28,135 @@ Keep to 2-3 paragraphs maximum.
 
 ### Security Requirements
 
+<!-- List security considerations and requirements -->
+- Authentication requirements
+- Authorization rules
+- Data protection needs
+- Input validation requirements
+- Security testing requirements
+
 ### Frontend Changes
 
+<!-- Focus on requirements, not implementation -->
+1. UI/UX Requirements:
+   - Required components
+   - User interactions
+   - Responsive design requirements
+   - Accessibility needs
+
+2. Data Requirements:
+   - Required API integrations
+   - State management needs
+   - Data validation rules
+   - Error handling requirements
+
+Example patterns (if needed):
+
 ```typescript
-// Key interfaces/types
-
-// Required components
-const components = {
-  new: [
-    // List new components with paths
-    'components/[[feature]]/[[Component]].tsx'
-  ],
-  modified: [
-    // List existing components requiring changes
-    'components/[[existing]]/[[Component]].tsx'
-  ]
-};
-
-// State changes
-interface StateChanges {
-  // Define state updates
-  [[stateName]]: {
-    type: [[type]];
-    initialValue: [[value]];
-    actions: string[];
-  };
+// Example type or interface pattern
+interface ExampleType {
+  // Add example properties and types
 }
 
-// UI States
-type UIState = 'idle' | 'loading' | 'success' | 'error';
-
-// Error Messages
-interface ErrorMessages {
-  [[errorType]]: string;
-}
-
-// Navigation Flows
-interface NavigationFlow {
-  success: {
-    path: string;
-    message?: string;
-  };
-  error: {
-    path: string;
-    displayError: boolean;
-  };
+// Example validation pattern
+function validateExample(data: ExampleType): boolean {
+  // Add example validation rules
 }
 ```
 
 ### Backend Changes
 
+1. API Requirements:
+   - Required endpoints
+   - Request/response formats
+   - Rate limiting needs
+   - Caching requirements
+
+2. Business Logic:
+   - Core functionality requirements
+   - Data processing needs
+   - Integration requirements
+   - Performance requirements
+
+3. Error Handling:
+   - Expected error cases
+   - Error response formats
+   - Logging requirements
+   - Recovery procedures
+
+Example patterns (if needed):
+
 ```typescript
-// API endpoints
-interface APIEndpoints {
-  [[METHOD]] [['/api/path']]: {
-    request: [[RequestType]];
-    response: [[ResponseType]];
-    security?: SecurityConfig;
-  };
-}
-
-// Service layer
-interface ServiceLayer {
-  // Define service methods
-  [[methodName]]: (params: [[ParamType]]) => Promise<[[ReturnType]]>;
-}
-
-// Error handling
-interface ErrorHandling {
-  codes: {
-    [[errorCode]]: string;
-  };
-  recovery: {
-    [[scenario]]: () => Promise<void>;
-  };
+// Example endpoint structure
+interface APIEndpoint {
+  path: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  requestFormat: unknown;
+  responseFormat: unknown;
 }
 ```
 
 ### Database Changes
 
+1. Schema Requirements:
+   - Required tables/collections
+   - Field requirements
+   - Relationships
+   - Indexes needed
+
+2. Data Migration:
+   - Migration requirements
+   - Data transformation needs
+   - Rollback considerations
+
+Example migration pattern:
+
 ```sql
--- Schema changes
-CREATE TABLE IF NOT EXISTS [[table_name]] (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    [[field]] [[type]] [[constraints]],
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX IF NOT EXISTS [[idx_name]] ON [[table_name]]([[fields]]);
-
--- Constraints
-ALTER TABLE [[table_name]] ADD CONSTRAINT [[constraint_name]] CHECK ([[condition]]);
-
--- Foreign Keys
-ALTER TABLE [[table_name]] ADD CONSTRAINT [[fk_name]] FOREIGN KEY ([[column]]) REFERENCES [[referenced_table]]([[column]]);
-
--- Migrations
--- Up
-[[up_migration_sql]]
-
--- Down
-[[down_migration_sql]]
+-- Example migration structure
+ALTER TABLE [[table_name]]
+  ADD COLUMN [[column_name]] [[type]] [[constraints]];
 ```
 
 ### Configuration
 
+1. Environment Variables:
+   - Required variables
+   - Default values
+   - Security considerations
+
+2. Feature Flags:
+   - Required flags
+   - Default states
+   - Toggle conditions
+
+3. Performance Settings:
+   - Timeout values
+   - Rate limits
+   - Cache settings
+
+Example structure:
+
 ```typescript
 interface FeatureConfig {
   // Environment-specific settings
-  [[env]]: {
-    [[setting]]: [[type]];
-    [[feature_flag]]: boolean;
+  environment: {
+    timeoutMs: number;
+    rateLimit: number;
+    cacheEnabled: boolean;
   };
 }
 
 // Required environment variables
 const required_env_vars = [
-  '[[KEY_NAME]]=[[default_value]] // [[description]]'
+  'VARIABLE_NAME=default_value // Description'
 ];
 
 // Feature flags
 const featureFlags = {
-  [[flag_name]]: {
+  featureName: {
     default: boolean;
     description: string;
-  };
+  }
 };
 ```
 
@@ -162,101 +164,112 @@ const featureFlags = {
 
 ### Unit Tests
 
+1. Core Function Tests:
+   - List key functions/components to test
+   - Required test scenarios
+   - Edge cases to cover
+   - Performance requirements
+
+2. Validation Tests:
+   - Input validation scenarios
+   - Error handling cases
+   - Boundary conditions
+
+Example test structure:
+
 ```typescript
-describe('[[Component/Service]]', () => {
-  // Happy path
-  test('should [[expected behavior]]', async () => {
-    // Arrange
-    [[setup code]]
-    
-    // Act
-    [[action code]]
-    
-    // Assert
-    [[assertions]]
+describe('Feature Component', () => {
+  describe('Core Functionality', () => {
+    // List test scenarios
   });
 
-  // Error cases
-  test('should handle [[error scenario]]', async () => {
-    [[error test code]]
-  });
-
-  // Edge cases
-  test('should handle [[edge case]]', async () => {
-    [[edge case test code]]
-  });
-});
-
-// Performance Tests
-describe('Performance', () => {
-  test('[[operation]] completes within [[time]]ms', async () => {
-    [[performance test code]]
+  describe('Error Handling', () => {
+    // List error scenarios
   });
 });
 ```
 
 ### Integration Tests
 
-<!-- List key integration test scenarios -->
-- API contract tests
-- Database interactions
-- External service integration
-- Error handling and recovery
-- Performance under load
-- Security constraints
-- Data consistency
+1. System Integration:
+   - API integration tests
+   - Database interaction tests
+   - External service integration tests
+
+2. Component Integration:
+   - Cross-component workflows
+   - Data flow validations
+   - Error propagation tests
 
 ### E2E Tests
 
-<!-- List end-to-end test scenarios -->
-- Critical user flows
-- Cross-browser compatibility
-- Mobile responsiveness
-- Error scenarios
-- Performance metrics
-- Security measures
-- Accessibility compliance
+1. User Workflows:
+   - Critical path tests
+   - User interaction flows
+   - Cross-browser requirements
+
+2. Performance Tests:
+   - Load testing requirements
+   - Response time expectations
+   - Concurrent user requirements
 
 ## Monitoring Requirements
 
 ### Logging
 
+1. Required Log Events:
+   - Critical operations
+   - Error conditions
+   - Audit requirements
+
+2. Log Format:
+   - Required fields
+   - Correlation requirements
+   - Sensitive data handling
+
+Example format:
+
 ```typescript
-interface LogFormat {
+interface LogEvent {
   timestamp: string;
   correlationId: string;
   level: 'debug' | 'info' | 'warn' | 'error';
   event: string;
   data?: Record<string, unknown>;
-  error?: {
-    code: string;
-    message: string;
-    stack?: string;
-  };
 }
 ```
 
 ### Metrics
 
+1. Performance Metrics:
+   - Response times
+   - Error rates
+   - Resource usage
+
+2. Business Metrics:
+   - Usage statistics
+   - Success rates
+   - Business KPIs
+
+3. Alert Thresholds:
+   - Warning levels
+   - Critical levels
+   - Response procedures
+
+Example structure:
+
 ```typescript
 interface Metrics {
-  // Performance metrics
   performance: {
-    [[operation]]: {
+    operation: {
       duration: Histogram;
       success: Counter;
       failure: Counter;
     };
   };
-
-  // Business metrics
-  business: {
-    [[metric]]: Counter | Gauge;
-  };
-
-  // Alert thresholds
+  business: Record<string, Counter | Gauge>;
   alerts: {
-    [[metric]]: {
+    metric: {
       warning: number;
       critical: number;
     };
@@ -269,20 +282,18 @@ interface Metrics {
 <!-- Customize based on feature requirements -->
 - [ ] All acceptance criteria met
 - [ ] Security requirements implemented
-- [ ] Unit tests passing (>90% coverage)
+- [ ] Unit tests written and passing
 - [ ] Integration tests passing
 - [ ] E2E tests passing
-- [ ] Performance benchmarks met
-- [ ] Documentation updated
+- [ ] Performance requirements met
+- [ ] Documentation completed
 - [ ] Code reviewed
 - [ ] Security review completed
-- [ ] Accessibility requirements met
-- [ ] Feature tested in staging
-- [ ] Monitoring and alerts configured
+- [ ] Monitoring configured
 
 ## Dependencies
-
 <!-- List all dependencies -->
+
 - External services:
   - [[service_name]]: [[purpose]]
 - Internal dependencies:
@@ -293,21 +304,19 @@ interface Metrics {
 
 ## Rollback Plan
 
-<!-- Detail steps for rolling back the feature -->
-1. Disable feature flag (if applicable)
-2. Revert database migrations:
+1. Feature flag disable procedure
+2. Database rollback steps:
 
    ```sql
    [[rollback_sql]]
    ```
 
-3. Remove new endpoints/routes
-4. Restore previous UI components
-5. Clean up configuration
-6. Update documentation
+3. Code reversion process
+4. Configuration cleanup
+5. Monitoring updates
 
 ## Changelog
 
 | Date | Author | Description | PR |
 |------|--------|-------------|-------|
-| [[YYYY-MM-DD]] | [[Author]] | [[Detailed description of changes]] | [[PR #]] |
+| [[YYYY-MM-DD]] | [[Author]] | [[Description]] | [[PR #]] |
