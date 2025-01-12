@@ -10,88 +10,104 @@ Below is the directory structure for ChatGenius:
 
 ```plaintext
 .
-├── db/                           # Database management
-│   ├── migrations/              # Database migration files
+├── db/                           # Database management package
+│   ├── src/                     # Source code
+│   │   ├── connection/         # Database connection management
+│   │   ├── notifications/      # Database event notifications
+│   │   └── shared/            # Shared utilities and types
+│   ├── migrations/             # Database migration files
 │   ├── schema/                 # Schema definitions and documentation
 │   ├── scripts/                # Database utility scripts
 │   ├── seeds/                  # Seed data scripts
 │   └── backups/                # Backup-related scripts
-├── src/
-│   ├── __tests__/                    # Test suites
-│   │   ├── components/               # Component tests
-│   │   │   ├── __snapshots__/       # Component snapshots
-│   │   │   ├── ProtectedRoute.test.tsx
-│   │   │   ├── SessionManager.test.tsx
-│   │   │   └── SessionWarningModal.test.tsx
-│   │   ├── layouts/                  # Layout tests
-│   │   │   └── RootLayout.test.tsx
-│   │   └── pages/                    # Page tests
-│   │       ├── __snapshots__/       # Page snapshots
-│   │       ├── ErrorPage.test.tsx
-│   │       ├── Home.test.tsx
-│   │       └── Login.test.tsx
-│   ├── assets/                      # Static assets
-│   │   └── react.svg
-│   ├── components/                  # Shared components
-│   │   ├── ProtectedRoute.tsx
-│   │   ├── SessionManager.tsx
-│   │   └── SessionWarningModal.tsx
-│   ├── hooks/                      # Custom React hooks
-│   ├── layouts/                    # Layout components
-│   │   └── RootLayout.tsx
-│   ├── pages/                      # Page components
-│   │   ├── ErrorPage.tsx
-│   │   ├── Home.tsx
-│   │   └── Login.tsx
-│   ├── utils/                      # Utility functions
-│   ├── App.css                     # App-level styles
-│   ├── App.tsx                     # Root App component
-│   ├── auth.config.ts             # Auth0 configuration
-│   ├── index.css                  # Global styles
-│   ├── main.tsx                   # Entry point
-│   ├── setupTests.ts              # Test setup
-│   └── vite-env.d.ts             # Vite type declarations
-├── package.json                   # Project dependencies and scripts
-├── tsconfig.json                 # TypeScript configuration
-├── vite.config.ts               # Vite configuration
-└── README.md                    # Project documentation
+├── server/                      # Server application
+│   ├── src/                    # Source code
+│   │   ├── api/               # API routes and controllers
+│   │   ├── config/            # Configuration files
+│   │   ├── middleware/        # Custom middleware
+│   │   ├── models/            # Data models
+│   │   ├── services/          # Business logic and services
+│   │   ├── utils/             # Utility functions
+│   │   └── types/            # TypeScript type definitions
+│   └── tests/                 # Test files
+├── frontend/                    # Frontend application
+│   ├── src/                    # Source code
+│   │   ├── components/        # Shared React components
+│   │   │   ├── ui/           # UI components
+│   │   │   └── features/     # Feature-specific components
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── layouts/          # Layout components
+│   │   ├── pages/            # Page components
+│   │   ├── utils/            # Utility functions
+│   │   └── types/           # TypeScript definitions
+│   ├── public/               # Static assets
+│   └── tests/                # Test files
+└── README.md                   # Project documentation
 ```
 
-## Directory Overview
+## Package Overview
 
-- db/: Database management and related files
-  - migrations/: Database migration files with timestamps
-  - schema/: Database schema definitions and ERD diagrams
-  - scripts/: Database utility and maintenance scripts
-  - seeds/: Data seeding scripts for different environments
-  - backups/: Backup configuration and verification scripts
+### Database Package (`db/`)
 
-- __tests__/: Test suites organized by component type
-  - components/: Tests for shared components
-  - layouts/: Tests for layout components
-  - pages/: Tests for page components
+The database package manages all database-related functionality:
 
-- assets/: Static assets like images and icons
-  - Currently contains React logo
+1. **Connection Management**:
+   - Railway database connection
+   - Connection pooling with automatic cleanup
+   - Health monitoring and reconnection
+   - Environment-based configuration
 
-- components/: Shared React components
-  - ProtectedRoute: Authentication route wrapper
-  - SessionManager: Handles session timeouts
-  - SessionWarningModal: Session expiration warning
+2. **Event Notifications**:
+   - Real-time database event notifications
+   - Event buffering and replay
+   - Channel-based subscriptions
+   - Error handling and recovery
 
-- hooks/: Custom React hooks
-  - Currently empty, ready for custom hooks
+3. **Shared Utilities**:
+   - Type definitions
+   - Configuration interfaces
+   - Common utilities
 
-- layouts/: Layout components
-  - RootLayout: Main application layout
+### Server Package (`server/`)
 
-- pages/: Page components
-  - ErrorPage: Error display page
-  - Home: Main home page
-  - Login: Authentication page
+The server package implements the application logic:
 
-- utils/: Utility functions
-  - Currently empty, ready for shared utilities
+1. **Services**:
+   - Event handling service
+   - Authentication service
+   - Business logic services
+
+2. **Configuration**:
+   - Database configuration
+   - Environment-based settings
+   - Type-safe configurations
+
+3. **API Layer**:
+   - RESTful endpoints
+   - Real-time event handling
+   - Error handling middleware
+
+### Frontend Package (`frontend/`)
+
+The frontend package implements the user interface:
+
+1. **Components**:
+   - Shared UI components
+   - Feature-specific components
+   - Layout components
+   - Page components
+
+2. **State Management**:
+   - Real-time sync state
+   - Offline state
+   - UI state matching Slack
+
+3. **Features**:
+   - Channel management
+   - Direct messaging
+   - Thread support
+   - File sharing
+   - Search functionality
 
 ## File Naming Conventions
 
@@ -112,9 +128,17 @@ Components are organized by their role in the application:
 
 ```plaintext
 components/
-├── ProtectedRoute.tsx    # Auth protection
-├── SessionManager.tsx    # Session handling
-└── SessionWarningModal.tsx # Session UI
+├── ui/                # UI components
+│   ├── Button.tsx
+│   ├── Input.tsx
+│   └── Modal.tsx
+├── features/          # Feature components
+│   ├── channels/
+│   ├── messages/
+│   └── threads/
+└── layout/           # Layout components
+    ├── Header.tsx
+    └── Sidebar.tsx
 ```
 
 ### Best Practices
@@ -141,115 +165,42 @@ components/
    - File sync
    - Background updates
 
-5. Testing Requirements:
-   - Unit tests for all components
-   - Snapshot tests for UI consistency
-   - Integration tests for auth flow
+## Testing Strategy
 
-### Scalability Guidelines
+1. **Frontend Tests**:
+   - Component unit tests
+   - Integration tests
+   - E2E tests with Cypress
+   - Coverage: 85% minimum
 
-1. Feature Organization:
+2. **Server Tests**:
+   - API endpoint tests
+   - Service logic tests
+   - Integration tests
+   - Coverage: 85% minimum
 
-   ```plaintext
-   features/
-   ├── channels/
-   │   ├── components/
-   │   ├── hooks/
-   │   ├── utils/
-   ├── messages/
-   ├── threads/
-   ├── files/
-   ```
+3. **Database Tests**:
+   - Connection tests
+   - Migration tests
+   - Notification tests
+   - Coverage: 90% minimum
 
-2. Performance Optimization:
-   - Route-based code splitting
-   - Image optimization
-   - SSE connection management
-   - IndexedDB optimization
+## Development Workflow
 
-3. State Management:
-   - Real-time sync state
-   - Offline state
-   - UI state matching Slack
+1. **Frontend Development**:
+   - Component-driven development
+   - Storybook for UI components
+   - Hot module replacement
+   - Type checking
 
-4. Error Handling:
-   - Network errors
-   - Auth failures
-   - Offline conflicts
-   - File upload issues
-
-## Highlights
-
-1. **Exact Slack Clone**:
-   - Pixel-perfect UI components
-   - Identical feature set
-   - Matching performance
-
-2. **Real-time First**:
-   - SSE implementation
-   - Real-time state management
-   - Presence handling
-
-3. **Offline Capable**:
-   - PWA support
-   - Sync management
-   - File caching
-
-4. **Developer Experience**:
-   - Clear structure
+2. **Server Development**:
+   - API-first development
+   - OpenAPI documentation
+   - Automated testing
    - Type safety
-   - Comprehensive testing
 
-## Testing Organization
-
-### Test File Structure
-
-```typescript
-// Example test file structure
-import { render, screen, fireEvent } from '@testing-library/react';
-import { useAuth0 } from '@auth0/auth0-react';
-import ComponentName from '../../components/ComponentName';
-
-// Mock external dependencies
-jest.mock('@auth0/auth0-react');
-const mockUseAuth0 = useAuth0 as jest.Mock;
-
-describe('ComponentName', () => {
-  // Setup and teardown
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  // Snapshot tests
-  describe('snapshots', () => {
-    it('matches snapshot for default state', () => {
-      const { container } = render(<ComponentName />);
-      expect(container).toMatchSnapshot();
-    });
-  });
-
-  // Functionality tests
-  it('handles user interaction', () => {
-    // Test implementation
-  });
-});
-```
-
-### Test Conventions
-
-1. **File Organization**:
-   - Test files mirror source structure
-   - Snapshots in `__snapshots__` directories
-   - Clear test descriptions
-   - Consistent mock patterns
-
-2. **Coverage Requirements**:
-   - Components: 85% minimum
-   - Pages: 85% minimum
-   - Utils: 95% minimum
-
-3. **Testing Patterns**:
-   - Mock Auth0 hooks consistently
-   - Test error states
-   - Verify user interactions
-   - Check component rendering
+3. **Database Development**:
+   - Schema-driven development
+   - Migration testing
+   - Connection management
+   - Event system testing

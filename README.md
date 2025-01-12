@@ -11,6 +11,15 @@ npm install
 # Set up environment variables
 cp .env.example .env.local
 
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Login to Railway
+railway login
+
+# Link to Railway project
+railway link
+
 # Start all development servers
 npm run dev
 ```
@@ -51,7 +60,6 @@ This is a monorepo managed with npm workspaces. Available commands:
 npm run dev              # Start all workspaces
 npm run dev:frontend     # Start frontend only
 npm run dev:server       # Start server only
-npm run dev:db          # Start database service only
 ```
 
 ### Building
@@ -60,7 +68,6 @@ npm run dev:db          # Start database service only
 npm run build           # Build all workspaces
 npm run build:frontend  # Build frontend only
 npm run build:server    # Build server only
-npm run build:db       # Build database service only
 ```
 
 ### Testing
@@ -69,7 +76,19 @@ npm run build:db       # Build database service only
 npm run test           # Test all workspaces
 npm run test:frontend  # Test frontend only
 npm run test:server    # Test server only
-npm run test:db       # Test database service only
+```
+
+### Database Commands
+
+```bash
+# Connect to Railway PostgreSQL
+railway connect postgresql
+
+# Run database migrations
+railway run "psql \${DATABASE_URL} < db/migrations/migration.sql"
+
+# View database variables
+railway variables
 ```
 
 ### Other Commands
@@ -96,10 +115,10 @@ npm run lint          # Lint all workspaces
 
 ### Database
 
-- PostgreSQL management
+- PostgreSQL on Railway
 - Migration tools
 - Connection pooling
-- SSH tunneling support
+- SSL/TLS encryption
 
 ## 🤝 Contributing
 

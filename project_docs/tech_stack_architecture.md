@@ -14,6 +14,13 @@ This document provides an overview of the technologies chosen for ChatGenius, th
     - [Backend](#backend)
     - [Realtime Communication](#realtime-communication)
     - [Database](#database)
+      - [Database Connection Architecture](#database-connection-architecture)
+        - [Connection Types](#connection-types)
+        - [Connection Flow](#connection-flow)
+          - [General Pool Connection](#general-pool-connection)
+          - [Dedicated Notification Connection](#dedicated-notification-connection)
+        - [Security Considerations](#security-considerations)
+        - [Monitoring and Maintenance](#monitoring-and-maintenance)
     - [Authentication](#authentication)
     - [PWA and Offline Support](#pwa-and-offline-support)
   - [System Architecture](#system-architecture)
@@ -39,7 +46,7 @@ This document provides an overview of the technologies chosen for ChatGenius, th
 | State        | Redux Toolkit                      | Centralized state management              |
 | Backend      | Node.js, TypeScript, Express       | Type-safe, efficient API handling         |
 | Realtime     | Server-Sent Events (SSE)           | Real-time updates from server to client   |
-| Database     | PostgreSQL                         | Robust relational data storage            |
+| Database     | PostgreSQL on Railway              | Managed, scalable database hosting        |
 | Auth         | Auth0                              | Secure, multi-provider authentication     |
 | Testing      | Jest, React Testing Library        | Comprehensive test coverage               |
 | Deployment   | Vercel                             | Zero-config deployment, edge functions    |
@@ -79,6 +86,50 @@ This document provides an overview of the technologies chosen for ChatGenius, th
   - Rich querying capabilities
   - Excellent performance for complex joins
   - LISTEN/NOTIFY for real-time features
+
+#### Database Connection Architecture
+
+The database connection system provides secure access to PostgreSQL through SSH tunneling, supporting both general database operations and specialized notification connections.
+
+##### Connection Types
+
+1. **Primary Connection Pool**:
+   - Managed by Railway
+   - Automatic scaling and failover
+   - SSL/TLS encryption
+   - Connection pooling built-in
+
+2. **Event Notification Connection**:
+   - Dedicated connection for LISTEN/NOTIFY
+   - Managed reconnection logic
+   - Event buffering during disconnects
+
+##### Connection Flow
+
+###### General Pool Connection
+1. Application startup
+2. Railway connection initialization
+3. Pool configuration with SSL
+4. Health check verification
+5. Ready for queries
+
+###### Dedicated Notification Connection
+1. Separate Railway connection
+2. LISTEN command registration
+3. Event handler attachment
+4. Reconnection monitoring
+
+##### Security Considerations
+- SSL/TLS encryption for all connections
+- Railway-managed credentials
+- Regular credential rotation
+- No direct database exposure
+
+##### Monitoring and Maintenance
+- Railway dashboard metrics
+- Connection pool statistics
+- Query performance monitoring
+- Automatic backups and updates
 
 ### Authentication
 

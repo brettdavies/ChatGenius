@@ -2,7 +2,7 @@
 
 ## Basic Information
 
-- **Feature ID**: DB-F-003
+- **Feature ID**: DB-F-002
 - **Feature Name**: PostgreSQL Event System
 - **Priority**: High
 - **Status**: 🟩 Completed
@@ -30,9 +30,40 @@ The system serves as the foundation for real-time features by capturing database
 - Secure event payload handling
 - No sensitive data in notifications
 - Connection pool security
+- SSH tunnel authentication
 - Proper error handling
 - Resource cleanup
 - Connection validation
+
+### Connection Architecture
+
+1. **Connection Types**:
+   - General pool connections for regular operations (shared SSH tunnel)
+   - Dedicated notification connections for LISTEN/NOTIFY (separate SSH tunnel)
+   - Maximum 10 concurrent pool connections
+   - One connection per notification instance
+   - **Important**: Notifications require their own separate SSH tunnel, distinct from the general connection pool tunnel
+
+2. **SSH Tunnel Integration**:
+   - Separate SSH tunnel for notifications to isolate LISTEN/NOTIFY traffic
+   - Private key authentication only
+   - No password authentication
+   - Key file permissions checked
+   - Connection encryption enforced
+
+3. **Connection Flow**:
+   ```mermaid
+   sequenceDiagram
+       participant App
+       participant Notifications
+       participant NotifyTunnel
+       participant DB
+       App->>Notifications: Initialize
+       Notifications->>NotifyTunnel: Create Dedicated SSH Tunnel
+       NotifyTunnel->>DB: Establish Connection
+       DB-->>Notifications: Connection Ready
+       Notifications->>DB: LISTEN Commands
+   ```
 
 ### Frontend Changes
 
@@ -53,10 +84,13 @@ The system serves as the foundation for real-time features by capturing database
    - Reconnection logic
 
 3. Error Handling:
-   - Connection failures
+   - Connection failures with exponential backoff
    - Parse errors
    - Type errors
    - Resource limits
+   - Health check monitoring
+   - Automatic cleanup of dead connections
+   - Graceful degradation for notification failures
 
 Example patterns:
 
@@ -114,9 +148,17 @@ $$ LANGUAGE plpgsql;
 ### Configuration
 
 1. Environment Variables:
-   - PG_NOTIFY_CHANNEL: Event channel prefix
-   - MAX_RECONNECT_ATTEMPTS: Retry limit
-   - RECONNECT_DELAY: Delay between retries
+   ```
+   SSH_KEY_PATH=path/to/key
+   SSH_HOST=hostname
+   SSH_USER=username
+   POSTGRES_USER=dbuser
+   POSTGRES_PASSWORD=dbpassword
+   POSTGRES_DB=dbname
+   PG_NOTIFY_CHANNEL=event_channel_prefix
+   MAX_RECONNECT_ATTEMPTS=5
+   RECONNECT_DELAY=1000
+   ```
 
 2. Feature Flags:
    - ENABLE_DB_EVENTS=true
@@ -188,6 +230,10 @@ describe('Database Events', () => {
    - Parse failures
    - Connection issues
    - Type errors
+   - Connection lifecycle events
+   - Error conditions
+   - Performance metrics
+   - Security-related events
 
 2. Log Format:
    - Include event ID
@@ -218,6 +264,9 @@ interface EventLog {
    - Parse duration
    - Connection uptime
    - Memory usage
+   - Dead connection cleanup
+   - Resource usage monitoring
+   - Error rate tracking
 
 2. Business Metrics:
    - Events by type
@@ -262,6 +311,7 @@ interface EventLog {
   - Code documentation
   - Test documentation
 - [x] Security review passed
+  - SSH tunnel security
   - Parameterized queries
   - No sensitive data exposure
   - Proper error handling
@@ -314,3 +364,4 @@ interface EventLog {
 | Date | Author | Description | PR |
 |------|--------|-------------|-------|
 | 2025-01-11 | System | Initial specification | - |
+| 2025-01-12 | System | Added SSH tunnel details | - |

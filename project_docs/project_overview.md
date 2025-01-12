@@ -17,6 +17,9 @@ This document provides a high-level introduction to the ChatGenius project, incl
     - [Out-of-Scope (MVP Phase)](#out-of-scope-mvp-phase)
   - [Key Milestones](#key-milestones)
   - [Tech Stack Overview](#tech-stack-overview)
+    - [Frontend Stack](#frontend-stack)
+    - [Server Stack](#server-stack)
+    - [Database Stack](#database-stack)
   - [Key Risks and Mitigations](#key-risks-and-mitigations)
   - [Stakeholders and Teams](#stakeholders-and-teams)
     - [Key Stakeholders](#key-stakeholders)
@@ -154,16 +157,43 @@ MVP Phase (2 Day Delivery):
 
 | Layer        | Technology                          | Rationale                                   |
 |--------------|-------------------------------------|--------------------------------------------|
-| Frontend     | React, TypeScript, MUI, Vite       | Type-safe, fast development                |
-| State        | Redux Toolkit                      | Centralized state management               |
-| Backend      | Node.js, TypeScript, Express       | Type-safe, efficient message handling      |
-| Realtime     | Server-Sent Events (SSE)           | Simple, reliable one-way real-time updates |
-| Database     | PostgreSQL                         | Robust, scalable data storage              |
+| Frontend     | React, TypeScript, Tailwind, Vite   | Modern, type-safe UI development           |
+| State        | Redux Toolkit                       | Centralized state management               |
+| Server       | Node.js, TypeScript, Express        | Type-safe, efficient message handling      |
+| Database     | PostgreSQL on Railway               | Managed database with secure access        |
+| Real-time    | Server-Sent Events (SSE)           | Simple, reliable one-way real-time updates |
 | Auth         | Auth0                              | Secure, multi-provider authentication      |
 | Testing      | Jest, React Testing Library        | Comprehensive test coverage                |
 | Deployment   | Vercel                             | Zero-config deployment, edge functions     |
 | Development  | Cursor AI                          | AI-powered development assistance          |
 | PWA          | Service Workers, IndexedDB         | Offline support, native-like experience    |
+
+### Frontend Stack
+
+- **Framework**: React with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui
+- **Build Tool**: Vite
+- **State Management**: Redux Toolkit
+- **Testing**: Jest + React Testing Library
+- **PWA Support**: Service Workers + IndexedDB
+
+### Server Stack
+
+- **Runtime**: Node.js
+- **Framework**: Express with TypeScript
+- **API Style**: RESTful with SSE
+- **Authentication**: Auth0 + JWT
+- **Testing**: Jest + Supertest
+- **Documentation**: OpenAPI/Swagger
+
+### Database Stack
+
+- **Database**: PostgreSQL on Railway
+- **Connection**: Railway connection pooling
+- **Security**: SSL/TLS encryption
+- **Events**: LISTEN/NOTIFY
+- **Migrations**: Custom migration system
+- **Testing**: Integration tests
 
 ---
 
@@ -178,6 +208,7 @@ MVP Phase (2 Day Delivery):
 | Auth0 integration complexity            | Start with basic auth flow, expand features later |
 | Offline data consistency                | Implement robust sync mechanisms and conflict resolution |
 | Storage limitations                     | Smart caching strategies and cleanup policies     |
+| Database connection reliability         | Use Railway's managed PostgreSQL with auto-failover |
 
 ---
 

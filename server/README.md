@@ -1,6 +1,6 @@
 # ChatGenius Server
 
-The backend server for ChatGenius, built with Node.js, Express, and TypeScript.
+The backend server for ChatGenius, built with Node.js, Express, and TypeScript. Integrates with Supabase for database operations and real-time features.
 
 ## 🚀 Quick Start
 
@@ -28,14 +28,15 @@ server/
 ├── src/
 │   ├── api/              # API routes and controllers
 │   ├── config/           # Configuration files
+│   │   └── app.ts       # Application settings
 │   ├── middleware/       # Custom middleware
-│   ├── models/           # Data models
-│   ├── services/         # Business logic
-│   ├── utils/            # Utility functions
-│   └── types/            # TypeScript type definitions
-├── tests/                # Test files and setup
-├── scripts/              # Utility scripts
-└── docs/                 # API documentation
+│   ├── models/          # Data models
+│   ├── services/        # Business logic
+│   │   ├── event-service.ts  # Event handling
+│   │   └── auth-service.ts   # Authentication
+│   ├── utils/           # Utility functions
+│   └── types/          # TypeScript definitions
+└── tests/              # Test files
 ```
 
 ## 🛠️ Technology Stack
@@ -43,10 +44,63 @@ server/
 - **Runtime**: Node.js
 - **Framework**: Express
 - **Language**: TypeScript
-- **Database**: PostgreSQL
+- **Database**: Supabase (PostgreSQL)
 - **Testing**: Jest + Supertest
 - **Documentation**: OpenAPI/Swagger
-- **Authentication**: JWT + Auth0
+- **Authentication**: Auth0
+- **Real-time**: Supabase Realtime
+
+## 📡 Real-time Features
+
+The server uses Supabase's real-time features for live updates:
+
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+
+// Subscribe to changes
+supabase
+  .channel('table-changes')
+  .on('postgres_changes', 
+    { event: '*', schema: 'public', table: 'messages' },
+    (payload) => {
+      // Handle real-time updates
+    }
+  )
+  .subscribe();
+```
+
+### Real-time Features
+
+- Automatic connection management
+- Event filtering
+- Type-safe payloads
+- Channel management
+- Presence support
+
+## 🔌 Database Integration
+
+Database access is managed through Supabase:
+
+```typescript
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+// Execute queries
+const { data, error } = await supabase
+  .from('users')
+  .select('*');
+```
+
+### Database Features
+
+- Connection pooling
+- Row Level Security (optional)
+- Type safety with generated types
+- Query builder
+- Real-time subscriptions
 
 ## 🧪 Testing
 
@@ -54,62 +108,20 @@ server/
 # Run all tests
 npm test
 
-# Run tests in watch mode
-npm run test:watch
+# Run specific test suites
+npm run test:unit
+npm run test:integration
 
 # Generate coverage report
-npm run test:coverage
+npm run coverage
 ```
 
 ### Test Structure
 
-- Uses Jest with TypeScript support
-- Supertest for API endpoint testing
-- Separate test environment configuration
-- Automatic test database setup
-
-### Test Files
-
-```typescript
-// Example API test
-import request from 'supertest';
-import app from '../src/app';
-
-describe('API Endpoints', () => {
-  it('GET /api/health should return 200', async () => {
-    const response = await request(app)
-      .get('/api/health')
-      .expect(200);
-    
-    expect(response.body).toEqual({ status: 'ok' });
-  });
-});
-```
-
-## 📚 Development Guidelines
-
-### Code Organization
-
-- Follow clean architecture principles
-- Implement proper TypeScript types
-- Use dependency injection
-- Write comprehensive tests
-
-### API Design
-
-- Follow REST best practices
-- Use proper HTTP methods
-- Implement proper error responses
-- Version your APIs
-- Document all endpoints
-
-### Security
-
-- Validate all inputs
-- Sanitize responses
-- Implement rate limiting
-- Use proper authentication
-- Follow security best practices
+- Unit tests for services
+- Integration tests for API
+- Database operation tests
+- Real-time feature tests
 
 ## 🔒 Environment Variables
 
@@ -118,50 +130,90 @@ Required environment variables:
 ```env
 # Server Configuration
 NODE_ENV=development
-PORT=3000
-
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/db
+PORT=3001
+CORS_ORIGIN=http://localhost:3000
 
 # Authentication
-JWT_SECRET=your-jwt-secret
 AUTH0_DOMAIN=your-auth0-domain
 AUTH0_AUDIENCE=your-auth0-audience
 
-# Test Environment
-TEST_DATABASE_URL=postgresql://user:password@localhost:5432/test_db
+# Supabase Configuration
+SUPABASE_URL=your-project-url
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 ## 📦 Available Scripts
 
-- `npm run dev` - Start development server with hot reload
+- `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm start` - Start production server
 - `npm test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Generate coverage report
 - `npm run lint` - Lint code
+- `npm run coverage` - Generate coverage report
+
+## 🔍 Error Handling
+
+The server implements comprehensive error handling:
+
+### API Errors
+
+- Input validation
+- Authentication failures
+- Authorization errors
+- Rate limiting
+
+### Database Errors
+
+- Connection failures
+- Query errors
+- Constraint violations
+- Real-time subscription errors
+
+## 🔒 Security
+
+- Auth0 integration
+- Supabase security features
+- Input validation
+- Rate limiting
+- Error sanitization
+
+## 📊 Monitoring
+
+The server provides monitoring for:
+
+- API endpoints
+- Database operations
+- Real-time subscriptions
+- Authentication
+- Error rates
 
 ## 🤝 Contributing
 
-1. Follow the project's coding standards
-2. Write clear commit messages
-3. Include tests for new features
-4. Update API documentation
-5. Create detailed pull requests
+1. Follow TypeScript practices
+2. Write comprehensive tests
+3. Document API changes
+4. Update OpenAPI specs
+5. Test error handling
 
-## 🔍 Common Issues
+## 🐛 Troubleshooting
 
-### Test Environment
+### Common Issues
 
-- Ensure test database is configured
-- Check environment variables
-- Clear Jest cache if needed
-- Use correct Node.js version
+1. Server Startup
+   - Check environment variables
+   - Verify Supabase connection
+   - Confirm port availability
+   - Review logs
 
-### Development
+2. API Issues
+   - Validate request format
+   - Check authentication
+   - Review rate limits
+   - Monitor timeouts
 
-- Run `npm run build` after changes
-- Check TypeScript errors
-- Verify database connection
-- Monitor API responses
+3. Real-time Features
+   - Check Supabase connection
+   - Verify channel subscriptions
+   - Monitor event delivery
+   - Review error logs
