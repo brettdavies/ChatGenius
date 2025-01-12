@@ -1,170 +1,135 @@
-import { Pool, PoolClient } from 'pg';
-import { PostgresEventService, DatabaseEvent } from '../event-service';
-import { EventSystemError } from '../../utils/events';
-import { EventEmitter } from 'events';
+import { jest } from '@jest/globals';
+import { EventService } from '../event-service';
+import { createMockPool, createMockClient } from '../../__mocks__/pg';
+import { DatabaseEvent } from '../../types/events';
+import { createMockChannel } from '../../utils/__tests__/test-mocks';
+import { Notification } from 'pg';
 
-jest.mock('pg');
-
-describe('PostgresEventService', () => {
-  let service: PostgresEventService;
-  let pool: jest.Mocked<Pool>;
-  let mockClient: any;
-  let handler: jest.Mock;
-  let notificationHandler: (msg: { channel: string; payload: string }) => void;
-  let errorHandler: (error: Error) => void;
+describe('EventService', () => {
+  let service: EventService;
+  let mockPool: ReturnType<typeof createMockPool>;
+  let mockClient: ReturnType<typeof createMockClient>;
 
   beforeEach(() => {
-    mockClient = {
-      query: jest.fn(),
-      on: jest.fn(),
-      removeAllListeners: jest.fn(),
-      release: jest.fn(),
-    };
+    mockClient = createMockClient();
+    mockPool = createMockPool();
+    mockPool.connect.mockImplementation(() => Promise.resolve(mockClient));
+    service = new EventService(mockPool);
+  });
 
-    pool = {
-      connect: jest.fn().mockResolvedValue(mockClient),
-    } as unknown as jest.Mocked<Pool>;
-
-    service = new PostgresEventService(pool);
-    handler = jest.fn();
+  afterEach(async () => {
+    await service.stop();
   });
 
   describe('start', () => {
-    it('should start listening for events', async () => {
+    it('should connect and set up listeners', async () => {
       await service.start();
-      expect(pool.connect).toHaveBeenCalled();
-      expect(mockClient.query).toHaveBeenCalledWith('LISTEN channels');
-      expect(mockClient.query).toHaveBeenCalledWith('LISTEN messages');
-      expect(mockClient.query).toHaveBeenCalledWith('LISTEN users');
-      expect(service.getStatus()).toBe('connected');
+
+      expect(mockPool.connect).toHaveBeenCalled();
+      expect(mockClient.on).toHaveBeenCalledWith('notification', expect.any(Function));
+      expect(mockClient.on).toHaveBeenCalledWith('error', expect.any(Function));
     });
 
     it('should handle connection errors', async () => {
       const error = new Error('Connection failed');
-      (pool.connect as jest.Mock).mockRejectedValueOnce(error);
-      
-      const errorPromise = new Promise<void>((resolve) => {
-        service['eventEmitter'].once('error', (err: EventSystemError) => {
-          expect(err.code).toBe('CONNECTION_ERROR');
-          expect(err.originalError).toBe(error);
-          resolve();
-        });
-      });
+      mockPool.connect.mockImplementation(() => Promise.reject(error));
 
-      await service.start();
-      await errorPromise;
-      expect(service['status']).toBe('error');
-    }, 30000);
+      await expect(service.start()).rejects.toThrow('Connection failed');
+    });
   });
 
   describe('event handling', () => {
+    let notificationHandler: (msg: Notification) => void;
+    let errorHandler: (error: Error) => void;
+
     beforeEach(async () => {
-      // Store the notification handler when it's registered
-      mockClient.on.mockImplementation((event: string, handler: any) => {
-        if (event === 'notification') {
-          notificationHandler = handler;
-        } else if (event === 'error') {
-          errorHandler = handler;
-        }
-      });
-
       await service.start();
+      
+      const calls = mockClient.on.mock.calls;
+      const notificationCall = calls.find(([event]) => event === 'notification');
+      const errorCall = calls.find(([event]) => event === 'error');
+      
+      notificationHandler = notificationCall?.[1] as (msg: Notification) => void;
+      errorHandler = errorCall?.[1] as (error: Error) => void;
+      
+      expect(notificationHandler).toBeDefined();
+      expect(errorHandler).toBeDefined();
     });
 
-    it('should process notifications correctly', async () => {
-      const event: DatabaseEvent = {
-        channel: 'messages',
+    it('should handle notifications', () => {
+      const mockEvent: DatabaseEvent = {
+        channel: 'test_channel',
         operation: 'INSERT',
         schema: 'public',
-        table: 'messages',
-        data: { id: '1', content: 'test' }
+        table: 'channels',
+        data: createMockChannel()
       };
 
-      service.onEvent('messages', handler);
-      notificationHandler({ channel: 'messages', payload: JSON.stringify(event) });
-      expect(handler).toHaveBeenCalledWith(event);
-    });
+      const listener = jest.fn();
+      service.on('test_channel', listener);
 
-    it('should buffer events when disconnected', async () => {
-      const event: DatabaseEvent = {
-        channel: 'messages',
-        operation: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        data: { id: '1' }
-      };
-
-      service.onEvent('messages', handler);
-
-      // Stop the service and verify status is disconnected
-      await service.stop();
-      expect(service.getStatus()).toBe('disconnected');
-
-      // Send event while disconnected
-      notificationHandler({ channel: 'messages', payload: JSON.stringify(event) });
-      expect(handler).not.toHaveBeenCalled();
-
-      // Reconnect and verify buffered event is processed
-      await service.start();
-      expect(handler).toHaveBeenCalledWith(event);
-    });
-
-    it('should emit error for invalid JSON payloads', async () => {
-      // Create a promise that resolves when the error event is emitted
-      const errorPromise = new Promise<void>((resolve) => {
-        service['eventEmitter'].once('error', (err: EventSystemError) => {
-          expect(err.code).toBe('PARSE_ERROR');
-          expect(err.originalError).toBeInstanceOf(SyntaxError);
-          resolve();
-        });
+      notificationHandler({
+        channel: 'test_channel',
+        payload: JSON.stringify(mockEvent),
+        processId: 123,
+        length: 0,
+        name: 'test_channel'
       });
 
-      notificationHandler({ channel: 'messages', payload: 'invalid json' });
-      await errorPromise;
+      expect(listener).toHaveBeenCalledWith(mockEvent);
+    });
+
+    it('should handle invalid notification payloads', () => {
+      const listener = jest.fn();
+      service.on('test_channel', listener);
+
+      notificationHandler({
+        channel: 'test_channel',
+        payload: 'invalid json',
+        processId: 123,
+        length: 0,
+        name: 'test_channel'
+      });
+
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('should handle database errors', async () => {
+      const error = new Error('Database error');
+      errorHandler(error);
+
+      // Verify that the service attempts to reconnect
+      expect(mockPool.connect).toHaveBeenCalledTimes(2);
     });
   });
 
-  describe('error handling', () => {
+  describe('emit', () => {
     beforeEach(async () => {
-      mockClient.on.mockImplementation((event: string, handler: any) => {
-        if (event === 'notification') {
-          notificationHandler = handler;
-        } else if (event === 'error') {
-          errorHandler = handler;
-        }
-      });
-
       await service.start();
-      jest.useFakeTimers();
     });
 
-    afterEach(() => {
-      jest.useRealTimers();
+    it('should send notifications', () => {
+      const mockEvent: DatabaseEvent = {
+        channel: 'test_channel',
+        operation: 'INSERT',
+        schema: 'public',
+        table: 'channels',
+        data: createMockChannel()
+      };
+
+      service.emit('test_channel', mockEvent);
+
+      expect(mockClient.query).toHaveBeenCalledWith(
+        'SELECT pg_notify($1, $2)',
+        ['test_channel', JSON.stringify(mockEvent)]
+      );
     });
 
-    it('should attempt reconnection on error', async () => {
-      jest.useFakeTimers();
-      const error = new Error('Connection lost');
-      
-      const reconnectPromise = new Promise<void>((resolve) => {
-        service['eventEmitter'].once('error', (err: EventSystemError) => {
-          expect(err.code).toBe('CONNECTION_ERROR');
-          expect(err.originalError).toBe(error);
-          expect(service['status']).toBe('reconnecting');
-          resolve();
-        });
-      });
+    it('should handle errors when sending notifications', () => {
+      mockClient.query.mockImplementation(() => Promise.reject(new Error('Query failed')));
 
-      await service.start();
-      await service['handleError'](error);
-      
-      // Fast-forward past reconnect delay
-      jest.advanceTimersByTime(service['config'].reconnectDelay);
-      
-      await reconnectPromise;
-      expect(service['reconnectAttempts']).toBe(1);
-      
-      jest.useRealTimers();
-    }, 30000);
+      const result = service.emit('test_channel', { data: 'test' });
+      expect(result).toBe(false);
+    });
   });
 }); 

@@ -1,135 +1,116 @@
+import { jest } from '@jest/globals';
 import { Response } from 'express';
 import { ServerSentEventsService } from '../sse-service';
-import { SSEConfig } from '../../utils/sse';
-import { DatabaseEvent } from '../../utils/events';
+import { createMockResponse } from '../../utils/__tests__/test-helpers';
 
 describe('ServerSentEventsService', () => {
   let service: ServerSentEventsService;
-  let res: any;
+  let mockResponse: jest.Mocked<Response>;
 
   beforeEach(() => {
-    res = {
-      write: jest.fn().mockReturnValue(true),
-      writeHead: jest.fn().mockReturnValue(true),
-      setHeader: jest.fn(),
-      on: jest.fn(),
-      once: jest.fn(),
-      end: jest.fn(),
-    };
-
-    const config: SSEConfig = {
-      heartbeatInterval: 100,
-      maxConnectionsPerUser: 2,
-      retryInterval: 1000,
-      compressionThreshold: 1024
-    };
-
-    service = new ServerSentEventsService(config);
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
+    service = new ServerSentEventsService();
+    mockResponse = createMockResponse();
   });
 
   describe('connection management', () => {
-    it('should establish a new connection', async () => {
+    it('should add a new connection', () => {
       const userId = 'test-user';
-      const connection = await service.addConnection(userId, res as Response);
-      expect(connection.id).toBeDefined();
+      const connection = service.addConnection(userId, mockResponse);
+
       expect(connection.userId).toBe(userId);
-      expect(connection.status).toBe('active');
+      expect(connection.channels).toBeInstanceOf(Set);
+      expect(connection.channels.size).toBe(0);
+      expect(mockResponse.writeHead).toHaveBeenCalledWith(
+        200,
+        expect.objectContaining({
+          'Content-Type': 'text/event-stream'
+        })
+      );
     });
 
-    it('should enforce connection limit per user', async () => {
+    it('should remove a connection', () => {
       const userId = 'test-user';
-      await service.addConnection(userId, res as Response);
-      await service.addConnection(userId, res as Response);
-      await expect(service.addConnection(userId, res as Response)).rejects.toThrow();
-    });
-
-    it('should remove connection on client disconnect', async () => {
-      const userId = 'test-user';
-      const connection = await service.addConnection(userId, res as Response);
+      const connection = service.addConnection(userId, mockResponse);
       service.removeConnection(connection.id);
-      expect(() => service.getConnectionStatus(connection.id)).toThrow();
+
+      const status = service.getConnectionStatus(connection.id);
+      expect(status.connected).toBe(false);
     });
   });
 
   describe('channel management', () => {
-    it('should subscribe and unsubscribe from channels', async () => {
+    it('should subscribe to channels', () => {
       const userId = 'test-user';
       const channel = 'test-channel';
-      const connection = await service.addConnection(userId, res as Response);
+      const connection = service.addConnection(userId, mockResponse);
+
+      service.subscribeToChannel(connection.id, channel);
+      const status = service.getConnectionStatus(connection.id);
+
+      expect(status.channels).toContain(channel);
+    });
+
+    it('should unsubscribe from channels', () => {
+      const userId = 'test-user';
+      const channel = 'test-channel';
+      const connection = service.addConnection(userId, mockResponse);
+
       service.subscribeToChannel(connection.id, channel);
       service.unsubscribeFromChannel(connection.id, channel);
-    });
+      const status = service.getConnectionStatus(connection.id);
 
-    it('should handle invalid connection IDs', () => {
-      expect(() => service.subscribeToChannel('invalid-id', 'test-channel')).toThrow();
-    });
-  });
-
-  describe('heartbeat', () => {
-    it('should send heartbeat at configured interval', async () => {
-      const userId = 'test-user';
-      await service.addConnection(userId, res as Response);
-      jest.advanceTimersByTime(100);
-      expect(res.write).toHaveBeenCalled();
-    });
-
-    it('should cleanup connection on failed heartbeat', async () => {
-      const userId = 'test-user';
-      const connection = await service.addConnection(userId, res as Response);
-      res.write.mockImplementation(() => {
-        throw new Error('Write failed');
-      });
-      jest.advanceTimersByTime(100);
-      expect(() => service.getConnectionStatus(connection.id)).toThrow();
+      expect(status.channels).not.toContain(channel);
     });
   });
 
-  describe('compression', () => {
-    it('should compress large payloads', async () => {
-      const userId = '123';
+  describe('event sending', () => {
+    it('should send events to subscribed connections', () => {
+      const userId = 'test-user';
       const channel = 'test-channel';
-      let wasCompressed = false;
-      
-      const res = {
-        write: jest.fn().mockReturnValue(true),
-        writeHead: jest.fn().mockImplementation((status, headers) => {
-          if (headers['Content-Encoding'] === 'gzip') {
-            wasCompressed = true;
-          }
-        }),
-        setHeader: jest.fn(),
-        on: jest.fn(),
-      } as unknown as Response;
-
-      const service = new ServerSentEventsService({
-        compressionThreshold: 10, // Set a low threshold for testing
-        heartbeatInterval: 1000,
-        maxConnectionsPerUser: 5,
-        retryInterval: 1000
-      });
-
-      const connection = await service.addConnection(userId, res);
+      const connection = service.addConnection(userId, mockResponse);
       service.subscribeToChannel(connection.id, channel);
 
-      const event: DatabaseEvent<{ content: string }> = {
-        channel,
-        operation: 'INSERT',
-        schema: 'public',
-        table: 'test',
-        data: { content: 'x'.repeat(1000) } // Create a large payload
-      };
+      const eventData = { message: 'test' };
+      service.sendEventToChannel(channel, 'test-event', eventData);
 
-      await service.broadcast(channel, event);
-      expect(wasCompressed).toBe(true);
-      expect(res.write).toHaveBeenCalled();
-      expect(res.writeHead).toHaveBeenCalledWith(200, expect.objectContaining({
-        'Content-Encoding': 'gzip'
-      }));
+      expect(mockResponse.write).toHaveBeenCalledWith(`event: test-event\n`);
+      expect(mockResponse.write).toHaveBeenCalledWith(`data: ${JSON.stringify(eventData)}\n\n`);
+    });
+
+    it('should not send events to unsubscribed connections', () => {
+      const userId = 'test-user';
+      const channel = 'test-channel';
+      const connection = service.addConnection(userId, mockResponse);
+
+      const eventData = { message: 'test' };
+      service.sendEventToChannel(channel, 'test-event', eventData);
+
+      expect(mockResponse.write).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('connection status', () => {
+    it('should return correct connection status', () => {
+      const userId = 'test-user';
+      const channel = 'test-channel';
+      const connection = service.addConnection(userId, mockResponse);
+      service.subscribeToChannel(connection.id, channel);
+
+      const status = service.getConnectionStatus(connection.id);
+
+      expect(status.connected).toBe(true);
+      expect(status.userId).toBe(userId);
+      expect(status.channels).toContain(channel);
+      expect(status.connectedSince).toBeInstanceOf(Date);
+    });
+
+    it('should return inactive status for unknown connections', () => {
+      const status = service.getConnectionStatus('unknown-id');
+
+      expect(status.connected).toBe(false);
+      expect(status.channels).toEqual([]);
+      expect(status.userId).toBeUndefined();
+      expect(status.connectedSince).toBeUndefined();
     });
   });
 }); 

@@ -1,37 +1,47 @@
-import { ChannelAuthorization, ChannelOperation, channelAuth } from '../authorization';
+import { ChannelAuthorization, channelAuth } from '../authorization';
+import type { AuthResult } from '../authorization';
 
-describe('Channel Authorization Stub', () => {
+describe('Channel Authorization', () => {
   const userId = '01H5XZK6J3V2857AWC8C9M5DQ3';
   const channelId = '01H5XZK6J3V2857AWC8C9M5DQ4';
 
-  describe('checkPermission', () => {
-    const operations: ChannelOperation[] = ['create', 'delete', 'update', 'invite', 'remove', 'view'];
-
-    test.each(operations)('should allow %s operation', async (operation) => {
-      const result = await channelAuth.checkPermission(userId, operation, channelId);
-      expect(result.allowed).toBe(true);
-      expect(result.reason).toBeUndefined();
-    });
-
-    test('should work without channelId for create operation', async () => {
-      const result = await channelAuth.checkPermission(userId, 'create');
-      expect(result.allowed).toBe(true);
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  describe('canCreateChannel', () => {
-    test('should allow channel creation', async () => {
+  describe('channel operations', () => {
+    it('should allow creating a channel', async () => {
       const result = await channelAuth.canCreateChannel(userId);
       expect(result.allowed).toBe(true);
     });
+
+    it('should allow deleting a channel', async () => {
+      const result = await channelAuth.canDeleteChannel(userId, channelId);
+      expect(result.allowed).toBe(true);
+    });
+
+    it('should allow updating a channel', async () => {
+      const result = await channelAuth.canUpdateChannel(userId, channelId);
+      expect(result.allowed).toBe(true);
+    });
+
+    it('should allow archiving a channel', async () => {
+      const result = await channelAuth.canArchiveChannel(userId, channelId);
+      expect(result.allowed).toBe(true);
+    });
   });
 
-  describe('canManageChannel', () => {
-    const operations: Exclude<ChannelOperation, 'create'>[] = ['delete', 'update', 'invite', 'remove', 'view'];
+  describe('error handling', () => {
+    it('should handle invalid user IDs', async () => {
+      const result = await channelAuth.canCreateChannel('');
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toBe('Invalid user ID');
+    });
 
-    test.each(operations)('should allow %s operation', async (operation) => {
-      const result = await channelAuth.canManageChannel(userId, channelId, operation);
-      expect(result.allowed).toBe(true);
+    it('should handle invalid channel IDs', async () => {
+      const result = await channelAuth.canDeleteChannel(userId, '');
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toBe('Invalid channel ID');
     });
   });
 }); 

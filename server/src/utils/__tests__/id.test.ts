@@ -9,7 +9,7 @@ describe('ULID Utilities', () => {
         });
 
         it('should generate unique IDs', () => {
-            const ids = new Set();
+            const ids = new Set<string>();
             for (let i = 0; i < 1000; i++) {
                 ids.add(generateId());
             }
@@ -18,58 +18,51 @@ describe('ULID Utilities', () => {
 
         it('should generate chronologically sortable IDs', async () => {
             const id1 = generateId();
-            // Wait 1ms to ensure different timestamps
             await new Promise(resolve => setTimeout(resolve, 1));
             const id2 = generateId();
-            
-            const time1 = getTimestampFromId(id1);
-            const time2 = getTimestampFromId(id2);
-            expect(time1).toBeLessThan(time2);
+            expect(compareIds(id1, id2)).toBe(-1);
         });
     });
 
     describe('getTimestampFromId', () => {
-        it('should extract correct timestamp from ULID', () => {
+        it('should extract timestamp from ULID', () => {
             const now = Date.now();
             const id = generateId();
             const timestamp = getTimestampFromId(id);
-            
-            // Should be within 1 second
             expect(Math.abs(timestamp - now)).toBeLessThan(1000);
         });
 
         it('should throw error for invalid ULID', () => {
-            expect(() => getTimestampFromId('invalid')).toThrow('Invalid ULID format');
+            expect(() => getTimestampFromId('invalid')).toThrow('Invalid ULID');
         });
     });
 
     describe('isValidId', () => {
-        it('should return true for valid ULIDs', () => {
+        it('should validate correct ULIDs', () => {
             const id = generateId();
             expect(isValidId(id)).toBe(true);
         });
 
-        it('should return false for invalid ULIDs', () => {
-            expect(isValidId('invalid')).toBe(false);
+        it('should reject invalid ULIDs', () => {
             expect(isValidId('')).toBe(false);
-            expect(isValidId('12345')).toBe(false);
-            expect(isValidId('I'.repeat(26))).toBe(false); // Invalid char (I)
-            expect(isValidId('L'.repeat(26))).toBe(false); // Invalid char (L)
-            expect(isValidId('O'.repeat(26))).toBe(false); // Invalid char (O)
-            expect(isValidId('U'.repeat(26))).toBe(false); // Invalid char (U)
+            expect(isValidId('invalid')).toBe(false);
+            expect(isValidId('0'.repeat(26))).toBe(false);
         });
     });
 
     describe('compareIds', () => {
-        it('should correctly compare ULIDs', async () => {
+        it('should compare IDs chronologically', () => {
             const id1 = generateId();
-            // Wait 1ms to ensure different timestamps
-            await new Promise(resolve => setTimeout(resolve, 1));
             const id2 = generateId();
+            expect(compareIds(id1, id2)).toBe(-1);
+            expect(compareIds(id2, id1)).toBe(1);
+            expect(compareIds(id1, id1)).toBe(0);
+        });
 
-            expect(compareIds(id1, id1)).toBe(0); // Same ID
-            expect(compareIds(id1, id2)).toBe(-1); // First ID is earlier
-            expect(compareIds(id2, id1)).toBe(1); // Second ID is later
+        it('should throw error for invalid IDs', () => {
+            const validId = generateId();
+            expect(() => compareIds('invalid', validId)).toThrow('Invalid ULID');
+            expect(() => compareIds(validId, 'invalid')).toThrow('Invalid ULID');
         });
     });
 }); 

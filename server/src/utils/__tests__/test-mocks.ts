@@ -1,65 +1,46 @@
-import { Response } from 'express';
-import { DatabaseEvent } from '../events';
-import { AuthResult } from '../authorization';
-import { jest } from '@jest/globals';
+import { User } from '../../types/user';
+import { Channel } from '../../types/channel';
+import { DatabaseEvent } from '../../types/events';
+import { AuthenticatedRequest } from '../../middleware/auth';
 
-/**
- * Mock Auth0 middleware for testing
- */
-export const mockAuth0Middleware = {
-  checkJwt: (req: any, res: any, next: any) => {
-    if (req.headers['x-mock-auth'] === 'fail') {
-      return res.status(401).json({ error: 'Unauthorized' });
+export const createMockUser = (overrides: Partial<User> = {}): User => ({
+  id: 'test-user-id',
+  email: 'test@example.com',
+  name: 'Test User',
+  created_at: new Date(),
+  updated_at: new Date(),
+  ...overrides
+});
+
+export const createMockAuthRequest = (overrides: Partial<AuthenticatedRequest> = {}): Partial<AuthenticatedRequest> => ({
+  auth: {
+    payload: {
+      sub: 'test-user-id',
+      email: 'test@example.com',
+      name: 'Test User'
     }
-    req.user = { id: 'test-user-id' };
-    next();
   },
-};
+  user: createMockUser(),
+  ...overrides
+});
 
-/**
- * Mock event service for testing
- */
-export const mockEventService = {
-  emit: jest.fn(),
-  onEvent: jest.fn(),
-  start: jest.fn(),
-  stop: jest.fn(),
-  getStatus: jest.fn(),
-};
+export const createMockChannel = (overrides: Partial<Channel> = {}): Channel => ({
+  id: 'test-channel-id',
+  name: 'Test Channel',
+  owner_id: 'test-user-id',
+  is_private: false,
+  created_at: new Date(),
+  updated_at: new Date(),
+  ...overrides
+});
 
-/**
- * Mock authorization service for testing
- */
-export const mockAuthService = {
-  checkPermission: jest.fn<() => Promise<AuthResult>>().mockResolvedValue({ allowed: true }),
-  canCreateChannel: jest.fn<() => Promise<AuthResult>>().mockResolvedValue({ allowed: true }),
-  canManageChannel: jest.fn<() => Promise<AuthResult>>().mockResolvedValue({ allowed: true }),
-  canViewChannel: jest.fn<() => Promise<AuthResult>>().mockResolvedValue({ allowed: true }),
-} as const;
-
-/**
- * Creates a mock Express response object for testing
- */
-export const createMockResponse = () => ({
-  write: jest.fn().mockReturnValue(true),
-  writeHead: jest.fn().mockReturnValue(true),
-  setHeader: jest.fn(),
-  on: jest.fn(),
-  once: jest.fn(),
-  end: jest.fn(),
-}) as unknown as Response;
-
-/**
- * Creates a mock database event for testing
- */
 export const createMockDatabaseEvent = <T>(
-  channel: string,
-  operation: 'INSERT' | 'UPDATE' | 'DELETE',
+  eventType: string,
   data: T
 ): DatabaseEvent<T> => ({
-  channel,
-  operation,
+  channel: 'test-channel',
+  operation: 'INSERT',
   schema: 'public',
-  table: channel,
-  data,
+  table: 'test_table',
+  data
 }); 

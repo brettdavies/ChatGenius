@@ -1,43 +1,49 @@
-import { auth } from 'express-oauth2-jwt-bearer';
 import { Request, Response, NextFunction } from 'express';
-import dotenv from 'dotenv';
+import { auth, AuthResult } from 'express-oauth2-jwt-bearer';
+import { User } from '../types/user';
 
-dotenv.config();
+// Extend Express Request to include auth and user
+declare global {
+  namespace Express {
+    interface Request {
+      auth?: AuthResult;
+      user?: User;
+    }
+  }
+}
 
-// Auth0 JWT validation middleware
-export const checkJwt = auth({
+// Create middleware using Auth0 configuration
+export const authMiddleware = auth({
   audience: process.env.AUTH0_AUDIENCE,
-  issuerBaseURL: process.env.AUTH0_ISSUER_URL,
+  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+  tokenSigningAlg: 'RS256'
 });
 
-// Error handling middleware for authentication
-export const handleAuthError = (err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).json({ error: 'Invalid token or no token provided' });
-    return;
+// Attach user information to request
+export const attachUser = (req: Request, _res: Response, next: NextFunction) => {
+  if (req.auth?.payload) {
+    const { sub, email, name, picture } = req.auth.payload as { sub: string; email: string; name: string; picture?: string };
+    req.user = {
+      id: sub,
+      email,
+      name,
+      picture,
+      created_at: new Date(),
+      updated_at: new Date()
+    };
   }
-  next(err);
+  next();
 };
 
-// SSE authentication middleware
-export const sseAuth = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      res.status(401).json({ error: 'No token provided' });
-      return;
-    }
-    
-    // Validate token using checkJwt
-    await new Promise((resolve, reject) => {
-      checkJwt(req, res, (err) => {
-        if (err) reject(err);
-        resolve(true);
-      });
-    });
-    
-    next();
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
+// Type guard to check if request is authenticated
+export const isAuthenticated = (req: Request): req is Request & { user: User } => {
+  return !!req.auth?.payload && !!req.user;
+};
+
+// Helper to get user ID from request
+export const getUserId = (req: Request): string => {
+  if (!isAuthenticated(req)) {
+    throw new Error('User is not authenticated');
   }
+  return req.user.id;
 }; 

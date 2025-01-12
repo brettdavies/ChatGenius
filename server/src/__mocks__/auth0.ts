@@ -1,18 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { jest } from '@jest/globals';
+import { AuthenticatedRequest } from '../middleware/auth';
+import { createMockUser } from '../utils/__tests__/test-mocks';
 
-/**
- * Mock Auth0 middleware for testing
- */
-export const checkJwt = (req: Request, res: Response, next: NextFunction) => {
-  if (req.headers['x-mock-auth'] === 'fail') {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  req.user = { id: 'test-user-id' };
+export const mockAuth0Middleware = (req: Request, res: Response, next: NextFunction) => {
+  const mockUser = createMockUser();
+  (req as AuthenticatedRequest).auth = {
+    payload: {
+      sub: mockUser.id,
+      email: mockUser.email,
+      name: mockUser.name
+    }
+  };
+  (req as AuthenticatedRequest).user = mockUser;
   next();
-};
-
-// Mock the auth0-express-jwt module
-jest.mock('express-oauth2-jwt-bearer', () => ({
-  auth: () => checkJwt
-})); 
+}; 
