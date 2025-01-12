@@ -1,6 +1,6 @@
 # Database Management
 
-This directory contains database schema definitions and migration files for the ChatGenius application. The database is now hosted on Supabase.
+This directory contains database schema definitions and migration files for the ChatGenius application. The database is hosted on Railway.
 
 ## Directory Structure
 
