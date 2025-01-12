@@ -1,6 +1,7 @@
 import { Pool, PoolClient } from 'pg';
 import { EventEmitter } from '../types/events';
 import { logger } from '../utils/logger';
+import { pool } from '../config/database';
 
 export class EventService implements EventEmitter {
   private client: PoolClient | null = null;
@@ -78,9 +79,4 @@ export class EventService implements EventEmitter {
   }
 }
 
-export const eventService = new EventService(
-  new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-  })
-); 
+export const eventService = new EventService(pool); 

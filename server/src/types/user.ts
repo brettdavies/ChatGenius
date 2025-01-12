@@ -1,19 +1,14 @@
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-  created_at: Date;
-  updated_at: Date;
+declare global {
+  namespace Express {
+    interface User {
+      auth0_id: string;
+      db_id: string;
+      email: string;
+      username: string;
+      full_name: string;
+      avatar_url?: string;
+    }
+  }
 }
 
-export interface CreateUserData {
-  email: string;
-  name: string;
-  picture?: string;
-}
-
-export interface UpdateUserData {
-  name?: string;
-  picture?: string;
-} 
+export {}; 

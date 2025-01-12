@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
 import { Server } from 'http';
 import path from 'path';
+import { EventService } from './services/event-service';
+import { pool } from './config/database';
 
 // Load environment variables based on environment
 if (process.env.NODE_ENV !== 'production') {
@@ -36,20 +37,6 @@ const processEnvTemplate = (template: string, env: NodeJS.ProcessEnv, processed 
   }
 });
 
-// Set the appropriate DATABASE_URL based on environment
-if (process.env.NODE_ENV === 'production') {
-  // In production (Railway), use the private domain URL
-  if (!process.env.DATABASE_URL?.includes('railway.internal')) {
-    console.warn('[WARNING] Production environment detected but not using internal Railway URL');
-  }
-} else {
-  // In development, use the public proxy URL
-  if (process.env.DATABASE_PUBLIC_URL) {
-    console.log('[CONFIG] Using public proxy URL for database connection');
-    process.env.DATABASE_URL = process.env.DATABASE_PUBLIC_URL;
-  }
-}
-
 // Debug environment variables
 console.log('Environment Variables:', {
   NODE_ENV: process.env.NODE_ENV,
@@ -59,12 +46,23 @@ console.log('Environment Variables:', {
   IS_RAILWAY: process.env.RAILWAY_ENVIRONMENT === 'production'
 });
 
+// Import routes
+import { channelRoutes } from './routes/channel-routes';
+import { userRoutes } from './routes/user-routes';
+
 // Initialize Express app
 const app = express();
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Mount routes
+app.use('/api/channels', channelRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -72,8 +70,11 @@ app.get('/health', (req, res) => {
 });
 
 // Global variables
+declare global {
+  var eventService: EventService;
+}
+
 let server: Server | undefined;
-let pool: Pool | undefined;
 
 async function startServer() {
   console.log('=== SERVER STARTUP SEQUENCE INITIATED ===');
@@ -84,12 +85,6 @@ async function startServer() {
   console.log('[CONFIG] CORS Origin:', process.env.CORS_ORIGIN);
 
   try {
-    // Initialize database connection
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    });
-    
     // Test database connection
     await pool.query('SELECT NOW()');
     console.log('[DB] Connected successfully');
@@ -122,11 +117,9 @@ async function shutdown() {
     });
   }
 
-  if (pool) {
-    console.log('[DB] Closing database pool...');
-    await pool.end();
-    console.log('[DB] Database pool closed');
-  }
+  console.log('[DB] Closing database pool...');
+  await pool.end();
+  console.log('[DB] Database pool closed');
 
   console.log('[SERVER] Shutdown complete');
   process.exit(0);

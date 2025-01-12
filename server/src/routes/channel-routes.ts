@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { authMiddleware } from '../middleware/auth';
+import { syncUser } from '../middleware/user-sync';
 import { channelController } from '../controllers/channel-controller';
 import { logger } from '../utils/logger';
 
@@ -17,9 +18,9 @@ const withAuth = (handler: AuthHandler) => async (req: Request, res: Response, n
 };
 
 // Create a new channel
-router.post('/', authMiddleware, withAuth(channelController.createChannel.bind(channelController)));
+router.post('/', authMiddleware, syncUser, withAuth(channelController.createChannel.bind(channelController)));
 
 // List channels for user
-router.get('/', authMiddleware, withAuth(channelController.listChannels.bind(channelController)));
+router.get('/', authMiddleware, syncUser, withAuth(channelController.listChannels.bind(channelController)));
 
 export const channelRoutes = router; 

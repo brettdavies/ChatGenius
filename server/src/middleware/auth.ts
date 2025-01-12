@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { auth, AuthResult } from 'express-oauth2-jwt-bearer';
 import { User } from '../types/user';
+import { logger } from '../utils/logger';
 
 // Extend Express Request to include auth and user
 declare global {
@@ -20,19 +21,32 @@ export const authMiddleware = auth({
 });
 
 // Attach user information to request
-export const attachUser = (req: Request, _res: Response, next: NextFunction) => {
-  if (req.auth?.payload) {
+export const attachUser = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.auth?.payload) {
+      return res.status(401).json({ error: 'No authentication payload found' });
+    }
+
     const { sub, email, name, picture } = req.auth.payload as { sub: string; email: string; name: string; picture?: string };
+    
+    if (!sub) {
+      return res.status(401).json({ error: 'No user ID found in token' });
+    }
+
     req.user = {
       id: sub,
-      email,
-      name,
+      email: email || '',
+      name: name || '',
       picture,
       created_at: new Date(),
       updated_at: new Date()
     };
+    
+    next();
+  } catch (error) {
+    logger.error('Error attaching user:', error);
+    res.status(500).json({ error: 'Failed to process authentication' });
   }
-  next();
 };
 
 // Type guard to check if request is authenticated

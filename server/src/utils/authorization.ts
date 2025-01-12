@@ -1,4 +1,5 @@
 import { Pool } from 'pg';
+import { pool } from '../config/database';
 
 /**
  * Authorization service interface for channel operations.
@@ -144,7 +145,4 @@ export class ChannelAuthorizationStub implements ChannelAuthorization {
 }
 
 // Export singleton instance
-export const channelAuth = new ChannelAuthorizationStub(new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-})); 
+export const channelAuth = new ChannelAuthorizationStub(pool); 
