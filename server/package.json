@@ -1,46 +1,48 @@
 {
-  "name": "@chatgenius/server",
+  "name": "pern-starter-server",
   "version": "1.0.0",
+  "description": "Express server for PERN stack",
+  "engines": {
+    "node": ">=18.20.0",
+    "npm": ">=10.8.0"
+  },
+  "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node-dev -r tsconfig-paths/register --respawn --transpile-only src/app.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node -r tsconfig-paths/register dist/app.js",
-    "migrate": "ts-node src/db/migrate.ts",
-    "test": "jest",
-    "seed": "ts-node src/db/seed.ts"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.js\"",
+    "pretest": "node ../database/init.test.db.js",
+    "test": "mocha \"tests/**/*.test.js\" --recursive",
+    "db:migrate": "node src/db/migrate.js",
+    "db:seed": "node src/db/seed.js",
+    "clean": "rm -rf node_modules coverage"
   },
   "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-oauth2-jwt-bearer": "^1.6.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "module-alias": "^2.2.3",
-    "next": "^14.0.4",
-    "next-auth": "^4.24.5",
-    "openai": "^4.24.1",
-    "pg": "^8.13.1",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.3.3",
-    "ulid": "^2.3.0",
-    "uuid": "^9.0.1",
-    "zod": "^3.22.4"
+    "cookie-parser": "^1.4.6",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "express-session": "^1.17.3"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.14",
-    "@types/jsonwebtoken": "^9.0.5",
-    "@types/node": "^20.10.6",
-    "@types/pg": "^8.11.10",
-    "@types/supertest": "^6.0.2",
-    "@types/uuid": "^9.0.7",
-    "jest": "^29.7.0",
-    "supertest": "^6.3.4",
-    "ts-jest": "^29.1.1",
-    "ts-node-dev": "^2.0.0"
+    "nodemon": "^3.0.2",
+    "supertest": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "mocha": "^10.2.0",
+    "chai": "^4.3.10",
+    "chai-http": "^4.4.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  }
-}
+  "type": "module"
+} 

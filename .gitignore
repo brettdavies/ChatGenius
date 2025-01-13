@@ -1,77 +1,56 @@
+# Development guides
+TASKS.md
+
 # Dependencies
-node_modules
-.pnp
-.pnp.js
+node_modules/
+server/node_modules/
+client/node_modules/
+database/node_modules/
 
-# Testing
-coverage
+# Production builds
+build/
+dist/
 
-# Production
-build
-dist
-dist-ssr
-*.local
+# Test coverage
+coverage/
+**/coverage/
+tests/cypress/videos/
+tests/cypress/screenshots/
 
-# Debug
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# Local env files
-.env*.local
-!.env.example
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# IDE - JetBrains
+# Editor directories and files
 .idea/
+.vscode/
+*.swp
+*.swo
 
-# IDE - Eclipse
-.project
-.classpath
-.settings/
-
-# System files
+# OS generated files
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
-Thumbs.db
 
-# TypeScript
-*.tsbuildinfo
+# Others
+*.local 
 
-# Logs
-logs
-*.log
+# Cypress
+client/tests/cypress/
+client/cypress/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-*.code-workspace
+# Other
+.old/ 
