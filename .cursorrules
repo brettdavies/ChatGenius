@@ -211,9 +211,44 @@
 1. **Component Rules**:
    - Always declare whether a component is `use server` or `use client` at the top.
    - Maintain visual spacing in JSX with extra blank lines for readability.
-2. **Data Fetching**:
+
+2. **Store Pattern Rules**:
+   - All global state must be managed using Zustand stores
+   - Store files must follow the pattern:
+     ```typescript
+     interface StateInterface {
+       data: DataType[];
+       loading: boolean;
+       error: string | null;
+     }
+
+     interface ActionsInterface {
+       setData: (data: DataType[]) => void;
+       addItem: (item: DataType) => void;
+       setLoading: (loading: boolean) => void;
+       setError: (error: string | null) => void;
+       reset: () => void;
+     }
+     ```
+   - Store implementations must:
+     - Define an `initialState` constant
+     - Export a `use{Entity}Store` hook created with Zustand
+     - Include standard actions: `setData`, `addItem`, `setLoading`, `setError`, `reset`
+   - Components must:
+     - Use store hooks for all global state management
+     - Never maintain API response data in local state
+     - Handle loading and error states from the store
+     - Clean up store state on unmount using `reset()`
+
+3. **Data Fetching**:
    - Fetch data in server components and pass it as props to client components.
    - Use `/actions` for server actions and ensure they return ActionState.
+   - When fetching data that needs to be globally available:
+     1. Set loading state using store's `setLoading`
+     2. Execute the API call
+     3. Update store with `setData` on success
+     4. Handle errors with `setError`
+     5. Clean up with `reset` on component unmount
 
 ---
 
