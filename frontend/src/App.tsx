@@ -1,87 +1,97 @@
-import React from 'react';
-import type { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useAuth0 } from '@auth0/auth0-react';
-import { PanelLayout } from './components/PanelLayout';
-import { NavigationPanel } from './components/NavigationPanel';
-import { ChannelView } from './components/ChannelView';
-import { ThreadView } from './components/ThreadView';
-import { ProfileView } from './components/ProfileView';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserStore } from '@/stores/user.store';
+import { themeConfig } from '@/config';
+import { LOCAL_STORAGE_KEYS } from '@/constants';
+import { ChannelView } from '@/components/channels/ChannelView';
+import { ThreadView } from '@/components/threads/ThreadView';
+import { NavigationPanel } from '@/components/navigation/NavigationPanel';
 
-const App: FC = () => {
-  const { isAuthenticated, isLoading, loginWithRedirect, error } = useAuth0();
+const LandingPage: FC = () => {
+  const { login, isAuthenticated } = useAuth();
 
-  // Auto-redirect to Auth0 login if not authenticated
-  React.useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      loginWithRedirect().catch((err: Error) => {
-        console.error('Failed to redirect to Auth0:', err);
-      });
+  // If already authenticated, redirect to default channel
+  if (isAuthenticated) {
+    return <Navigate to="/0000000001" replace />;
+  }
+
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Failed to login:', error);
     }
-  }, [isLoading, isAuthenticated, loginWithRedirect]);
+  };
 
-  // Show loading state
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="text-center space-y-6">
+        <h1 className="text-4xl font-bold text-white">Welcome to ChatGenius</h1>
+        <p className="text-xl text-gray-300">Connect and collaborate with your team</p>
+        <button
+          onClick={handleLogin}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Click here to login
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ProtectedRoute: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const { preferences } = useUserStore();
+
+  useEffect(() => {
+    // Set theme based on user preferences or system default
+    const theme = preferences?.theme ?? localStorage.getItem(LOCAL_STORAGE_KEYS.THEME) ?? themeConfig.colorMode;
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [preferences?.theme]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="text-gray-300">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center text-red-500">
-          <p>Authentication Error</p>
-          <p className="text-sm">{error.message}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render anything while redirecting to Auth0
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400">Redirecting to login...</p>
-        </div>
-      </div>
-    );
+    return <Navigate to="/" replace />;
   }
 
+  return <>{children}</>;
+};
+
+const App: FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root to default workspace */}
-        <Route path="/" element={<Navigate to="/client/default" replace />} />
+        {/* Public landing page */}
+        <Route path="/" element={<LandingPage />} />
 
-        {/* Main client routes */}
+        {/* Protected channel routes - using channelId directly in URL */}
         <Route
-          path="/client/:workspaceId"
+          path="/:channelId"
           element={
-            <PanelLayout
-              navigation={<NavigationPanel />}
-              main={<Outlet />}
-            />
+            <ProtectedRoute>
+              <div className="flex h-screen">
+                <NavigationPanel />
+                <main className="flex-1">
+                  <ChannelView />
+                  <Outlet />
+                </main>
+              </div>
+            </ProtectedRoute>
           }
         >
-          {/* Default channel route */}
-          <Route index element={<Navigate to="channel/general" replace />} />
-
-          {/* Channel routes */}
-          <Route path="channel/:channelId" element={<ChannelView />}>
-            {/* Thread route as a child of channel */}
-            <Route path="thread/:threadId" element={<ThreadView />} />
-          </Route>
-
-          {/* User profile route */}
-          <Route path="user/:userId" element={<ProfileView />} />
+          {/* Thread route as a child of channel */}
+          <Route path="thread/:threadId" element={<ThreadView />} />
         </Route>
 
         {/* Catch all redirect */}
@@ -91,4 +101,4 @@ const App: FC = () => {
   );
 };
 
-export default App;
+export default App; 

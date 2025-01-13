@@ -1,10 +1,11 @@
 import { jest } from '@jest/globals';
-import { ChannelService } from '../channel-service';
-import { EventService } from '../event-service';
-import { createMockPool, createQueryResult } from '../../__mocks__/pg';
-import { createMockChannel } from '../../utils/__tests__/test-mocks';
-import { Channel } from '../../types/channel';
-import { DatabaseEvent } from '../../types/events';
+import { ChannelService } from '@/services/channel-service';
+import { EventService } from '@/services/event-service';
+import { createMockPool, createQueryResult } from '@/__mocks__/pg';
+import { createMockChannel } from '@/utils/__tests__/test-mocks';
+import { Channel, ChannelType, ChannelMemberRole } from '@/types/channel';
+import { DatabaseEvent } from '@/types/events';
+import { ValidationError, UnauthorizedError } from '@/errors';
 
 describe('ChannelService', () => {
   let service: ChannelService;

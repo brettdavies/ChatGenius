@@ -1,78 +1,72 @@
-import { Pool } from 'pg';
-import { generateId } from '../utils/id';
-import { logger } from '../utils/logger';
-import { pool } from '../config/database';
-
-export interface Channel {
-  id: string;
-  name: string;
-  description?: string;
-  type: 'public' | 'private' | 'dm';
-  created_by: string;
-  created_at: Date;
-  updated_at: Date;
-  archived_at?: Date;
-  archived_by?: string;
-}
-
-export interface CreateChannelData {
-  name: string;
-  description?: string;
-  type: 'public' | 'private' | 'dm';
-}
+import { ChannelModel } from '@/models/channel.model';
+import { CreateChannelRequest } from '@/types/channel';
+import { NotFoundError, ValidationError, UnauthorizedError } from '@/errors';
 
 export class ChannelService {
-  constructor(private pool: Pool) {}
+  private channelModel: ChannelModel;
 
-  async createChannel(userId: string, data: CreateChannelData): Promise<string> {
-    const client = await this.pool.connect();
-    try {
-      await client.query('BEGIN');
-      
-      // Generate channel ID
-      const channelId = generateId();
-      
-      // Generate member ID
-      const memberId = generateId();
+  constructor() {
+    this.channelModel = new ChannelModel();
+  }
 
-      // Create channel
-      await client.query(
-        `INSERT INTO channels (id, name, description, type, created_by)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [channelId, data.name, data.description, data.type, userId]
-      );
+  /**
+   * Get all channels for a user
+   */
+  async getChannels(userId: string) {
+    return await this.channelModel.findAll();
+  }
 
-      // Add creator as member with owner role
-      await client.query(
-        `INSERT INTO channel_members (id, channel_id, user_id, role)
-         VALUES ($1, $2, $3, $4)`,
-        [memberId, channelId, userId, 'owner']
-      );
-
-      await client.query('COMMIT');
-      return channelId;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      logger.error('Error creating channel:', error);
-      throw error;
-    } finally {
-      client.release();
+  /**
+   * Create a new channel
+   */
+  async createChannel(data: CreateChannelRequest, userId: string) {
+    if (!data.name) {
+      throw new ValidationError('Channel name is required');
     }
+    return await this.channelModel.create(data.name, userId);
   }
 
-  async listChannels(userId: string): Promise<Channel[]> {
-    const result = await this.pool.query<Channel>(
-      `SELECT c.*
-       FROM channels c
-       JOIN channel_members cm ON c.id = cm.channel_id
-       WHERE cm.user_id = $1
-         AND c.archived_at IS NULL
-       ORDER BY c.created_at DESC`,
-      [userId]
-    );
-    return result.rows;
+  /**
+   * Get a channel by ID
+   */
+  async getChannel(channelId: string, userId: string) {
+    const channel = await this.channelModel.findById(channelId);
+    if (!channel) {
+      throw new NotFoundError('Channel not found');
+    }
+    return channel;
   }
-}
 
-// Export singleton instance
-export const channelService = new ChannelService(pool); 
+  /**
+   * Get a channel by short ID
+   */
+  async getChannelByShortId(shortId: string, userId: string) {
+    const channel = await this.channelModel.findByShortId(shortId);
+    if (!channel) {
+      throw new NotFoundError('Channel not found');
+    }
+    return channel;
+  }
+
+  /**
+   * Archive a channel
+   */
+  async archiveChannel(channelId: string, userId: string) {
+    const channel = await this.channelModel.archive(channelId);
+    if (!channel) {
+      throw new NotFoundError('Channel not found');
+    }
+    return channel;
+  }
+
+  /**
+   * Delete a channel
+   */
+  async deleteChannel(channelId: string, userId: string) {
+    const channel = await this.channelModel.delete(channelId);
+    if (!channel) {
+      throw new NotFoundError('Channel not found');
+    }
+    return channel;
+  }
+} 

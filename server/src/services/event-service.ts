@@ -1,7 +1,7 @@
 import { Pool, PoolClient } from 'pg';
-import { EventEmitter } from '../types/events';
-import { logger } from '../utils/logger';
-import { pool } from '../config/database';
+import { EventEmitter } from '@/types/events';
+import { logger } from '@/utils/logger';
+import { pool } from '@/config/database';
 
 export class EventService implements EventEmitter {
   private client: PoolClient | null = null;

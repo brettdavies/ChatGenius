@@ -25,6 +25,14 @@ frontend/
 ├── src/
 │   ├── __tests__/          # Test suites
 │   ├── components/         # Shared components
+│   │   ├── channel/       # Single channel view components
+│   │   ├── channels/      # Channel list, creation, and management
+│   │   ├── layout/       # Layout components (Header, Footer, etc.)
+│   │   ├── navigation/     # Navigation components (Sidebar, NavBar, etc.)
+│   │   ├── profile/      # Profile-related components
+│   │   ├── thread/       # Thread-related components
+│   │   ├── ui/           # Shared UI components (Button, Input, Modal, etc.)
+│   │   └── users/        # User-related components (UserList, UserCard, etc.)
 │   ├── layouts/           # Layout components
 │   ├── pages/             # Page components
 │   ├── hooks/             # Custom React hooks
@@ -123,3 +131,11 @@ VITE_API_URL=your-api-url
 - Clear `node_modules` and reinstall if needed
 - Verify TypeScript configuration
 - Check for proper Vite setup
+
+### Each component folder may contain:
+
+- Component files (`.tsx`)
+- Tests (`.test.tsx`)
+- Styles (if component-specific)
+- Type definitions (if component-specific)
+- Index files for clean exports

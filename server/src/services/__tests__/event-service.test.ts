@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
-import { EventService } from '../event-service';
-import { createMockPool, createMockClient } from '../../__mocks__/pg';
-import { DatabaseEvent } from '../../types/events';
-import { createMockChannel } from '../../utils/__tests__/test-mocks';
+import { EventService } from '@/services/event-service';
+import { createMockPool, createQueryResult } from '@/__mocks__/pg';
+import { DatabaseEvent, EventType } from '@/types/events';
+import { createMockChannel } from '@/utils/__tests__/test-mocks';
 import { Notification } from 'pg';
 
 describe('EventService', () => {

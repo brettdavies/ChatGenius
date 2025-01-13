@@ -41,8 +41,9 @@ export const syncUser = async (req: Request, res: Response, next: NextFunction) 
       return next();
     }
 
-    // Log the full auth payload for debugging
-    logger.debug('Auth0 payload:', JSON.stringify(req.auth.payload, null, 2));
+    // Log the decoded token claims
+    logger.debug('=== Auth0 Token Claims ===');
+    logger.debug(JSON.stringify(req.auth.payload, null, 2));
     
     // Get the access token from the Authorization header
     const accessToken = req.headers.authorization?.split(' ')[1];
@@ -58,7 +59,9 @@ export const syncUser = async (req: Request, res: Response, next: NextFunction) 
       }
     });
 
-    logger.debug('Auth0 user info:', userInfo);
+    // Log the userinfo response
+    logger.debug('=== Auth0 Userinfo Response ===');
+    logger.debug(JSON.stringify(userInfo, null, 2));
 
     // Extract user data from userinfo response
     const auth0Id = userInfo.sub;
@@ -66,6 +69,17 @@ export const syncUser = async (req: Request, res: Response, next: NextFunction) 
     const nickname = userInfo.nickname;
     const name = userInfo.name || nickname || email?.split('@')[0];
     const picture = userInfo.picture;
+
+    // Log the extracted data
+    logger.debug('=== Extracted User Data ===');
+    logger.debug(JSON.stringify({
+      auth0Id,
+      email,
+      nickname,
+      name,
+      picture,
+      email_verified: userInfo.email_verified
+    }, null, 2));
 
     // Skip if we don't have required user data
     if (!auth0Id || !email) {

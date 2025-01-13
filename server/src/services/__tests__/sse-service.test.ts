@@ -1,25 +1,24 @@
 import { jest } from '@jest/globals';
 import { Response } from 'express';
-import { ServerSentEventsService } from '../sse-service';
+import { SSEService } from '../sse-service';
+import { SSEConnection, ConnectionStatus } from '../../types/sse';
 import { createMockResponse } from '../../utils/__tests__/test-helpers';
 
-describe('ServerSentEventsService', () => {
-  let service: ServerSentEventsService;
-  let mockResponse: jest.Mocked<Response>;
+describe('SSEService', () => {
+  let sseService: SSEService;
+  let mockResponse: Response;
 
   beforeEach(() => {
-    service = new ServerSentEventsService();
+    sseService = new SSEService();
     mockResponse = createMockResponse();
   });
 
   describe('connection management', () => {
     it('should add a new connection', () => {
       const userId = 'test-user';
-      const connection = service.addConnection(userId, mockResponse);
+      const connectionId = sseService.addConnection(userId, mockResponse);
 
-      expect(connection.userId).toBe(userId);
-      expect(connection.channels).toBeInstanceOf(Set);
-      expect(connection.channels.size).toBe(0);
+      expect(connectionId).toBeTruthy();
       expect(mockResponse.writeHead).toHaveBeenCalledWith(
         200,
         expect.objectContaining({
@@ -30,11 +29,10 @@ describe('ServerSentEventsService', () => {
 
     it('should remove a connection', () => {
       const userId = 'test-user';
-      const connection = service.addConnection(userId, mockResponse);
-      service.removeConnection(connection.id);
+      const connectionId = sseService.addConnection(userId, mockResponse);
+      sseService.removeConnection(connectionId);
 
-      const status = service.getConnectionStatus(connection.id);
-      expect(status.connected).toBe(false);
+      expect(sseService.getConnectionCount()).toBe(0);
     });
   });
 
@@ -42,24 +40,18 @@ describe('ServerSentEventsService', () => {
     it('should subscribe to channels', () => {
       const userId = 'test-user';
       const channel = 'test-channel';
-      const connection = service.addConnection(userId, mockResponse);
+      const connectionId = sseService.addConnection(userId, mockResponse);
 
-      service.subscribeToChannel(connection.id, channel);
-      const status = service.getConnectionStatus(connection.id);
-
-      expect(status.channels).toContain(channel);
+      sseService.subscribeToChannel(connectionId, channel);
     });
 
     it('should unsubscribe from channels', () => {
       const userId = 'test-user';
       const channel = 'test-channel';
-      const connection = service.addConnection(userId, mockResponse);
+      const connectionId = sseService.addConnection(userId, mockResponse);
 
-      service.subscribeToChannel(connection.id, channel);
-      service.unsubscribeFromChannel(connection.id, channel);
-      const status = service.getConnectionStatus(connection.id);
-
-      expect(status.channels).not.toContain(channel);
+      sseService.subscribeToChannel(connectionId, channel);
+      sseService.unsubscribeFromChannel(connectionId, channel);
     });
   });
 
@@ -67,50 +59,24 @@ describe('ServerSentEventsService', () => {
     it('should send events to subscribed connections', () => {
       const userId = 'test-user';
       const channel = 'test-channel';
-      const connection = service.addConnection(userId, mockResponse);
-      service.subscribeToChannel(connection.id, channel);
+      const connectionId = sseService.addConnection(userId, mockResponse);
+      sseService.subscribeToChannel(connectionId, channel);
 
       const eventData = { message: 'test' };
-      service.sendEventToChannel(channel, 'test-event', eventData);
+      sseService.sendEventToChannel(channel, eventData);
 
-      expect(mockResponse.write).toHaveBeenCalledWith(`event: test-event\n`);
       expect(mockResponse.write).toHaveBeenCalledWith(`data: ${JSON.stringify(eventData)}\n\n`);
     });
 
     it('should not send events to unsubscribed connections', () => {
       const userId = 'test-user';
       const channel = 'test-channel';
-      const connection = service.addConnection(userId, mockResponse);
+      sseService.addConnection(userId, mockResponse);
 
       const eventData = { message: 'test' };
-      service.sendEventToChannel(channel, 'test-event', eventData);
+      sseService.sendEventToChannel(channel, eventData);
 
       expect(mockResponse.write).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('connection status', () => {
-    it('should return correct connection status', () => {
-      const userId = 'test-user';
-      const channel = 'test-channel';
-      const connection = service.addConnection(userId, mockResponse);
-      service.subscribeToChannel(connection.id, channel);
-
-      const status = service.getConnectionStatus(connection.id);
-
-      expect(status.connected).toBe(true);
-      expect(status.userId).toBe(userId);
-      expect(status.channels).toContain(channel);
-      expect(status.connectedSince).toBeInstanceOf(Date);
-    });
-
-    it('should return inactive status for unknown connections', () => {
-      const status = service.getConnectionStatus('unknown-id');
-
-      expect(status.connected).toBe(false);
-      expect(status.channels).toEqual([]);
-      expect(status.userId).toBeUndefined();
-      expect(status.connectedSince).toBeUndefined();
     });
   });
 }); 

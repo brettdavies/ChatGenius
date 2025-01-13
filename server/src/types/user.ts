@@ -1,14 +1,13 @@
-declare global {
-  namespace Express {
-    interface User {
-      auth0_id: string;
-      db_id: string;
-      email: string;
-      username: string;
-      full_name: string;
-      avatar_url?: string;
-    }
-  }
-}
+import { z } from 'zod';
 
-export {}; 
+export const userSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string(),
+  picture: z.string().url().optional(),
+  created_at: z.date(),
+  updated_at: z.date(),
+  deleted_at: z.date().optional()
+});
+
+export type User = z.infer<typeof userSchema>; 

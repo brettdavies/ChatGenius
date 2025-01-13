@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { SSEConnection, ConnectionStatus } from '../types/sse';
-import { logger } from '../utils/logger';
+import { SSEConnection, ConnectionStatus } from '@/types/sse';
+import { logger } from '@/utils/logger';
 
 export class SSEService {
   private connections: Map<string, SSEConnection> = new Map();

@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
-import { SSEService } from '../services/sse-service';
-import { getUserId } from '../middleware/auth';
-import { logger } from '../utils/logger';
+import { sseService } from '@/services/sse-service';
+import { logger } from '@/utils/logger';
+import { getUserId } from '@/middleware/auth';
+import { AuthenticatedRequest } from '@/types/express';
 
-const sseService = new SSEService();
+export class SSEController {
+  private clients: Map<string, Response> = new Map();
 
-export const sseController = {
-  async handleSSE(req: Request, res: Response) {
+  handleSSE(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = getUserId(req);
       const connectionId = sseService.addConnection(userId, res);
@@ -27,4 +28,4 @@ export const sseController = {
       res.status(500).json({ error: 'Internal server error' });
     }
   }
-}; 
+} 

@@ -1,4 +1,8 @@
 {
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -8,6 +12,14 @@
     "plugin:import/typescript"
   ],
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
   "plugins": [
     "@typescript-eslint",
     "react",
@@ -15,20 +27,11 @@
     "import"
   ],
   "rules": {
+    // React rules
     "react/react-in-jsx-scope": "error",
     "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    "@typescript-eslint/explicit-function-return-type": ["warn", {
-      "allowExpressions": true,
-      "allowTypedFunctionExpressions": true
-    }],
-    "@typescript-eslint/no-unused-vars": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/explicit-module-boundary-types": "warn",
-    "@typescript-eslint/no-non-null-assertion": "error",
-    "@typescript-eslint/no-floating-promises": "error",
     "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
     "react/jsx-no-useless-fragment": "warn",
     "react/jsx-pascal-case": "error",
@@ -38,19 +41,54 @@
     }],
     "react/no-array-index-key": "warn",
     "react/no-unused-prop-types": "error",
+
+    // TypeScript rules
+    "@typescript-eslint/explicit-function-return-type": ["warn", {
+      "allowExpressions": true,
+      "allowTypedFunctionExpressions": true
+    }],
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "warn",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/no-floating-promises": "error",
+
+    // Import rules
     "import/no-unresolved": "error",
     "import/named": "error",
     "import/namespace": "error",
     "import/default": "error",
     "import/export": "error",
-    "import/order": ["error", {
-      "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-      "newlines-between": "always",
-      "alphabetize": { "order": "asc" }
-    }],
     "import/no-cycle": "error",
     "import/no-self-import": "error",
     "import/no-useless-path-segments": "error",
+    "import/order": ["error", {
+      "groups": [
+        "builtin",
+        "external",
+        "internal",
+        ["parent", "sibling"],
+        "index",
+        "object",
+        "type"
+      ],
+      "pathGroups": [
+        {
+          "pattern": "react",
+          "group": "builtin",
+          "position": "before"
+        }
+      ],
+      "pathGroupsExcludedImportTypes": ["react"],
+      "newlines-between": "always",
+      "alphabetize": {
+        "order": "asc",
+        "caseInsensitive": true
+      }
+    }],
+
+    // General rules
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-async-promise-executor": "error",
     "no-promise-executor-return": "error",
     "require-atomic-updates": "error",
@@ -66,12 +104,11 @@
       "version": "detect"
     },
     "import/resolver": {
-      "typescript": true,
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": "./tsconfig.json"
+      },
       "node": true
     }
-  },
-  "env": {
-    "browser": true,
-    "es2021": true
   }
 } 

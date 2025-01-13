@@ -4,43 +4,19 @@ This directory contains database schema definitions and migration files for the 
 
 ## Directory Structure
 
-- `/schema` - SQL schema files defining the database structure
-- `/migrations` - Historical migration files
-- `/seeds` - Seed data for development/testing
 - `/backups` - Database backup files
-
-## Working with Supabase
-
-### Prerequisites
-- Install Supabase CLI: `brew install supabase/tap/supabase`
-- Docker Desktop must be running for local development
-
-### Common Commands
-
-```bash
-# Link to Supabase project
-supabase link --project-ref your-project-ref
-
-# Pull current schema
-supabase db pull
-
-# Push schema changes
-supabase db push
-
-# Start local development
-supabase start
-
-# View database changes
-supabase db diff
-```
+- `/migrations` - Historical migration files
+- `/schema` - SQL schema files defining the database structure
+- `/seeds` - Seed data for development/testing
 
 ### Schema Management
 
-The database schema is now managed through Supabase migrations. The `/schema` directory is kept for reference and documentation purposes.
+The database schema is now managed through `/server`. The `/schema` directory is kept for reference and documentation purposes.
 
 For any schema changes:
-1. Make changes through Supabase Dashboard or local migrations
-2. Pull the updated schema: `supabase db pull`
+
+1. Make changes through Railway Dashboard or local migrations
+2. Pull the updated schema: [[NOT AVAILABLE]]
 3. Commit the new migration files
 
 ### Real-time Features

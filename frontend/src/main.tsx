@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Auth0Provider } from '@auth0/auth0-react';
 import App from './App';
-import './index.css';
+import '@/styles/global.styles.css';
 
 // Debug Auth0 environment variables
 console.log('Auth0 Config:', {
@@ -12,7 +12,11 @@ console.log('Auth0 Config:', {
   redirectUri: window.location.origin,
 });
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+
+root.render(
   <React.StrictMode>
     <Auth0Provider
       domain={import.meta.env.VITE_AUTH0_DOMAIN}
@@ -20,10 +24,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       authorizationParams={{
         redirect_uri: window.location.origin,
         audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-        scope: 'openid profile email',
+        scope: 'openid profile email'
       }}
-      cacheLocation="localstorage"
       useRefreshTokens={true}
+      cacheLocation="localstorage"
     >
       <App />
     </Auth0Provider>
