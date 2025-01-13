@@ -4,10 +4,10 @@ CREATE TABLE channels (
     name VARCHAR(80) NOT NULL,
     description TEXT,
     type VARCHAR(20) NOT NULL CHECK (type IN ('public', 'private', 'dm')),
-    created_by VARCHAR(50) NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    created_by VARCHAR(26) NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     archived_at TIMESTAMPTZ,
-    archived_by VARCHAR(50) REFERENCES users(id),
+    archived_by VARCHAR(26) REFERENCES users(id),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ
 );

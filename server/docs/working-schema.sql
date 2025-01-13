@@ -221,12 +221,12 @@ CREATE TABLE public.channels (
     name character varying(80) NOT NULL,
     description text,
     type character varying(20) NOT NULL,
-    created_by character varying(50) NOT NULL,
+    created_by character varying(26) NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted_at timestamp with time zone,
     archived_at timestamp with time zone,
-    archived_by character varying(50),
+    archived_by character varying(26),
     CONSTRAINT channels_type_check CHECK (((type)::text = ANY ((ARRAY['public'::character varying, 'private'::character varying, 'dm'::character varying])::text[])))
 );
 
