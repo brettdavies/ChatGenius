@@ -1,84 +1,81 @@
 import { z } from 'zod';
+import { LENGTH_LIMITS, REGEX_PATTERNS, VALIDATION_RULES } from '@/constants';
 
-// Channel type enum
-export const ChannelType = {
-  PUBLIC: 'public',
-  PRIVATE: 'private',
-  DM: 'dm',
-} as const;
+export enum ChannelType {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+  DM = 'dm'
+}
 
-export type ChannelType = typeof ChannelType[keyof typeof ChannelType];
+export enum ChannelMemberRole {
+  OWNER = 'owner',
+  ADMIN = 'admin',
+  MEMBER = 'member'
+}
 
-// Utility function to get short ID from full ID
-export const getShortId = (id: string): string => {
-  return id.slice(-10);
-};
+export const channelMemberSchema = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  channel_id: z.string(),
+  role: z.nativeEnum(ChannelMemberRole),
+  joined_at: z.date()
+});
 
-// Base channel schema
 export const channelSchema = z.object({
-  id: z.string().length(26), // ULID length
-  short_id: z.string().length(10),
-  name: z.string().min(2).max(80),
-  description: z.string().optional(),
-  type: z.enum([ChannelType.PUBLIC, ChannelType.PRIVATE, ChannelType.DM]),
-  creator_id: z.string().length(26),
+  id: z.string(),
+  short_id: z.string(),
+  name: z.string()
+    .min(LENGTH_LIMITS.CHANNEL_NAME.MIN, VALIDATION_RULES.CHANNEL_NAME.MESSAGE)
+    .max(LENGTH_LIMITS.CHANNEL_NAME.MAX, VALIDATION_RULES.CHANNEL_NAME.MESSAGE)
+    .regex(REGEX_PATTERNS.CHANNEL_NAME, VALIDATION_RULES.CHANNEL_NAME.MESSAGE),
+  description: z.string().max(LENGTH_LIMITS.BIO.MAX).optional(),
+  type: z.nativeEnum(ChannelType),
+  created_by: z.string(),
   created_at: z.date(),
   updated_at: z.date(),
   archived_at: z.date().optional(),
-  archived_by: z.string().length(26).optional(),
+  archived_by: z.string().optional(),
   deleted_at: z.date().optional(),
+  members: z.array(channelMemberSchema).optional()
 });
 
-// Create channel request schema
-export const createChannelSchema = z.object({
-  name: z.string().min(2).max(80).optional(),
-  type: z.enum([ChannelType.PUBLIC, ChannelType.PRIVATE, ChannelType.DM]),
-  description: z.string().optional(),
-  members: z.array(z.string().length(26)).min(1),
-}).refine(data => {
-  // DM channels must have exactly 2 members
-  if (data.type === ChannelType.DM) {
-    return data.members.length === 2;
-  }
-  return true;
-}, {
-  message: "DM channels must have exactly 2 members"
+export const createChannelSchema = channelSchema.pick({
+  name: true,
+  description: true,
+  type: true
+}).extend({
+  members: z.array(z.string()).min(1).superRefine((members, ctx) => {
+    const type = ctx.path[0] === 'type' ? ctx.path[1] : undefined;
+    if (type === ChannelType.DM && members.length !== 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'DM channels must have exactly 2 members'
+      });
+    }
+  })
 });
 
-// Channel response type
 export type Channel = z.infer<typeof channelSchema>;
-
-// Create channel request type
+export type ChannelMember = z.infer<typeof channelMemberSchema>;
 export type CreateChannelRequest = z.infer<typeof createChannelSchema>;
 
-// Channel member role enum
-export const ChannelMemberRole = {
-  OWNER: 'owner',
-  ADMIN: 'admin',
-  MEMBER: 'member',
-} as const;
+export class ChannelNotFoundError extends Error {
+  constructor(message = 'Channel not found') {
+    super(message);
+    this.name = 'ChannelNotFoundError';
+  }
+}
 
-export type ChannelMemberRole = typeof ChannelMemberRole[keyof typeof ChannelMemberRole];
+export class ChannelAccessError extends Error {
+  constructor(message = 'You do not have access to this channel') {
+    super(message);
+    this.name = 'ChannelAccessError';
+  }
+}
 
-// Channel member schema
-export const channelMemberSchema = z.object({
-  id: z.string().length(26),
-  channel_id: z.string().length(26),
-  user_id: z.string().length(26),
-  role: z.enum([ChannelMemberRole.OWNER, ChannelMemberRole.ADMIN, ChannelMemberRole.MEMBER]),
-  created_at: z.date(),
-  updated_at: z.date(),
-  deleted_at: z.date().optional(),
-});
-
-export type ChannelMember = z.infer<typeof channelMemberSchema>;
-
-// Error types
-export type ChannelError = 
-  | 'INVALID_NAME'
-  | 'INVALID_TYPE'
-  | 'INVALID_MEMBER_COUNT'
-  | 'MEMBER_NOT_FOUND'
-  | 'CHANNEL_NOT_FOUND'
-  | 'UNAUTHORIZED'
-  | 'ALREADY_ARCHIVED'; 
+export class ChannelValidationError extends Error {
+  constructor(message = 'Invalid channel data') {
+    super(message);
+    this.name = 'ChannelValidationError';
+  }
+} 

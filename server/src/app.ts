@@ -2,20 +2,28 @@ import express from 'express';
 import cors from 'cors';
 import { config } from '@/config';
 import channelRoutes from '@/routes/channel.routes';
+import messageRoutes from '@/routes/message.routes';
 import { pool } from '@/db/pool';
 import { UnauthorizedError } from 'express-oauth2-jwt-bearer';
+import { authMiddleware } from '@/middleware/auth';
+import { syncUser } from '@/middleware/user-sync';
 
 const app = express();
 
-// Middleware
+// Basic middleware
 app.use(cors({
   origin: config.corsOrigin,
   credentials: true
 }));
 app.use(express.json());
 
+// Auth middleware (applied to all routes)
+app.use(authMiddleware);
+app.use(syncUser);
+
 // Routes
 app.use('/api/channels', channelRoutes);
+app.use('/api', messageRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

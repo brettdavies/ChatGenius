@@ -1,120 +1,92 @@
 import { Request, Response, NextFunction } from 'express';
-import { pool } from '../config/database';
-import { logger } from '../utils/logger';
-import { generateId } from '../utils/id';
-import https from 'https';
+import { UserService } from '@/services/user-service';
+import { AuthService } from '@/services/auth-service';
+import { httpsRequest } from '@/utils/http';
+import { config } from '@/config';
 
-/**
- * Helper function to make HTTPS requests
- */
-function httpsRequest(url: string, options: any): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const req = https.request(url, options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`Request failed with status ${res.statusCode}: ${data}`));
-        } else {
-          try {
-            resolve(JSON.parse(data));
-          } catch (e) {
-            reject(e);
-          }
-        }
-      });
-    });
+const userService = new UserService();
+const authService = AuthService.getInstance();
 
-    req.on('error', reject);
-    req.end();
-  });
+interface Auth0UserInfo {
+  email: string;
+  nickname: string;
+  name: string;
+  picture?: string;
 }
 
-/**
- * Middleware to sync Auth0 user data with our database
- */
-export const syncUser = async (req: Request, res: Response, next: NextFunction) => {
+export async function syncUser(req: Request, res: Response, next: NextFunction) {
   try {
-    // Skip if no auth data
-    if (!req.auth?.payload) {
-      logger.debug('No auth payload found');
+    // Skip sync in development mode
+    if (config.nodeEnv === 'development') {
+      const devUser = authService.getCurrentUser(req);
+      req.user = await userService.findOrCreateDevUser({
+        auth0Id: devUser.sub,
+        email: devUser.email || 'dev@example.com',
+        username: 'dev_user',
+        name: devUser.name || 'Development User',
+        picture: devUser.picture || ''
+      });
       return next();
     }
 
-    // Log the decoded token claims
-    logger.debug('=== Auth0 Token Claims ===');
-    logger.debug(JSON.stringify(req.auth.payload, null, 2));
-    
-    // Get the access token from the Authorization header
-    const accessToken = req.headers.authorization?.split(' ')[1];
-    if (!accessToken) {
-      logger.error('No access token found');
-      return res.status(401).json({ error: 'No access token provided' });
+    // Skip if no auth payload
+    if (!req.auth?.payload) {
+      console.log('No auth payload found, skipping sync');
+      return next();
     }
 
-    // Fetch user info from Auth0
-    const userInfo = await httpsRequest('https://dev-qshac8qsfsfw08iv.us.auth0.com/userinfo', {
+    const auth0Id = req.auth.payload.sub;
+    if (!auth0Id) {
+      throw new Error('No Auth0 ID found in token');
+    }
+    
+    // Check if user already exists and is synced
+    const existingUser = await userService.findByAuth0Id(auth0Id);
+    if (existingUser) {
+      req.user = existingUser;
+      return next();
+    }
+
+    // First time login - sync user from Auth0
+    console.log('First time login detected, syncing user from Auth0');
+    
+    // Get access token
+    const accessToken = req.auth.token;
+    if (!accessToken) {
+      console.log('No access token found, skipping sync');
+      return next();
+    }
+
+    // Get user info from Auth0
+    const userInfo = await httpsRequest({
+      hostname: config.auth0.domain,
+      path: '/userinfo',
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
-    });
+    }) as Auth0UserInfo;
 
-    // Log the userinfo response
-    logger.debug('=== Auth0 Userinfo Response ===');
-    logger.debug(JSON.stringify(userInfo, null, 2));
-
-    // Extract user data from userinfo response
-    const auth0Id = userInfo.sub;
-    const email = userInfo.email;
-    const nickname = userInfo.nickname;
-    const name = userInfo.name || nickname || email?.split('@')[0];
-    const picture = userInfo.picture;
-
-    // Log the extracted data
-    logger.debug('=== Extracted User Data ===');
-    logger.debug(JSON.stringify({
+    // Extract user data
+    const { email, nickname, name, picture } = userInfo;
+    
+    if (!email || !nickname || !name) {
+      throw new Error('Missing required user info from Auth0');
+    }
+    
+    // Sync user to database
+    const user = await userService.syncUser({
       auth0Id,
       email,
-      nickname,
-      name,
-      picture,
-      email_verified: userInfo.email_verified
-    }, null, 2));
-
-    // Skip if we don't have required user data
-    if (!auth0Id || !email) {
-      logger.error('Missing required user data:', { auth0Id, email });
-      return res.status(400).json({ error: 'Missing required user data' });
-    }
-
-    // Generate ID for new users
-    const userId = generateId();
-    
-    logger.debug('Syncing user:', { auth0Id, email, name, nickname });
-    
-    const result = await pool.query(
-      'SELECT sync_auth0_user($1, $2, $3, $4, $5, $6) as user_id',
-      [userId, auth0Id, email, nickname, name, picture]
-    );
-
-    const dbUserId = result.rows[0].user_id;
-    
-    // Attach user data to request
-    req.user = {
-      db_id: dbUserId,
-      auth0_id: auth0Id,
-      email: email,
       username: nickname,
-      full_name: name,
-      avatar_url: picture,
-      email_verified: userInfo.email_verified
-    };
+      name,
+      picture: picture || ''
+    });
 
-    logger.debug('User synced successfully:', { dbUserId });
+    req.user = user;
     next();
   } catch (error) {
-    logger.error('Error syncing user:', error);
-    // Stop the request chain on error
-    return res.status(500).json({ error: 'Failed to sync user' });
+    console.error('Error syncing user:', error);
+    next(error);
   }
-}; 
+} 
