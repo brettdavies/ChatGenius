@@ -163,6 +163,24 @@
 - Use lowercase for commit messages.
 - Write concise summaries for commit messages.
 - Include descriptions for non-obvious changes.
+
+**Commit Message Workflow**:
+1. Always run `git status` first to get a clear view of:
+
+   - Changed files
+   - Untracked files
+   - Deleted files
+   - Current branch status
+
+2. Structure the commit message following this format:
+
+   ```plaintext
+   type(scope): concise summary of changes
+
+   - Bullet points listing specific changes
+   - Additional context if needed
+   ```
+
 - Include **Feature ID(s)** in the commit summary for all features included in the commit.
   - Format: `type(scope): message [Feature ID(s): ID-001, ID-002]`
   - Example:

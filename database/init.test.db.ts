@@ -3,35 +3,46 @@ const { Client } = pkg;
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
+import type { ClientConfig } from 'pg';
 
 // Load test environment variables
-dotenv.config({ path: '../server/.env.test' });
+config({ path: '../server/.env.test' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-async function initTestDb() {
-  // First connect to postgres database to create test database
-  const client = new Client({
+async function initTestDb(): Promise<void> {
+  // Define base client configuration
+  const baseConfig: ClientConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    port: parseInt(process.env.DB_PORT || '5432', 10)
+  };
+
+  // First connect to postgres database to create test database
+  const client = new Client({
+    ...baseConfig,
     database: 'postgres'
   });
 
   try {
     await client.connect();
     
+    const dbName = process.env.DB_NAME;
+    if (!dbName) {
+      throw new Error('DB_NAME environment variable is not set');
+    }
+
     // Drop test database if it exists
     await client.query(`
-      DROP DATABASE IF EXISTS ${process.env.DB_NAME};
+      DROP DATABASE IF EXISTS ${dbName};
     `);
 
     // Create test database
     await client.query(`
-      CREATE DATABASE ${process.env.DB_NAME};
+      CREATE DATABASE ${dbName};
     `);
 
     // Close connection to postgres database
@@ -39,11 +50,8 @@ async function initTestDb() {
 
     // Connect to test database
     const testClient = new Client({
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
-      database: process.env.DB_NAME
+      ...baseConfig,
+      database: dbName
     });
 
     await testClient.connect();
@@ -53,12 +61,13 @@ async function initTestDb() {
     const sql = await readFile(sqlPath, 'utf8');
     await testClient.query(sql);
 
-    console.log('Test database initialized successfully');
+    console.log('✅ Test database initialized successfully');
     await testClient.end();
   } catch (error) {
-    console.error('Error initializing test database:', error);
+    console.error('❌ Error initializing test database:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
 
+// Run the initialization
 initTestDb(); 

@@ -3,9 +3,21 @@
   "version": "1.0.0",
   "description": "Database module for PERN stack",
   "type": "module",
-  "main": "db.js",
+  "main": "dist/db.js",
+  "types": "dist/db.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test:connection": "npm run build && node dist/test.connection.js",
+    "test:init-db": "npm run build && node dist/init.test.db.js",
+    "clean": "rm -rf dist"
+  },
   "dependencies": {
     "pg": "^8.11.3",
     "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/pg": "^8.10.9",
+    "typescript": "^5.3.3"
   }
-} 
+}
