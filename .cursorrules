@@ -165,12 +165,13 @@
 - Include descriptions for non-obvious changes.
 
 **Commit Message Workflow**:
-1. Always run `git status` first to get a clear view of:
 
+1. Always run `git status && echo "\nChanges in files:" && git diff | cat` first to get a clear view of:
    - Changed files
    - Untracked files
    - Deleted files
    - Current branch status
+   - Detailed file changes across the entire repository (using `git diff | cat` to prevent paging)
 
 2. Structure the commit message following this format:
 

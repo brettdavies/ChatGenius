@@ -21,7 +21,7 @@ async function initTestDb(): Promise<void> {
     port: parseInt(process.env.DB_PORT || '5432', 10)
   };
 
-  // First connect to postgres database to create test database
+  // First connect to postgres database
   const client = new Client({
     ...baseConfig,
     database: 'postgres'
@@ -42,7 +42,12 @@ async function initTestDb(): Promise<void> {
 
     // Create test database
     await client.query(`
-      CREATE DATABASE ${dbName};
+      CREATE DATABASE ${dbName}
+      WITH 
+        ENCODING = 'UTF8'
+        LC_COLLATE = 'en_US.UTF-8'
+        LC_CTYPE = 'en_US.UTF-8'
+        TEMPLATE template0;
     `);
 
     // Close connection to postgres database
@@ -59,6 +64,8 @@ async function initTestDb(): Promise<void> {
     // Read and execute the test schema
     const sqlPath = join(__dirname, 'init.test.sql');
     const sql = await readFile(sqlPath, 'utf8');
+    
+    // Execute the SQL script
     await testClient.query(sql);
 
     console.log('✅ Test database initialized successfully');
