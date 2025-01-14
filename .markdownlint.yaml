@@ -1,0 +1,16 @@
+# Use default rules
+default: true
+
+# MD013: Disable line length checking
+MD013: false
+
+# MD024: Allow multiple headings with same content
+MD024: false
+
+# MD033: Allow inline HTML
+MD033: false
+
+# Formatting rules
+no-hard-tabs: true
+no-trailing-spaces: true
+no-multiple-blanks: true 

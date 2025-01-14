@@ -1,0 +1,286 @@
+# .cursorrules
+
+## Overview
+
+1. Only work on the feature you are assigned to.
+2. Do not work on features that are not assigned to you.
+3. Do not delete or modify code that is not related to the feature you are working on.
+4. Write code that is clean, readable, and maintainable.'
+5. If you are unsure about the feature or code you are working on, ask the team before coding it.
+6. If you think there needs to be a change outside of the feature you are working on, ask the team before coding it.
+
+## General Rules
+
+1. **Follow Best Practices**:
+   - Use type hints, logging, and docstrings as per global instructions.
+   - Ensure your environment variables are managed securely.
+   - Use Auth0 for all authentication functionality.
+
+2. **Naming Conventions**:
+   - Directory names: Use kebab-case for all directories
+   - File extensions: Use `.ts` for TypeScript files, `.tsx` for React components
+   - Database:
+     - Table names: Plural, snake_case (e.g., `user_profiles`, `chat_messages`)
+     - Column names: Singular, snake_case (e.g., `first_name`, `created_at`)
+     - Foreign keys: `<table_name>_id` (e.g., `user_id`, `channel_id`)
+     - Indexes: `idx_<table>_<column(s)>` (e.g., `idx_users_email`)
+     - Migration files: `YYYYMMDD_description.sql` (e.g., `20240112_add_user_roles.sql`)
+   - Backend:
+     - Controllers: kebab-case with `-controller.ts` suffix (e.g., `user-controller.ts`)
+     - Services: kebab-case with `-service.ts` suffix (e.g., `auth-service.ts`)
+     - Routes: kebab-case with `-routes.ts` suffix (e.g., `user-routes.ts`)
+     - Middleware: kebab-case with `-middleware.ts` suffix (e.g., `auth-middleware.ts`)
+     - Config: kebab-case with `-config.ts` suffix (e.g., `database-config.ts`)
+     - Types/Interfaces:
+       - Types: PascalCase (e.g., `UserRole.ts`, `MessageType.ts`)
+       - Interfaces: PascalCase with `I` prefix (e.g., `IUser.ts`, `IMessage.ts`)
+     - Utils: kebab-case with `.ts` suffix (e.g., `string-utils.ts`, `date-utils.ts`)
+     - Tests: Place in `__tests__` with `.test.ts` suffix (e.g., `user-service.test.ts`)
+     - Mocks: Place in `__mocks__` with same name as mocked file
+     - Environment files:
+       - Development: `.env.development`
+       - Production: `.env.production`
+       - Local overrides: `.env.local`
+       - Example template: `.env.example`
+   - Frontend:
+     - Components:
+       - Files: PascalCase with `.tsx` suffix (e.g., `UserProfile.tsx`, `ChatMessage.tsx`)
+       - Directories: kebab-case (e.g., `user-profile/`, `chat-messages/`)
+     - Hooks:
+       - Files: camelCase with `use` prefix and `.ts` suffix (e.g., `useAuth.ts`, `useChannel.ts`)
+       - Directories: kebab-case (e.g., `hooks/auth/`, `hooks/channel/`)
+     - Store:
+       - Files: kebab-case with `.store.ts` suffix (e.g., `user.store.ts`, `auth.store.ts`)
+       - Directories: kebab-case (e.g., `stores/`)
+     - Utils:
+       - Files: kebab-case with `.ts` suffix (e.g., `string.utils.ts`, `date.utils.ts`)
+       - Directories: kebab-case (e.g., `utils/string/`, `utils/date/`)
+     - Styles:
+       - Files: kebab-case with `.styles.ts` suffix (e.g., `button.styles.ts`)
+       - Directories: kebab-case (e.g., `styles/`)
+     - Types:
+       - Files: PascalCase with `.types.ts` suffix (e.g., `User.types.ts`, `Message.types.ts`)
+       - Directories: kebab-case (e.g., `types/`)
+     - Services:
+       - Files: kebab-case with `.service.ts` suffix (e.g., `auth.service.ts`, `api.service.ts`)
+       - Directories: kebab-case (e.g., `services/auth/`, `services/api/`)
+     - Tests: Place in `__tests__` with `.test.tsx` or `.test.ts` suffix
+     - Mocks: Place in `__mocks__` with same name as mocked file
+
+3. **TypeScript Type Organization**:
+   a) **Type Directory Structure**:
+
+      ```
+      src/
+      ├── types/                    # Domain and shared types
+      │   ├── channel.types.ts      # Core domain models
+      │   ├── message.types.ts
+      │   ├── user.types.ts
+      │   ├── common.types.ts       # Shared utility types
+      │   └── api/                  # API-specific types
+      │       ├── channel.api.types.ts
+      │       ├── message.api.types.ts
+      │       └── user.api.types.ts
+      ├── stores/                   # Store-specific types
+      │   ├── channel.store.ts      # Contains ChannelState and ChannelActions
+      │   └── message.store.ts      # Contains MessageState and MessageActions
+      └── components/               # Component-specific types
+          └── channels/
+              └── channel-view/
+                  └── ChannelView.tsx  # Contains ChannelViewProps
+      ```
+
+   b) **Domain Types** (`@/types/*.types.ts`):
+      - Core domain models and interfaces (e.g., `Channel`, `Message`)
+      - Enums and shared types
+      - No API or store-specific types
+      - Must be the single source of truth for domain models
+      - Example: `channel.types.ts`, `message.types.ts`
+
+   c) **Shared Utility Types** (`@/types/common.types.ts`):
+      - Reusable type utilities and helpers
+      - Generic types used across multiple features
+      - Common type patterns and transformations
+      - Example: `Nullable<T>`, `AsyncResult<T>`, `Pagination<T>`
+
+   d) **API Types** (`@/types/api/*.types.ts`):
+      - API request/response interfaces
+      - Must follow API naming conventions (e.g., `created_at` vs `createdAt`)
+      - Must import and reference domain types when needed
+      - Example: `channel.api.types.ts`, `message.api.types.ts`
+
+   e) **Store Types** (in respective store files):
+      - Must import domain types from `@/types/`
+      - Only define store-specific interfaces (state and actions)
+      - Never redefine domain models
+      - Example: `interface ChannelState`, `interface ChannelActions`
+
+   f) **Component Types**:
+      - Must import domain types from `@/types/`
+      - Must import API types from `@/types/api/`
+      - Only define component-specific props interfaces locally
+      - Example: `interface ChannelViewProps`, `interface MessageListProps`
+
+   g) **Type Naming Conventions**:
+      - Domain interfaces: PascalCase (e.g., `Channel`, `Message`)
+      - API interfaces: Prefix with `Api` (e.g., `ApiChannel`, `ApiMessage`)
+      - Request/Response types: Suffix with `Request`/`Response` (e.g., `CreateChannelRequest`)
+      - Store interfaces: Suffix with `State`/`Actions` (e.g., `ChannelState`, `ChannelActions`)
+      - Props interfaces: Suffix with `Props` (e.g., `ChannelViewProps`)
+
+   h) **Type Import Rules**:
+      - Always use `@/types/` alias for domain types
+      - Always use `@/types/api/` alias for API types
+      - Never use relative imports for types from `@/types/` directory
+      - Example: `import { Channel } from '@/types/channel.types';`
+
+4. **Auth0 Configuration**:
+   - Prefix Auth0-related environment variables with `AUTH0_`
+   - Required Auth0 environment variables:
+     - `AUTH0_DOMAIN`
+     - `AUTH0_CLIENT_ID`
+     - `AUTH0_CLIENT_SECRET` (backend only)
+     - `AUTH0_AUDIENCE` (API identifier)
+   - Store Auth0 configuration in dedicated config files
+   - Use Auth0 SDK for React in frontend
+   - Use Auth0 Management API in backend when needed
+
+5. **Environment Variables**:
+   - Update `.env.example` when new environment variables are introduced.
+   - Store actual values in `.env.local` and never expose sensitive variables to the frontend.
+   - Group environment variables by functionality (AUTH0, DB, API, etc.)
+
+6. **File Structure**:
+   - Organize components, hooks, and utilities based on the provided project structure.
+   - Keep shared and one-off components separate (e.g., `/components` vs. `/_components`).
+   - Auth0-related components should be in `/components/auth`
+   - Auth0 hooks should be in `/hooks/auth`
+
+---
+
+## Git Rules
+
+- Use lowercase for commit messages.
+- Write concise summaries for commit messages.
+- Include descriptions for non-obvious changes.
+- Include **Feature ID(s)** in the commit summary for all features included in the commit.
+  - Format: `type(scope): message [Feature ID(s): ID-001, ID-002]`
+  - Example:
+
+    ```plaintext
+    feat(auth): added OAuth login functionality [Feature ID(s): ID-003]
+    ```
+
+- For commits with multiple features or significant changes, use this extended format:
+
+  ```plaintext
+  type(scope): summary message [Feature ID(s): ID-001, ID-002]
+
+  [ID-001] Feature Name:
+  - Change 1
+  - Change 2
+  - Change 3
+
+  [ID-002] Feature Name:
+  - Change 1
+  - Change 2
+  - Change 3
+
+  Breaking changes:
+  - List any breaking changes here
+  - One per line
+
+  Additional notes:
+  - Any other relevant information
+  - Migration steps if needed
+  ```
+
+- Commit types:
+  - `feat`: New feature
+  - `fix`: Bug fix
+  - `docs`: Documentation only changes
+  - `style`: Changes that do not affect the meaning of the code
+  - `refactor`: Code change that neither fixes a bug nor adds a feature
+  - `test`: Adding missing tests or correcting existing tests
+  - `chore`: Changes to the build process or auxiliary tools
+
+---
+
+## Documentation Rules
+
+- Update relevant markdown files as you work on features.
+- Maintain evergreen documents by marking incomplete sections with `[[TODO]]` or notes for follow-up.
+- Document API interactions, data flows, and any permissions required for functionality.
+- Ensure `manifest.json` and other key configuration files are well-documented.
+- When writing feature documentation, do not remove any headers or subheaders. If a header or subheader is not relevant to the feature, write "[[ Not relevant to this feature ]]".
+
+---
+
+## Frontend-Specific Rules
+
+1. **Component Rules**:
+   - Always declare whether a component is `use server` or `use client` at the top.
+   - Maintain visual spacing in JSX with extra blank lines for readability.
+
+2. **Store Pattern Rules**:
+   - All global state must be managed using Zustand stores
+   - Store files must follow the pattern:
+
+     ```typescript
+     interface StateInterface {
+       data: DataType[];
+       loading: boolean;
+       error: string | null;
+     }
+
+     interface ActionsInterface {
+       setData: (data: DataType[]) => void;
+       addItem: (item: DataType) => void;
+       setLoading: (loading: boolean) => void;
+       setError: (error: string | null) => void;
+       reset: () => void;
+     }
+     ```
+
+   - Store implementations must:
+     - Define an `initialState` constant
+     - Export a `use{Entity}Store` hook created with Zustand
+     - Include standard actions: `setData`, `addItem`, `setLoading`, `setError`, `reset`
+   - Components must:
+     - Use store hooks for all global state management
+     - Never maintain API response data in local state
+     - Handle loading and error states from the store
+     - Clean up store state on unmount using `reset()`
+
+3. **Data Fetching**:
+   - Fetch data in server components and pass it as props to client components.
+   - Use `/actions` for server actions and ensure they return ActionState.
+   - When fetching data that needs to be globally available:
+     1. Set loading state using store's `setLoading`
+     2. Execute the API call
+     3. Update store with `setData` on success
+     4. Handle errors with `setError`
+     5. Clean up with `reset` on component unmount
+
+---
+
+## Backend-Specific Rules
+
+1. **Database Schema**:
+   - Include `createdAt` and `updatedAt` columns in all tables.
+   - Use enums for limited value sets (e.g., `membership: ["free", "pro"]`).
+2. **Actions**:
+   - CRUD actions should follow the pattern:
+     - Create
+     - Read
+     - Update
+     - Delete
+   - Always include meaningful error handling and logging.
+
+---
+
+## Development Workflow
+
+- Use proper version control with branching and commit conventions.
+- Ensure all code passes tests in local and staging environments before deployment.
+- Follow semantic versioning (`MAJOR.MINOR.PATCH`) for releases.
