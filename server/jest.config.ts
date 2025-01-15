@@ -3,6 +3,7 @@ const config = {
   // Test environment
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  globalTeardown: '<rootDir>/tests/teardown.ts',
 
   // TypeScript configuration
   preset: 'ts-jest',
@@ -21,6 +22,8 @@ const config = {
 
   // Module resolution
   moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^(\\.{1,2}/.*)\\.ts$': '$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@auth/(.*)$': '<rootDir>/src/auth/$1',
     '^@constants/(.*)$': '<rootDir>/src/constants/$1',

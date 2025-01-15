@@ -1,13 +1,14 @@
-import { PoolClient, QueryResult } from 'pg';
+import pkg, { PoolClient as IPoolClient, QueryResult as IQueryResult } from 'pg';
+const { Pool } = pkg;
 import pool from './db.js';
 
 async function testConnection(): Promise<void> {
-  let client: PoolClient | null = null;
+  let client: IPoolClient | null = null;
   
   try {
     // Try to connect and run a simple query
     client = await pool.connect();
-    const result: QueryResult = await client.query('SELECT NOW()');
+    const result: IQueryResult = await client.query('SELECT NOW()');
     console.log('✅ Database connection successful!');
     console.log('Current timestamp from DB:', result.rows[0].now);
   } catch (err) {

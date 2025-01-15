@@ -1,27 +1,32 @@
 import { RequestHandler } from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { AUTH_MESSAGES } from '@constants/auth.constants';
+import { AUTH_MESSAGES } from '../constants/auth.constants.js';
+import { ENV } from '../config/env.js';
 
-// Rate limiter configuration
-const rateLimiters = {
+// Rate limiting configuration
+export const rateLimiters = {
+  auth: rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: ENV.NODE_ENV === 'test' ? 1000 : 5, // Higher limit for tests
+    message: { message: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  }),
   api: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: { message: AUTH_MESSAGES.TOO_MANY_REQUESTS }
+    max: ENV.NODE_ENV === 'test' ? 1000 : 100, // Higher limit for tests
+    message: { message: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
   }),
-  auth: rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10, // limit each IP to 10 attempts per minute
-    message: { message: AUTH_MESSAGES.TOO_MANY_REQUESTS }
-  })
 };
 
 // CORS configuration
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type'],
   credentials: true
 };
 
@@ -39,6 +44,4 @@ export const securityMiddleware = [
   helmet(),
   corsMiddleware,
   rateLimiters.api
-];
-
-export { rateLimiters }; 
+]; 

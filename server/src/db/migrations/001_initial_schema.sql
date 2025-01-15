@@ -2,13 +2,19 @@
 DROP TABLE IF EXISTS refresh_tokens CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
+-- Drop type if it exists
+DROP TYPE IF EXISTS user_role CASCADE;
+
+-- Create role type
+CREATE TYPE user_role AS ENUM ('user', 'admin');
+
 -- Users table
 CREATE TABLE users (
     id VARCHAR(26) PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(20) DEFAULT 'user' NOT NULL,
+    role user_role DEFAULT 'user' NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ

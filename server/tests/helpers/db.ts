@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { pool } from '@db/pool';
+import pool from '@db/pool';
 import { User } from '@auth/types';
 import { hashPassword } from '@utils/hashPassword';
 

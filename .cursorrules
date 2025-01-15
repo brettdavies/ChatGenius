@@ -166,7 +166,7 @@
 
 **Commit Message Workflow**:
 
-1. Always run `git status && echo "\nChanges in files:" && git diff | cat` first to get a clear view of:
+1. Always run `git status && echo "\nChanges in files:" && git diff > ./_gitdiff.tmp` first to get a clear view of:
    - Changed files
    - Untracked files
    - Deleted files

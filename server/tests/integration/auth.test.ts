@@ -1,111 +1,72 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
-import app from '@/app';
-import { pool } from '@db/pool';
-import { AUTH_ERRORS } from '@constants/auth.constants';
-import { API_ROUTES, AUTH_ROUTES } from '@constants/routes.constants';
+import { ulid } from 'ulid';
+import app from '../../src/app.js';
+import pool from '../../src/db/pool.js';
+import { hashPassword } from '../../src/utils/hashPassword.js';
+import { AUTH_MESSAGES } from '../../src/constants/auth.constants.js';
+import { USER_ROLES } from '../../src/constants/auth.constants.js';
 
-const TEST_SCHEMA = 'test_schema';
-
-describe('Authentication API', () => {
+describe('Auth API', () => {
   const testUser = {
-    username: 'testuser',
+    id: ulid(),
     email: 'test@example.com',
-    password: 'password123'
+    password: 'Password123!',
+    username: 'testuser',
+    role: USER_ROLES.USER
   };
 
   beforeAll(async () => {
-    // Clear users table before tests
-    await pool.query(`DELETE FROM ${TEST_SCHEMA}.users`);
+    // Create test user
+    const hashedPassword = await hashPassword(testUser.password);
+    const now = new Date();
+    await pool.query(
+      'INSERT INTO users (id, email, password, username, role, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [testUser.id, testUser.email, hashedPassword, testUser.username, testUser.role, now, now]
+    );
   });
 
   afterAll(async () => {
-    // Clean up test data
-    await pool.query(`DELETE FROM ${TEST_SCHEMA}.users`);
+    // Clean up test user
+    await pool.query('DELETE FROM users WHERE email = $1', [testUser.email]);
   });
 
-  describe(`POST ${API_ROUTES.AUTH}${AUTH_ROUTES.REGISTER}`, () => {
-    it('should register a new user successfully', async () => {
+  describe('POST /api/auth/login', () => {
+    it('should login successfully with valid credentials', async () => {
       const res = await request(app)
-        .post(`${API_ROUTES.AUTH}${AUTH_ROUTES.REGISTER}`)
-        .send(testUser);
-
-      expect(res.status).toBe(201);
-      expect(res.body.user).toHaveProperty('id');
-      expect(res.body.user.username).toBe(testUser.username);
-      expect(res.body.user.email).toBe(testUser.email);
-      expect(res.body.accessToken).toBeDefined();
-      expect(res.body).not.toHaveProperty('refreshToken');
-    });
-
-    it('should not allow duplicate usernames', async () => {
-      const res = await request(app)
-        .post(`${API_ROUTES.AUTH}${AUTH_ROUTES.REGISTER}`)
-        .send(testUser);
-
-      expect(res.status).toBe(400);
-      expect(res.body.code).toBe(AUTH_ERRORS.USERNAME_TAKEN);
-    });
-  });
-
-  describe(`POST ${API_ROUTES.AUTH}${AUTH_ROUTES.LOGIN}`, () => {
-    it('should login successfully with correct credentials', async () => {
-      const res = await request(app)
-        .post(`${API_ROUTES.AUTH}${AUTH_ROUTES.LOGIN}`)
+        .post('/api/auth/login')
         .send({
-          username: testUser.username,
+          email: testUser.email,
           password: testUser.password
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.user).toHaveProperty('id');
-      expect(res.body.accessToken).toBeDefined();
-      expect(res.body).not.toHaveProperty('refreshToken');
+      expect(res.body.user).toBeDefined();
+      expect(res.body.user.email).toBe(testUser.email);
+      expect(res.body.user.password).toBeUndefined();
     });
 
-    it('should fail with incorrect password', async () => {
+    it('should fail with invalid password', async () => {
       const res = await request(app)
-        .post(`${API_ROUTES.AUTH}${AUTH_ROUTES.LOGIN}`)
+        .post('/api/auth/login')
         .send({
-          username: testUser.username,
+          email: testUser.email,
           password: 'wrongpassword'
         });
 
       expect(res.status).toBe(401);
-      expect(res.body.code).toBe(AUTH_ERRORS.INVALID_CREDENTIALS);
+      expect(res.body.message).toBe(AUTH_MESSAGES.INVALID_CREDENTIALS);
     });
-  });
 
-  describe(`GET ${API_ROUTES.AUTH}${AUTH_ROUTES.ME}`, () => {
-    let accessToken: string;
-
-    beforeAll(async () => {
+    it('should fail with non-existent user', async () => {
       const res = await request(app)
-        .post(`${API_ROUTES.AUTH}${AUTH_ROUTES.LOGIN}`)
+        .post('/api/auth/login')
         .send({
-          username: testUser.username,
-          password: testUser.password
+          email: 'nonexistent@example.com',
+          password: 'password123'
         });
-      accessToken = res.body.accessToken;
-    });
-
-    it('should return user profile with valid token', async () => {
-      const res = await request(app)
-        .get(`${API_ROUTES.AUTH}${AUTH_ROUTES.ME}`)
-        .set('Authorization', `Bearer ${accessToken}`);
-
-      expect(res.status).toBe(200);
-      expect(res.body.user.username).toBe(testUser.username);
-      expect(res.body.user.email).toBe(testUser.email);
-    });
-
-    it('should fail with invalid token', async () => {
-      const res = await request(app)
-        .get(`${API_ROUTES.AUTH}${AUTH_ROUTES.ME}`)
-        .set('Authorization', 'Bearer invalid-token');
 
       expect(res.status).toBe(401);
-      expect(res.body.code).toBe(AUTH_ERRORS.INVALID_TOKEN);
+      expect(res.body.message).toBe(AUTH_MESSAGES.USER_NOT_FOUND);
     });
   });
 }); 

@@ -1,33 +1,44 @@
-import { USER_ROLES } from '@constants/auth.constants';
+import { UserRole } from '../constants/auth.constants.js';
 
-export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+// Database model (matches DB column names)
+export interface UserDB {
+  id: string;
+  email: string;
+  password: string;
+  username: string;
+  role: UserRole;
+  created_at: Date;
+  updated_at: Date;
+  deleted_at?: Date;
+}
 
+// API model (camelCase for frontend consumption)
 export interface User {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt?: Date;
+  id: string;
+  email: string;
+  password: string;
+  username: string;
+  role: UserRole;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
 }
 
-export interface UserCredentials {
-    username: string;
-    email: string;
-    password: string;
+// Public profile (omits sensitive data)
+export interface UserProfile extends Omit<User, 'password'> {
+  // Add any additional profile fields here
 }
 
-export interface TokenPair {
-    accessToken: string;
-    refreshToken: string;
-}
-
-// Extend Express Request type
-declare global {
-    namespace Express {
-        interface Request {
-            user?: User;
-        }
-    }
+// Helper function to convert DB model to API model
+export function toUser(dbUser: UserDB): User {
+  return {
+    id: dbUser.id,
+    email: dbUser.email,
+    password: dbUser.password,
+    username: dbUser.username,
+    role: dbUser.role,
+    createdAt: dbUser.created_at,
+    updatedAt: dbUser.updated_at,
+    deletedAt: dbUser.deleted_at
+  };
 } 

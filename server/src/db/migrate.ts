@@ -16,7 +16,17 @@ const pool = new Pool({
 });
 
 async function runMigrations() {
+  const client = await pool.connect();
   try {
+    // Create and set schema if in test environment
+    const schemaName = process.env.SCHEMA_NAME;
+    if (schemaName) {
+      console.log(`Creating schema: ${schemaName}`);
+      await client.query(`DROP SCHEMA IF EXISTS ${schemaName} CASCADE`);
+      await client.query(`CREATE SCHEMA ${schemaName}`);
+      await client.query(`SET search_path TO ${schemaName}`);
+    }
+
     const migrationsDir = path.join(__dirname, 'migrations');
     const files = fs.readdirSync(migrationsDir)
       .filter(file => file.endsWith('.sql'))
@@ -27,17 +37,21 @@ async function runMigrations() {
       const filePath = path.join(migrationsDir, file);
       const sql = fs.readFileSync(filePath, 'utf-8');
       
-      await pool.query(sql);
+      await client.query(sql);
       console.log(`Completed migration: ${file}`);
     }
 
     console.log('All migrations completed successfully');
-    await pool.end();
   } catch (error) {
     console.error('Migration failed:', error);
+    throw error;
+  } finally {
+    client.release();
     await pool.end();
-    process.exit(1);
   }
 }
 
-runMigrations(); 
+runMigrations().catch(error => {
+  console.error('Migration failed:', error);
+  process.exit(1);
+}); 

@@ -3,27 +3,23 @@ export const AUTH_ERRORS = {
   AUTHENTICATION_ERROR: 'AUTHENTICATION_ERROR',
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   USERNAME_TAKEN: 'USERNAME_TAKEN',
+  EMAIL_TAKEN: 'EMAIL_TAKEN',
   INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
   USER_NOT_FOUND: 'USER_NOT_FOUND',
-  REFRESH_TOKEN_INVALID: 'REFRESH_TOKEN_INVALID',
-  INVALID_TOKEN: 'INVALID_TOKEN',
-  TOKEN_EXPIRED: 'TOKEN_EXPIRED',
-  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS'
+  MISSING_CREDENTIALS: 'MISSING_CREDENTIALS',
+  INVALID_REQUEST: 'INVALID_REQUEST'
 } as const;
 
 // Error messages corresponding to error codes
 export const AUTH_MESSAGES = {
-  NO_TOKEN: 'No token provided',
-  INVALID_TOKEN: 'Invalid token',
-  TOKEN_EXPIRED: 'Token expired',
   USER_NOT_FOUND: 'User not found',
-  AUTH_REQUIRED: 'Authentication required',
-  INSUFFICIENT_PERMISSIONS: 'Insufficient permissions',
-  TOO_MANY_REQUESTS: 'Too many requests, please try again later',
-  INVALID_CREDENTIALS: 'Invalid username or password',
+  INVALID_PASSWORD: 'Invalid password',
+  INVALID_CREDENTIALS: 'Invalid email or password',
   USERNAME_TAKEN: 'Username already taken',
+  EMAIL_TAKEN: 'Email address already taken',
   AUTHENTICATION_ERROR: 'Authentication failed',
-  REFRESH_TOKEN_INVALID: 'Invalid refresh token'
+  MISSING_CREDENTIALS: 'Email and password are required',
+  INVALID_REQUEST: 'Invalid request data'
 } as const;
 
 // User roles
@@ -32,26 +28,23 @@ export const USER_ROLES = {
   USER: 'user'
 } as const;
 
-// Token configuration
-export const TOKEN_CONFIG = {
-  TOKEN_TYPE: 'Bearer',
-  ACCESS_TOKEN_EXPIRY: '15m',
-  REFRESH_TOKEN_EXPIRY: '7d',
-  COOKIE_OPTIONS: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' as const,
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
-  }
-} as const;
-
 // API routes
 export const AUTH_ROUTES = {
   REGISTER: '/register',
   LOGIN: '/login',
-  LOGOUT: '/logout',
-  REFRESH: '/refresh',
   ME: '/me'
+} as const;
+
+// Rate limiting configuration
+export const RATE_LIMITS = {
+  AUTH: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5 // limit each IP to 5 requests per windowMs
+  },
+  API: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+  }
 } as const;
 
 // Type exports

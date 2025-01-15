@@ -1,7 +1,5 @@
--- Create the role enum type
-CREATE TYPE user_role AS ENUM ('user', 'admin');
+-- Add any additional role-related changes here
+-- For example, adding new role types or role-related constraints
 
--- Add role column to users table
-ALTER TABLE users 
-  DROP COLUMN IF EXISTS role,
-  ADD COLUMN role user_role DEFAULT 'user' NOT NULL; 
+-- Ensure all existing users have a valid role
+UPDATE users SET role = 'user' WHERE role IS NULL; 
