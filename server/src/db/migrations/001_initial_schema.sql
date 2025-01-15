@@ -1,3 +1,7 @@
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Users table
 CREATE TABLE users (
     id VARCHAR(26) PRIMARY KEY,

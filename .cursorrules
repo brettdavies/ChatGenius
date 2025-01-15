@@ -303,3 +303,190 @@
 - Use proper version control with branching and commit conventions.
 - Ensure all code passes tests in local and staging environments before deployment.
 - Follow semantic versioning (`MAJOR.MINOR.PATCH`) for releases.
+
+## Directory Structure Rules
+
+1. **Source Code Organization**:
+   - Client-side code goes in `/client/src/`
+   - Server-side code goes in `/server/src/`
+   - Never mix client and server code in the same directory
+   - Always check which `src` directory you're in before making changes
+
+2. **Root Directory Structure**:
+   ```
+   ChatGenius/
+   ├── client/
+   │   ├── src/           # Client-side source code
+   │   ├── public/        # Static assets
+   │   └── dist/          # Built client files
+   ├── server/
+   │   ├── src/           # Server-side source code
+   │   └── dist/          # Built server files
+   └── shared/            # Shared types and utilities
+       └── src/           # Shared source code
+   ```
+
+3. **Working Directory Rules**:
+   - Always verify the correct working directory before making changes
+   - Use absolute imports with path aliases to avoid confusion
+   - Server-side changes must be in `/server/src/`
+   - Client-side changes must be in `/client/src/`
+   - Shared code must be in `/shared/src/`
+
+## File Structure
+
+1. **Directory Organization**:
+   - Server code must be in `/server/src/`:
+     - Routes: `/server/src/routes/`
+     - Controllers: `/server/src/controllers/`
+     - Services: `/server/src/services/`
+     - Middleware: `/server/src/middleware/`
+     - Config: `/server/src/config/`
+     - Types: `/server/src/types/`
+     - Utils: `/server/src/utils/`
+     - Tests: `/server/src/__tests__/`
+   
+   - Client code must be in `/client/src/`:
+     - Components: `/client/src/components/`
+     - Hooks: `/client/src/hooks/`
+     - Store: `/client/src/store/`
+     - Utils: `/client/src/utils/`
+     - Types: `/client/src/types/`
+     - Tests: `/client/src/__tests__/`
+
+2. **Import Rules**:
+   - Use path aliases relative to the appropriate src directory:
+     - Server: `@/*` maps to `/server/src/*`
+     - Client: `@/*` maps to `/client/src/*`
+     - Shared: `@shared/*` maps to `/shared/src/*`
+
+## Constants and Configuration
+
+1. **Route Constants**:
+   - All API routes must be defined in `src/constants/routes.constants.ts`
+   - Base paths (e.g., `/api`) must be defined as constants and reused
+   - Route structure:
+     ```typescript
+     // Base paths
+     export const API_BASE = '/api';
+     
+     // Feature routes
+     export const API_ROUTES = {
+       FEATURE: `${API_BASE}/feature`,
+     } as const;
+     
+     // Sub-routes
+     export const FEATURE_ROUTES = {
+       ACTION: '/action',
+     } as const;
+     ```
+   - Usage in route files:
+     ```typescript
+     import { API_ROUTES, FEATURE_ROUTES } from '@constants/routes.constants';
+     
+     // Mounting routes
+     app.use(API_ROUTES.FEATURE, featureRoutes);
+     
+     // Defining endpoints
+     router.post(FEATURE_ROUTES.ACTION, handler);
+     ```
+   - Usage in tests:
+     ```typescript
+     describe(`POST ${API_ROUTES.FEATURE}${FEATURE_ROUTES.ACTION}`, () => {
+       it('should...', async () => {
+         await request(app).post(`${API_ROUTES.FEATURE}${FEATURE_ROUTES.ACTION}`);
+       });
+     });
+     ```
+
+2. **Other Constants**:
+   - Group related constants in feature-specific files (e.g., `auth.constants.ts`)
+   - Use TypeScript `as const` assertion for better type inference
+   - Export individual constants or grouped objects based on usage
+   - Place in appropriate subdirectory under `src/constants/`
+   - Examples:
+     ```typescript
+     // Error codes
+     export const ERRORS = {
+       FEATURE: {
+         NOT_FOUND: 'FEATURE_NOT_FOUND',
+       },
+     } as const;
+
+     // Configuration
+     export const CONFIG = {
+       FEATURE: {
+         MAX_ITEMS: 100,
+       },
+     } as const;
+     ```
+
+3. **Environment Variables**:
+   - Define types for all environment variables
+   - Centralize environment variable access
+   - Validate at startup
+   - Example:
+     ```typescript
+     // src/config/env.ts
+     export const ENV = {
+       NODE_ENV: process.env.NODE_ENV,
+       PORT: parseInt(process.env.PORT || '3000'),
+     } as const;
+     ```
+
+4. **Naming Conventions**:
+   - Constants should be in UPPER_SNAKE_CASE
+   - Grouped constants should be in PascalCase
+   - Use descriptive prefixes for related constants
+   - Examples:
+     ```typescript
+     export const MAX_ITEMS = 100;
+     export const UserRoles = {
+       ADMIN: 'ADMIN',
+       USER: 'USER',
+     } as const;
+     ```
+
+5. **Type Safety**:
+   - Use TypeScript's const assertions
+   - Define and export types for constants when needed
+   - Example:
+     ```typescript
+     export const STATUSES = {
+       ACTIVE: 'active',
+       INACTIVE: 'inactive',
+     } as const;
+     
+     export type Status = typeof STATUSES[keyof typeof STATUSES];
+     ```
+
+6. **Documentation**:
+   - Add JSDoc comments for complex constants
+   - Explain any non-obvious values or relationships
+   - Example:
+     ```typescript
+     /** Maximum number of failed login attempts before lockout */
+     export const MAX_LOGIN_ATTEMPTS = 5;
+     
+     /** Lockout duration in minutes */
+     export const LOCKOUT_DURATION = 15;
+     ```
+
+7. **Testing**:
+   - Import constants directly in tests
+   - Never hardcode values that are defined in constants
+   - Use constants in test descriptions for clarity
+   - Example:
+     ```typescript
+     import { MAX_LOGIN_ATTEMPTS } from '@constants/auth.constants';
+     
+     it(`should lock account after ${MAX_LOGIN_ATTEMPTS} failed attempts`, () => {
+       // Test implementation
+     });
+     ```
+
+8. **Maintenance**:
+   - Review and update constants during feature changes
+   - Keep constants organized and grouped logically
+   - Remove unused constants during cleanup
+   - Consider backwards compatibility when changing constants
