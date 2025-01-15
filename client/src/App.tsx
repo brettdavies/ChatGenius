@@ -1,24 +1,28 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0);
+interface CountResponse {
+  count: number;
+}
+
+function App(): JSX.Element {
+  const [count, setCount] = useState<number>(0);
 
   useEffect(() => {
-    fetchCount();
+    void fetchCount();
   }, []);
 
-  const fetchCount = async () => {
+  const fetchCount = async (): Promise<void> => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/counter`);
-      const data = await response.json();
+      const data: CountResponse = await response.json();
       setCount(data.count);
     } catch (error) {
       console.error('Error fetching count:', error);
     }
   };
 
-  const incrementCount = async () => {
+  const incrementCount = async (): Promise<void> => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/counter/increment`, {
         method: 'POST',
@@ -26,7 +30,7 @@ function App() {
           'Content-Type': 'application/json'
         }
       });
-      const data = await response.json();
+      const data: CountResponse = await response.json();
       setCount(data.count);
     } catch (error) {
       console.error('Error incrementing count:', error);

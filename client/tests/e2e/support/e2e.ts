@@ -1,9 +1,13 @@
 // Import commands.js using ES2015 syntax:
 import './commands';
 
-// Prevent uncaught exceptions from failing tests
-Cypress.on('uncaught:exception', (err, runnable) => {
-  return false;
+// Configure Cypress behavior
+Cypress.on('uncaught:exception', (err) => {
+  // Returning false here prevents Cypress from failing the test
+  if (err.message.includes('ResizeObserver loop')) {
+    return false;
+  }
+  return true;
 });
 
 // Custom command to login
