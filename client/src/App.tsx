@@ -1,52 +1,61 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { useEffect } from 'react';
+import { useAuthStore, useChannelStore, useUserStore } from './stores';
+import MainLayout from './components/layout/MainLayout';
+import Channel from './components/channel/Channel';
 
-interface CountResponse {
-  count: number;
-}
+// Mock data for development
+const MOCK_USER = {
+  id: '1',
+  name: 'John Doe',
+  email: 'john@example.com',
+  status: 'online' as const,
+};
 
-function App(): JSX.Element {
-  const [count, setCount] = useState<number>(0);
+const MOCK_CHANNELS = [
+  {
+    id: '1',
+    name: 'general',
+    description: 'General discussion',
+    isPrivate: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'random',
+    description: 'Random stuff',
+    isPrivate: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
 
+export default function App() {
+  const login = useAuthStore((state) => state.login);
+  const setCurrentUser = useUserStore((state) => state.setCurrentUser);
+  const setChannels = useChannelStore((state) => state.setChannels);
+  const setOnlineUsers = useUserStore((state) => state.setOnlineUsers);
+  const setActiveChannel = useChannelStore((state) => state.setActiveChannel);
+
+  // Initialize app with mock data
   useEffect(() => {
-    void fetchCount();
-  }, []);
-
-  const fetchCount = async (): Promise<void> => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/counter`);
-      const data: CountResponse = await response.json();
-      setCount(data.count);
-    } catch (error) {
-      console.error('Error fetching count:', error);
-    }
-  };
-
-  const incrementCount = async (): Promise<void> => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/counter/increment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      const data: CountResponse = await response.json();
-      setCount(data.count);
-    } catch (error) {
-      console.error('Error incrementing count:', error);
-    }
-  };
+    // Simulate login
+    login('mock-token');
+    setCurrentUser(MOCK_USER);
+    
+    // Set mock channels
+    setChannels(MOCK_CHANNELS);
+    setActiveChannel(MOCK_CHANNELS[0].id); // Set first channel as active
+    
+    // Set mock online users
+    setOnlineUsers([MOCK_USER.id]);
+  }, [login, setCurrentUser, setChannels, setActiveChannel, setOnlineUsers]);
 
   return (
-    <main>
-      <h1>Welcome to PERN Starter Kit</h1>
-      <p>A modern full-stack starter template for building web applications</p>
-      <div className="counter-section">
-        <p>Current count: {count}</p>
-        <button onClick={incrementCount}>Increment Count</button>
-      </div>
-    </main>
+    <div className="min-h-screen bg-white text-gray-900 antialiased dark:bg-gray-900 dark:text-white">
+      <MainLayout>
+        <Channel />
+      </MainLayout>
+    </div>
   );
-}
-
-export default App; 
+} 
