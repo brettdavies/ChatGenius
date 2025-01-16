@@ -134,27 +134,14 @@
       - Never use relative imports for types from `@/types/` directory
       - Example: `import { Channel } from '@/types/channel.types';`
 
-4. **Auth0 Configuration**:
-   - Prefix Auth0-related environment variables with `AUTH0_`
-   - Required Auth0 environment variables:
-     - `AUTH0_DOMAIN`
-     - `AUTH0_CLIENT_ID`
-     - `AUTH0_CLIENT_SECRET` (backend only)
-     - `AUTH0_AUDIENCE` (API identifier)
-   - Store Auth0 configuration in dedicated config files
-   - Use Auth0 SDK for React in frontend
-   - Use Auth0 Management API in backend when needed
-
-5. **Environment Variables**:
+4. **Environment Variables**:
    - Update `.env.example` when new environment variables are introduced.
    - Store actual values in `.env.local` and never expose sensitive variables to the frontend.
-   - Group environment variables by functionality (AUTH0, DB, API, etc.)
+   - Group environment variables by functionality (DB, API, etc.)
 
-6. **File Structure**:
+5. **File Structure**:
    - Organize components, hooks, and utilities based on the provided project structure.
    - Keep shared and one-off components separate (e.g., `/components` vs. `/_components`).
-   - Auth0-related components should be in `/components/auth`
-   - Auth0 hooks should be in `/hooks/auth`
 
 ---
 
@@ -166,14 +153,16 @@
 
 **Commit Message Workflow**:
 
-1. Always run `git status && echo "\nChanges in files:" && git diff > ./_gitdiff.tmp` first to get a clear view of:
+1. Always run `git status && echo "\nChanges in files:" && git diff > .idea/_gitdiff.tmp` first to get a clear view of:
    - Changed files
    - Untracked files
    - Deleted files
    - Current branch status
-   - Detailed file changes across the entire repository (using `git diff | cat` to prevent paging)
+   - Detailed file changes across the entire repository
+   - Save the output to `.idea/_gitdiff.tmp`
+   - Use `.idea/_gitdiff.tmp` as the source of truth for the commit message
 
-2. Structure the commit message following this format:
+2. Structure the commit message following this format and save to `.idea/git_changes.tmp`:
 
    ```plaintext
    type(scope): concise summary of changes

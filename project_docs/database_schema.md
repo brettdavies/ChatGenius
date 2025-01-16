@@ -10,11 +10,9 @@
     - [messages](#messages)
     - [reactions](#reactions)
     - [channel\_members](#channel_members)
-    - [files](#files)
     - [user\_settings](#user_settings)
     - [user\_status](#user_status)
     - [message\_reads](#message_reads)
-    - [sync\_state](#sync_state)
   - [Relationships](#relationships)
     - [One-to-One](#one-to-one)
     - [One-to-Many](#one-to-many)
@@ -35,7 +33,6 @@ Default Sort: created_at DESC
 Indexes:
 
 - idx_users_email (email) - For fast lookups by email
-- idx_users_auth0_id (auth0_id) - For Auth0 integration
 - idx_users_username (username) - For username searches
 
 Triggers:
@@ -46,11 +43,11 @@ Triggers:
 | Column           | Type          | Description                                  | Key Type     | Constraints                    | Default Value       | Example Value                   |
 |-----------------|---------------|----------------------------------------------|-------------|--------------------------------|--------------------|---------------------------------|
 | id              | VARCHAR(26)   | Primary key (ULID)                          | Primary Key | UNIQUE, NOT NULL               | NULL               | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| auth0_id        | VARCHAR(128)  | Auth0 user identifier                       | Unique Key  | UNIQUE, NOT NULL               | NULL               | 'auth0|123456789'               |
 | email           | VARCHAR(255)  | User's email address                        | Unique Key  | UNIQUE, NOT NULL               | NULL               | 'user@example.com'              |
 | username        | VARCHAR(50)   | User's display name                         | None        | NOT NULL                       | NULL               | 'johndoe'                       |
-| full_name       | VARCHAR(100)  | User's full name                           | None        | NOT NULL                       | NULL               | 'John Doe'                      |
+| full_name       | VARCHAR(100)  | User's full name                           | None        | NULL                          | NULL               | 'John Doe'                      |
 | avatar_url      | TEXT          | URL to user's avatar                        | None        | NULL                          | NULL               | 'https://example.com/avatar.jpg' |
+| role            | VARCHAR(20)   | User's system role                         | None        | CHECK (role IN ('user', 'admin')) | 'user'          | 'admin'                         |
 | created_at      | TIMESTAMPTZ   | Creation timestamp                          | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
 | updated_at      | TIMESTAMPTZ   | Last update timestamp                       | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
 | deleted_at      | TIMESTAMPTZ   | Deletion timestamp                          | None        | NULL                          | NULL               | '2024-03-14 12:00:00+00'        |
@@ -191,42 +188,6 @@ Foreign Key References:
 - channel_id REFERENCES channels(id) ON DELETE CASCADE
 - user_id REFERENCES users(id) ON DELETE CASCADE
 
-### files
-
-Table Description: Stores file metadata for attachments.
-
-Default Sort: created_at DESC
-
-Indexes:
-
-- idx_files_user_id (user_id) - For user file lookups
-- idx_files_message_id (message_id) - For message attachment lookups
-- idx_files_type (type) - For file type filtering
-
-Triggers:
-
-- before_insert_files: Sets created_at, updated_at
-- before_update_files: Updates updated_at
-- after_delete_files: Cleans up storage
-
-| Column           | Type          | Description                                  | Key Type     | Constraints                    | Default Value       | Example Value                   |
-|-----------------|---------------|----------------------------------------------|-------------|--------------------------------|--------------------|---------------------------------|
-| id              | VARCHAR(26)   | Primary key (ULID)                          | Primary Key | UNIQUE, NOT NULL               | NULL               | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| message_id      | VARCHAR(26)   | Message containing the file                 | Foreign Key | FOREIGN KEY (messages.id), NOT NULL | NULL          | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| user_id         | VARCHAR(26)   | User who uploaded the file                  | Foreign Key | FOREIGN KEY (users.id), NOT NULL | NULL            | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| name            | VARCHAR(255)  | Original file name                          | None        | NOT NULL                       | NULL               | 'document.pdf'                  |
-| type            | VARCHAR(100)  | MIME type                                   | None        | NOT NULL                       | NULL               | 'application/pdf'               |
-| size            | BIGINT        | File size in bytes                          | None        | NOT NULL                       | NULL               | 1048576                         |
-| url             | TEXT          | Storage URL                                 | None        | NOT NULL                       | NULL               | 'https://storage.example.com/file.pdf' |
-| created_at      | TIMESTAMPTZ   | Creation timestamp                          | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
-| updated_at      | TIMESTAMPTZ   | Last update timestamp                       | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
-| deleted_at      | TIMESTAMPTZ   | Deletion timestamp                          | None        | NULL                          | NULL               | '2024-03-14 12:00:00+00'        |
-
-Foreign Key References:
-
-- message_id REFERENCES messages(id) ON DELETE CASCADE
-- user_id REFERENCES users(id) ON DELETE RESTRICT
-
 ### user_settings
 
 Table Description: Stores user preferences and settings.
@@ -249,7 +210,6 @@ Triggers:
 | theme           | VARCHAR(20)   | UI theme preference                         | None        | CHECK (theme IN ('light', 'dark')) | 'light'        | 'dark'                         |
 | notifications   | JSONB         | Notification preferences                     | None        | NOT NULL                       | '{}'               | '{"desktop":true,"email":false}' |
 | muted_channels  | VARCHAR(26)[] | Array of muted channel IDs                  | None        | NULL                          | NULL               | ['01H5XZK...', '01H5XZK...']    |
-| offline_sync    | JSONB         | Offline sync preferences                    | None        | NOT NULL                       | '{"file_sync_days":7,"message_sync_days":7}' | '{"file_sync_days":14,"message_sync_days":30}' |
 | created_at      | TIMESTAMPTZ   | Creation timestamp                          | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
 | updated_at      | TIMESTAMPTZ   | Last update timestamp                       | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
 
@@ -321,40 +281,6 @@ Foreign Key References:
 - channel_id REFERENCES channels(id) ON DELETE CASCADE
 - last_read_message_id REFERENCES messages(id) ON DELETE CASCADE
 
-### sync_state
-
-Table Description: Tracks offline sync state for PWA functionality.
-
-Default Sort: created_at DESC
-
-Indexes:
-
-- idx_sync_state_user_id (user_id) - For user sync state lookups
-- idx_sync_state_channel_id (channel_id) - For channel sync state lookups
-- idx_sync_state_last_synced_at (last_synced_at) - For sync timing queries
-
-Triggers:
-
-- before_insert_sync_state: Sets created_at, updated_at
-- before_update_sync_state: Updates updated_at
-
-| Column           | Type          | Description                                  | Key Type     | Constraints                    | Default Value       | Example Value                   |
-|-----------------|---------------|----------------------------------------------|-------------|--------------------------------|--------------------|---------------------------------|
-| id              | VARCHAR(26)   | Primary key (ULID)                          | Primary Key | UNIQUE, NOT NULL               | NULL               | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| user_id         | VARCHAR(26)   | User this sync belongs to                   | Foreign Key | FOREIGN KEY (users.id), NOT NULL | NULL            | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| channel_id      | VARCHAR(26)   | Channel being synced                        | Foreign Key | FOREIGN KEY (channels.id), NOT NULL | NULL          | '01H5XZK6J3V2857AWC8C9M5DQ3'    |
-| last_synced_at  | TIMESTAMPTZ   | Last successful sync time                   | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
-| sync_type       | VARCHAR(20)   | Type of sync                                | None        | CHECK (sync_type IN ('messages', 'files', 'reactions')) | NULL | 'messages'                    |
-| sync_status     | VARCHAR(20)   | Current sync status                         | None        | CHECK (sync_status IN ('pending', 'complete', 'error')) | 'pending' | 'complete'                    |
-| error_details   | JSONB         | Error information if sync failed            | None        | NULL                          | NULL               | '{"error": "network timeout"}'   |
-| created_at      | TIMESTAMPTZ   | Creation timestamp                          | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
-| updated_at      | TIMESTAMPTZ   | Last update timestamp                       | None        | NOT NULL                       | CURRENT_TIMESTAMP  | '2024-03-14 12:00:00+00'        |
-
-Foreign Key References:
-
-- user_id REFERENCES users(id) ON DELETE CASCADE
-- channel_id REFERENCES channels(id) ON DELETE CASCADE
-
 ## Relationships
 
 ### One-to-One
@@ -365,12 +291,9 @@ Foreign Key References:
 ### One-to-Many
 
 - User -> Messages
-- User -> Files
 - Channel -> Messages
-- Message -> Files
 - Message -> Reactions
 - Message -> ThreadMessages (self-referential)
-- User -> SyncStates
 
 ### Many-to-Many
 

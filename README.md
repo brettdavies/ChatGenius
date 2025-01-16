@@ -2,29 +2,54 @@
 
 This is a full-stack starter kit using the PERN (PostgreSQL, Express, React, and Node.js) stack. It includes a modern frontend built with React (using Vite), a RESTful API server with Express, a PostgreSQL database, and a collection of tooling, Docker configurations, and automated tests to streamline development and deployment.
 
+## Tech Stack
+
+### Frontend
+- React 18.2.0
+- Zustand 4.4.7 (State Management)
+- React Router DOM 6.22.3
+- Vite 5.1.5
+- TypeScript 5.7.3
+- TailwindCSS 3.4.17
+- Heroicons 2.2.0
+- date-fns 4.1.0
+
+### Development & Testing
+- ESLint 8.57.0
+- Vitest 1.3.1
+- Cypress 13.6.6
+- Testing Library React 14.2.1
+- TypeScript ESLint 7.1.1
+
 Below is an overview of each part of the project:
 
 ---
 
 ## Table of Contents
 
-- [Folder Structure](#folder-structure)
-- [Features](#features)
-- [Setup and Usage](#setup-and-usage)
-  - [1. Environment Variables](#1-environment-variables)
-  - [2. Installation](#2-installation)
-  - [3. Running with Docker](#3-running-with-docker)
-  - [4. Running Locally (without Docker)](#4-running-locally-without-docker)
-  - [5. Additional Scripts](#5-additional-scripts)
-- [Counter Feature](#counter-feature)
-- [Testing](#testing)
-  - [Frontend Tests (React)](#frontend-tests-react)
-  - [Backend Tests (Express)](#backend-tests-express)
-  - [End-to-End Tests (Cypress)](#end-to-end-tests-cypress)
-- [Security](#security)
-- [Authentication](#authentication)
-- [Contributing](#contributing)
-- [License](#license)
+- [PERN Starter Kit](#pern-starter-kit)
+  - [Tech Stack](#tech-stack)
+    - [Frontend](#frontend)
+    - [Development \& Testing](#development--testing)
+  - [Table of Contents](#table-of-contents)
+  - [Folder Structure](#folder-structure)
+  - [Features](#features)
+  - [Setup and Usage](#setup-and-usage)
+    - [1. Environment Variables](#1-environment-variables)
+    - [2. Installation](#2-installation)
+    - [3. Running with Docker](#3-running-with-docker)
+    - [4. Running Locally (without Docker)](#4-running-locally-without-docker)
+    - [5. Additional Scripts](#5-additional-scripts)
+  - [Counter Feature](#counter-feature)
+    - [Relevant Files](#relevant-files)
+  - [Testing](#testing)
+    - [Frontend Tests (React)](#frontend-tests-react)
+    - [Backend Tests (Express)](#backend-tests-express)
+    - [End-to-End Tests (Cypress)](#end-to-end-tests-cypress)
+  - [Security](#security)
+  - [Authentication](#authentication)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ---
 
