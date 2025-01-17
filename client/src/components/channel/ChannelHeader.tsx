@@ -1,6 +1,7 @@
 import { HashtagIcon, LockClosedIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import type { Channel } from '../../types/store.types';
 import { useUserStore } from '../../stores';
+import SearchInput from '../search/SearchInput';
 
 interface ChannelHeaderProps {
   channel: Channel;
@@ -30,6 +31,9 @@ export default function ChannelHeader({ channel }: ChannelHeaderProps) {
       </div>
       
       <div className="flex items-center space-x-4">
+        <div className="w-64">
+          <SearchInput />
+        </div>
         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
           <UserGroupIcon className="mr-1 h-4 w-4" />
           <span>{onlineUsers.size} online</span>

@@ -4,7 +4,9 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ChannelHeader from './ChannelHeader';
 import MessageThread from './MessageThread';
+import SearchResultsView from '../search/SearchResultsView';
 import { sampleMessages, sampleUsers } from '../../data/sample-messages';
+import TypingIndicator from './TypingIndicator';
 
 export default function Channel() {
   const activeChannelId = useChannelStore((state) => state.activeChannelId);
@@ -16,7 +18,7 @@ export default function Channel() {
   const messages = useMessageStore((state) => 
     activeChannelId ? state.messages[activeChannelId] || [] : []
   );
-  const setActiveThread = useMessageStore((state) => state.setActiveThread);
+  const searchQuery = useMessageStore((state) => state.searchQuery);
 
   useEffect(() => {
     // Initialize sample data
@@ -38,24 +40,29 @@ export default function Channel() {
   }
 
   const activeChannel = channels.find(c => c.id === activeChannelId)!;
-  const activeMessage = activeThreadId ? messages.find(m => m.id === activeThreadId) : null;
 
   return (
     <div className="flex h-full">
       <div className="flex flex-1 flex-col">
         <ChannelHeader channel={activeChannel} />
-        <MessageList channelId={activeChannelId} />
+        <div className="flex-1 overflow-y-auto">
+          <MessageList channelId={activeChannelId} />
+        </div>
+        <TypingIndicator channelId={activeChannelId} />
         <MessageInput channelId={activeChannelId} />
       </div>
       
-      {activeMessage && (
-        <div className="w-96">
+      {activeThreadId && (
+        <div className="w-96 border-l border-gray-200 dark:border-gray-700">
           <MessageThread 
-            parentMessage={activeMessage} 
-            onClose={() => setActiveThread(null)} 
+            channelId={activeChannelId}
+            threadId={activeThreadId}
           />
         </div>
       )}
+
+      {/* Search Results Modal */}
+      {searchQuery && <SearchResultsView />}
     </div>
   );
 } 
