@@ -153,7 +153,7 @@
 
 **Commit Message Workflow**:
 
-1. Always run `git status && echo "\nChanges in files:" && git diff > .idea/_gitdiff.tmp` first to get a clear view of:
+1. Always run `cd /Users/brett/Library/CloudStorage/Dropbox/Docs/Work/Github/ChatGenius && git status && echo "\nChanges in files:" && git diff > .idea/_gitdiff.tmp` first to get a clear view of:
    - Changed files
    - Untracked files
    - Deleted files
