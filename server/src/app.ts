@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from './auth/passport.js';
-import session from 'express-session';
+import session, { MemoryStore } from 'express-session';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,6 +9,8 @@ import { ENV } from './config/env.js';
 import swaggerUi from 'swagger-ui-express';
 import { middleware as openApiValidator } from 'express-openapi-validator';
 import openApiConfig from './openapi/index.js';
+import { SessionCleanupService } from './services/session-cleanup.js';
+import { customFormats } from './openapi/formats.js';
 
 // Route imports
 import authRoutes from './routes/auth.js';
@@ -39,8 +41,12 @@ if (ENV.NODE_ENV !== 'test') {
   }));
 }
 
+// Session store setup
+const store = new MemoryStore();
+
 // Session configuration
-app.use(session({
+const sessionMiddleware = session({
+  store,
   secret: ENV.AUTH.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -50,9 +56,22 @@ app.use(session({
     httpOnly: true,
     sameSite: 'strict',
     domain: ENV.AUTH.COOKIE_DOMAIN,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: ENV.AUTH.SESSION_MAX_AGE
   }
-}));
+});
+
+app.use(sessionMiddleware);
+
+// Initialize session cleanup (not in test mode)
+if (ENV.NODE_ENV !== 'test') {
+  const sessionCleanup = new SessionCleanupService(store);
+  sessionCleanup.start();
+  
+  // Cleanup on graceful shutdown
+  process.on('SIGTERM', () => {
+    sessionCleanup.stop();
+  });
+}
 
 // Passport initialization
 app.use(passport.initialize());
@@ -76,7 +95,8 @@ app.use(
       handlers: {
         bearerAuth: async (req) => Boolean(req.user)
       }
-    }
+    },
+    formats: customFormats
   })
 );
 
@@ -84,7 +104,7 @@ app.use(
 app.use('/api/auth', authRoutes);
 
 // Error handling
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: Error & { status?: number, errors?: unknown[] }, _req: express.Request, res: express.Response) => {
   // OpenAPI validation errors
   if (err.status === 400 && err.errors) {
     return res.status(400).json({

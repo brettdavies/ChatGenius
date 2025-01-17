@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { AUTH_MESSAGES } from '../constants/auth.constants.js';
 import { ENV } from '../config/env.js';
 
 // Rate limiting configuration

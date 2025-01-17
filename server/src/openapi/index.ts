@@ -6,7 +6,8 @@ import {
   RegisterRequest,
   RegisterResponse,
   UserResponse,
-  UserProfileResponse
+  UserProfileResponse,
+  UpdateUserRequest
 } from './schemas/auth';
 
 const openApiConfig: OpenAPIV3.Document = {
@@ -29,7 +30,8 @@ const openApiConfig: OpenAPIV3.Document = {
       RegisterRequest,
       RegisterResponse,
       UserResponse,
-      UserProfileResponse
+      UserProfileResponse,
+      UpdateUserRequest
     },
     securitySchemes: {
       bearerAuth: {

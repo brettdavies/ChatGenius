@@ -38,7 +38,8 @@ export const ENV = {
     JWT_ACCESS_EXPIRY: process.env.JWT_ACCESS_EXPIRY || '15m',
     JWT_REFRESH_EXPIRY: process.env.JWT_REFRESH_EXPIRY || '7d',
     SESSION_SECRET: process.env.SESSION_SECRET || 'dev-session-secret-key',
-    COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || 'localhost'
+    COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || 'localhost',
+    SESSION_MAX_AGE: parseInt(process.env.SESSION_MAX_AGE || '86400000', 10), // 24 hours in milliseconds
   },
 
   // Rate Limiting

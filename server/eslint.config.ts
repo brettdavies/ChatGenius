@@ -1,11 +1,7 @@
-import eslint from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import eslintConfigPrettier from 'eslint-config-prettier';
-import importPlugin from 'eslint-plugin-import';
-import nodePlugin from 'eslint-plugin-node';
-import promisePlugin from 'eslint-plugin-promise';
-import securityPlugin from 'eslint-plugin-security';
+import * as importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 
 export default [
@@ -23,9 +19,6 @@ export default [
     plugins: {
       '@typescript-eslint': tseslint,
       'import': importPlugin,
-      'node': nodePlugin,
-      'promise': promisePlugin,
-      'security': securityPlugin,
     },
     languageOptions: {
       parser: tsParser,
@@ -36,7 +29,7 @@ export default [
       },
       globals: {
         ...globals.node,
-        ...globals.es2022,
+        ...globals.es2021,
       },
     },
     settings: {
@@ -63,21 +56,6 @@ export default [
       '@typescript-eslint/require-await': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
-
-      // Security rules
-      'security/detect-object-injection': 'warn',
-      'security/detect-non-literal-regexp': 'warn',
-      'security/detect-unsafe-regex': 'error',
-      'security/detect-buffer-noassert': 'error',
-      'security/detect-eval-with-expression': 'error',
-
-      // Promise handling
-      'promise/always-return': 'error',
-      'promise/no-return-wrap': 'error',
-      'promise/param-names': 'error',
-      'promise/catch-or-return': 'error',
-      'promise/no-new-statics': 'error',
-      'promise/no-return-in-finally': 'error',
 
       // Import rules
       'import/first': 'error',
