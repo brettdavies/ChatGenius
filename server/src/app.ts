@@ -9,19 +9,24 @@ import { ENV } from './config/env.js';
 import swaggerUi from 'swagger-ui-express';
 import { middleware as openApiValidator } from 'express-openapi-validator';
 import openApiConfig from './openapi/index.js';
-import { SessionCleanupService } from './services/session-cleanup.js';
+import { cleanupExpiredSessions } from './services/session-cleanup.js';
 import { customFormats } from './openapi/formats.js';
 
 // Route imports
 import authRoutes from './routes/auth.js';
+import channelRoutes from './routes/channels.js';
+import eventRoutes from './routes/events.js';
+import messageRoutes from './routes/messages.js';
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: ENV.CORS_ORIGIN,
-  credentials: true
+  origin: ENV.CLIENT_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Basic middleware
@@ -29,8 +34,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Rate limiting (disabled in test mode)
-if (ENV.NODE_ENV !== 'test') {
+// Rate limiting (disabled in development and test modes)
+if (ENV.NODE_ENV === 'production') {
   app.use('/api/auth', rateLimit({
     windowMs: ENV.RATE_LIMIT.AUTH.WINDOW_MS,
     max: ENV.RATE_LIMIT.AUTH.MAX_REQUESTS
@@ -54,7 +59,7 @@ const sessionMiddleware = session({
   cookie: {
     secure: ENV.NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'lax',
     domain: ENV.AUTH.COOKIE_DOMAIN,
     maxAge: ENV.AUTH.SESSION_MAX_AGE
   }
@@ -64,12 +69,19 @@ app.use(sessionMiddleware);
 
 // Initialize session cleanup (not in test mode)
 if (ENV.NODE_ENV !== 'test') {
-  const sessionCleanup = new SessionCleanupService(store);
-  sessionCleanup.start();
+  // Run cleanup every hour
+  const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+  const cleanup = () => {
+    cleanupExpiredSessions(store, ENV.AUTH.SESSION_MAX_AGE)
+      .catch(err => console.error('Session cleanup failed:', err));
+  };
+  
+  const cleanupInterval = setInterval(cleanup, CLEANUP_INTERVAL);
+  cleanup(); // Run initial cleanup
   
   // Cleanup on graceful shutdown
   process.on('SIGTERM', () => {
-    sessionCleanup.stop();
+    clearInterval(cleanupInterval);
   });
 }
 
@@ -93,7 +105,17 @@ app.use(
     validateResponses: true,
     validateSecurity: {
       handlers: {
-        bearerAuth: async (req) => Boolean(req.user)
+        session: async (req) => {
+          // Check if user is authenticated via session
+          if (req.isAuthenticated()) {
+            return true;
+          }
+          // For login/register endpoints, allow unauthenticated access
+          if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
+            return true;
+          }
+          return false;
+        }
       }
     },
     formats: customFormats
@@ -102,9 +124,12 @@ app.use(
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/channels', channelRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/messages', messageRoutes);
 
 // Error handling
-app.use((err: Error & { status?: number, errors?: unknown[] }, _req: express.Request, res: express.Response) => {
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   // OpenAPI validation errors
   if (err.status === 400 && err.errors) {
     return res.status(400).json({
@@ -121,10 +146,11 @@ app.use((err: Error & { status?: number, errors?: unknown[] }, _req: express.Req
   }
 
   // Default error
-  console.error(err);
+  console.error('Error:', err);
   res.status(err.status || 500).json({
     message: err.message || 'Internal server error'
   });
 });
 
-export default app; 
+export default app;
+export const viteNodeApp = app; 

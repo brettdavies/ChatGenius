@@ -3,8 +3,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.dev';
-const envPath = join(__dirname, '../../', envFile);
+const envPath = join(__dirname, '../../.env.dev');
 
 config({ path: envPath });
 
@@ -51,6 +50,82 @@ export const ENV = {
     API: {
       WINDOW_MS: parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
       MAX_REQUESTS: parseInt(process.env.API_RATE_LIMIT_MAX_REQUESTS || '100', 10)
+    },
+    TOTP: {
+      SETUP: {
+        WINDOW_MS: parseInt(process.env.TOTP_SETUP_RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
+        MAX_REQUESTS: parseInt(process.env.TOTP_SETUP_RATE_LIMIT_MAX_REQUESTS || '5', 10)
+      },
+      VERIFY: {
+        WINDOW_MS: parseInt(process.env.TOTP_VERIFY_RATE_LIMIT_WINDOW_MS || '300000', 10), // 5 minutes
+        MAX_REQUESTS: parseInt(process.env.TOTP_VERIFY_RATE_LIMIT_MAX_REQUESTS || '3', 10)
+      },
+      VALIDATE: {
+        WINDOW_MS: 5 * 60 * 1000, // 5 minutes
+        MAX_REQUESTS: 3 // Stricter limit for login attempts
+      }
+    },
+    CHANNELS: {
+      CREATE: {
+        WINDOW_MS: parseInt(process.env.CHANNEL_CREATE_RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour
+        MAX_REQUESTS: parseInt(process.env.CHANNEL_CREATE_RATE_LIMIT_MAX_REQUESTS || '10', 10)
+      },
+      UPDATE: {
+        WINDOW_MS: parseInt(process.env.CHANNEL_UPDATE_RATE_LIMIT_WINDOW_MS || '60000', 10), // 1 minute
+        MAX_REQUESTS: parseInt(process.env.CHANNEL_UPDATE_RATE_LIMIT_MAX_REQUESTS || '30', 10)
+      },
+      MEMBERS: {
+        WINDOW_MS: parseInt(process.env.CHANNEL_MEMBERS_RATE_LIMIT_WINDOW_MS || '300000', 10), // 5 minutes
+        MAX_REQUESTS: parseInt(process.env.CHANNEL_MEMBERS_RATE_LIMIT_MAX_REQUESTS || '50', 10)
+      },
+      DELETE: {
+        WINDOW_MS: parseInt(process.env.CHANNEL_DELETE_RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour
+        MAX_REQUESTS: parseInt(process.env.CHANNEL_DELETE_RATE_LIMIT_MAX_REQUESTS || '10', 10)
+      },
+      ARCHIVE: {
+        WINDOW_MS: parseInt(process.env.CHANNEL_ARCHIVE_RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour
+        MAX_REQUESTS: parseInt(process.env.CHANNEL_ARCHIVE_RATE_LIMIT_MAX_REQUESTS || '10', 10)
+      },
+      READ: {
+        WINDOW_MS: parseInt(process.env.CHANNEL_READ_RATE_LIMIT_WINDOW_MS || '60000', 10), // 1 minute
+        MAX_REQUESTS: parseInt(process.env.CHANNEL_READ_RATE_LIMIT_MAX_REQUESTS || '100', 10)
+      }
+    },
+    EVENTS: {
+      SUBSCRIPTION: {
+        WINDOW_MS: 60 * 60 * 1000, // 1 hour
+        MAX_REQUESTS: 1 // 1 connection per channel per user
+      },
+      TYPING: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 30 // 30 updates per minute
+      },
+      PRESENCE: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 60 // 60 updates per minute
+      }
+    },
+    MESSAGES: {
+      CREATE: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 30 // 30 messages per minute
+      },
+      UPDATE: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 30 // 30 updates per minute
+      },
+      DELETE: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 20 // 20 deletes per minute
+      },
+      REACTIONS: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 60 // 60 reactions per minute
+      },
+      SEARCH: {
+        WINDOW_MS: 60 * 1000, // 1 minute
+        MAX_REQUESTS: 30 // 30 searches per minute
+      }
     }
   }
 } as const;

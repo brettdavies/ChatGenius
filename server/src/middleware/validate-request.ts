@@ -6,52 +6,67 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
   const method = req.method;
 
   try {
-    // Registration validation
-    if (path === '/register' && method === 'POST') {
-      const { email, password, username } = req.body;
-      if (!email || !password || !username) {
-        throw new UserError('MISSING_CREDENTIALS', 'Email, password, and username are required');
-      }
+    // 2FA setup validation
+    if (path === '/2fa/setup' && method === 'POST') {
+      // No request body validation needed for setup
+      return next();
     }
 
-    // Login validation
-    if (path === '/login' && method === 'POST') {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        throw new UserError('MISSING_CREDENTIALS', 'Email and password are required');
+    // 2FA verification validation
+    if (path === '/2fa/verify' && method === 'POST') {
+      const { token } = req.body;
+      if (!token) {
+        throw new UserError('MISSING_TOKEN', 'Token is required');
       }
+      if (!/^[0-9]{6}$/.test(token)) {
+        throw new UserError('INVALID_TOKEN', 'Token must be 6 digits');
+      }
+      return next();
     }
 
-    // Profile update validation
-    if (path === '/me' && method === 'PUT') {
-      const { email, password, username } = req.body;
-      if (!email && !password && !username) {
-        throw new UserError('INVALID_UPDATE', 'At least one field must be provided for update');
+    // Message validation
+    if (path === '/' && method === 'POST') {
+      const { channelId, content } = req.body;
+      if (!channelId || !content) {
+        throw new UserError('MISSING_FIELDS', 'Channel ID and content are required');
       }
+      if (content.length > 4000) {
+        throw new UserError('CONTENT_TOO_LONG', 'Message content cannot exceed 4000 characters');
+      }
+      return next();
     }
 
-    // 2FA validation
-    if (path.startsWith('/2fa/')) {
-      if (path === '/2fa/validate' && method === 'POST') {
-        const { email, token } = req.body;
-        if (!email || !token) {
-          throw new UserError('MISSING_CREDENTIALS', 'Email and token are required');
-        }
+    // Message update validation
+    if (path.match(/^\/[^/]+$/) && method === 'PUT') {
+      const { content } = req.body;
+      if (!content) {
+        throw new UserError('MISSING_CONTENT', 'Message content is required');
       }
+      if (content.length > 4000) {
+        throw new UserError('CONTENT_TOO_LONG', 'Message content cannot exceed 4000 characters');
+      }
+      return next();
+    }
 
-      if (path === '/2fa/verify' && method === 'POST') {
-        const { token } = req.body;
-        if (!token) {
-          throw new UserError('MISSING_TOKEN', 'Verification token is required');
-        }
+    // Message reaction validation
+    if (path.match(/^\/[^/]+\/reactions$/) && method === 'POST') {
+      const { emoji } = req.body;
+      if (!emoji) {
+        throw new UserError('MISSING_EMOJI', 'Emoji is required');
       }
+      if (!emoji.match(/^[\u{1F300}-\u{1F9FF}]$/u)) {
+        throw new UserError('INVALID_EMOJI', 'Invalid emoji format');
+      }
+      return next();
+    }
 
-      if (path === '/2fa/disable' && method === 'POST') {
-        const { password } = req.body;
-        if (!password) {
-          throw new UserError('MISSING_PASSWORD', 'Password is required to disable 2FA');
-        }
+    // Search validation
+    if (path === '/search' && method === 'GET') {
+      const { query } = req.query;
+      if (!query) {
+        throw new UserError('MISSING_QUERY', 'Search query is required');
       }
+      return next();
     }
 
     next();

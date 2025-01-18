@@ -8,7 +8,7 @@ import { OpenAPIV3 } from 'openapi-types';
  */
 
 // Export individual schemas
-export const RegisterRequest = {
+export const RegisterRequest: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['email', 'password', 'username'],
   properties: {
@@ -37,9 +37,9 @@ export const RegisterRequest = {
       example: 'user'
     }
   }
-} as const;
+};
 
-export const LoginRequest = {
+export const LoginRequest: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['email', 'password'],
   properties: {
@@ -55,9 +55,9 @@ export const LoginRequest = {
       example: 'secureP@ssw0rd'
     }
   }
-} as const;
+};
 
-export const UpdateUserRequest = {
+export const UpdateUserRequest: OpenAPIV3.SchemaObject = {
   type: 'object',
   properties: {
     email: {
@@ -85,9 +85,9 @@ export const UpdateUserRequest = {
       example: 'admin'
     }
   }
-} as const;
+};
 
-export const TOTPSetupResponse = {
+export const TOTPSetupResponse: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['qrCodeUrl', 'backupCodes'],
   properties: {
@@ -105,9 +105,9 @@ export const TOTPSetupResponse = {
       example: ['12345678', '87654321']
     }
   }
-} as const;
+};
 
-export const TOTPVerifyRequest = {
+export const TOTPVerifyRequest: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['token'],
   properties: {
@@ -118,9 +118,9 @@ export const TOTPVerifyRequest = {
       example: '123456'
     }
   }
-} as const;
+};
 
-export const TOTPValidateRequest = {
+export const TOTPValidateRequest: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['email', 'token'],
   properties: {
@@ -142,9 +142,9 @@ export const TOTPValidateRequest = {
       example: false
     }
   }
-} as const;
+};
 
-export const TOTPDisableRequest = {
+export const TOTPDisableRequest: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['password'],
   properties: {
@@ -154,9 +154,9 @@ export const TOTPDisableRequest = {
       example: 'secureP@ssw0rd'
     }
   }
-} as const;
+};
 
-export const UserResponse = {
+export const UserResponse: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['id', 'email', 'username', 'role', 'createdAt', 'updatedAt'],
   properties: {
@@ -208,9 +208,9 @@ export const UserResponse = {
       example: null
     }
   }
-} as const;
+};
 
-export const ErrorResponse = {
+export const ErrorResponse: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['message', 'code'],
   properties: {
@@ -237,9 +237,9 @@ export const ErrorResponse = {
       ]
     }
   }
-} as const;
+};
 
-export const LoginResponse = {
+export const LoginResponse: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['user'],
   properties: {
@@ -247,9 +247,9 @@ export const LoginResponse = {
       $ref: '#/components/schemas/UserResponse'
     }
   }
-} as const;
+};
 
-export const RegisterResponse = {
+export const RegisterResponse: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['user'],
   properties: {
@@ -257,9 +257,9 @@ export const RegisterResponse = {
       $ref: '#/components/schemas/UserResponse'
     }
   }
-} as const;
+};
 
-export const UserProfileResponse = {
+export const UserProfileResponse: OpenAPIV3.SchemaObject = {
   type: 'object',
   required: ['user'],
   properties: {
@@ -267,7 +267,7 @@ export const UserProfileResponse = {
       $ref: '#/components/schemas/UserResponse'
     }
   }
-} as const;
+};
 
 // Keep the authSchemas object for reference and reuse
 export const authSchemas = {
@@ -283,7 +283,7 @@ export const authSchemas = {
   TOTPDisableRequest,
   UserResponse,
   ErrorResponse
-} as const;
+};
 
 // Export paths separately
 export const authPaths: OpenAPIV3.PathsObject = {

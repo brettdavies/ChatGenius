@@ -2,8 +2,9 @@ import 'dotenv/config';
 import 'module-alias/register';
 import { pool } from '@db/pool';
 import app from '@/app';
+import { ENV } from './config/env.js';
 
-const PORT = process.env.PORT || 5000;
+const PORT = ENV.PORT;
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {

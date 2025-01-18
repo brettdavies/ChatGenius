@@ -1,5 +1,9 @@
 import { OpenAPIV3 } from 'openapi-types';
-import { authPaths } from './paths/auth';
+import { authPaths } from './paths/auth.js';
+import { channelPaths } from './paths/channels.js';
+import { eventPaths } from './paths/events.js';
+import { messagePaths, messageSchemas } from './paths/messages.js';
+import { ErrorResponse, ValidationError } from './schemas/common.js';
 import {
   LoginRequest,
   LoginResponse,
@@ -7,10 +11,22 @@ import {
   RegisterResponse,
   UserResponse,
   UserProfileResponse,
-  UpdateUserRequest
-} from './schemas/auth';
+  UpdateUserRequest,
+  TOTPSetupResponse,
+  TOTPVerifyRequest,
+  TOTPValidateRequest,
+  TOTPDisableRequest
+} from './schemas/auth.js';
+import {
+  ChannelResponse,
+  ChannelMemberResponse,
+  CreateChannelRequest,
+  UpdateChannelRequest,
+  AddChannelMemberRequest,
+  UpdateChannelMemberRequest
+} from './schemas/channels.js';
 
-const openApiConfig: OpenAPIV3.Document = {
+const openApiConfig = {
   openapi: '3.0.0',
   info: {
     title: 'ChatGenius API',
@@ -25,40 +41,72 @@ const openApiConfig: OpenAPIV3.Document = {
   ],
   components: {
     schemas: {
+      // Common schemas
+      ErrorResponse,
+      ValidationError,
+      
+      // Auth schemas
       LoginRequest,
       LoginResponse,
       RegisterRequest,
       RegisterResponse,
       UserResponse,
       UserProfileResponse,
-      UpdateUserRequest
+      UpdateUserRequest,
+      TOTPSetupResponse,
+      TOTPVerifyRequest,
+      TOTPValidateRequest,
+      TOTPDisableRequest,
+      
+      // Channel schemas
+      ChannelResponse,
+      ChannelMemberResponse,
+      CreateChannelRequest,
+      UpdateChannelRequest,
+      AddChannelMemberRequest,
+      UpdateChannelMemberRequest,
+      
+      // Message schemas
+      ...messageSchemas
     },
     securitySchemes: {
-      bearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT'
+      session: {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'sessionId',
+        description: 'Session cookie for authentication'
       }
     }
   },
-  security: [
-    {
-      bearerAuth: []
-    }
-  ],
+  security: [],  // Default is no security, individual paths specify their requirements
   paths: {
-    ...authPaths
+    ...authPaths,
+    ...channelPaths,
+    ...eventPaths,
+    ...messagePaths
   },
   tags: [
     {
       name: 'Authentication',
       description: 'Authentication endpoints'
+    },
+    {
+      name: 'Two-Factor Authentication',
+      description: '2FA setup and verification endpoints'
+    },
+    {
+      name: 'Channels',
+      description: 'Channel management endpoints'
+    },
+    {
+      name: 'Messages',
+      description: 'Message and thread management endpoints'
+    },
+    {
+      name: 'Events',
+      description: 'Real-time event endpoints'
     }
   ]
-};
+} as const;
 
-// Convert to JSON and back to ensure it's a plain object
-const serializedConfig = JSON.stringify(openApiConfig);
-const plainConfig = JSON.parse(serializedConfig);
-
-export default plainConfig; 
+export default openApiConfig; 

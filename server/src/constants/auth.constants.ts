@@ -39,7 +39,7 @@ export const AUTH_ROUTES = {
 export const RATE_LIMITS = {
   AUTH: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5 // limit each IP to 5 requests per windowMs
+    max: 500 // limit each IP to 5 requests per windowMs
   },
   API: {
     windowMs: 15 * 60 * 1000, // 15 minutes

@@ -1,10 +1,15 @@
 -- Users table
 CREATE TABLE users (
     id VARCHAR(26) PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    avatar_url TEXT,
     role VARCHAR(20) DEFAULT 'user' NOT NULL,
+    totp_enabled BOOLEAN DEFAULT FALSE,
+    totp_secret TEXT,
+    backup_codes TEXT[] DEFAULT ARRAY[]::TEXT[],
+    totp_verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ
