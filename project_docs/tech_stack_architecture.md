@@ -35,6 +35,7 @@ This document provides an overview of the technologies chosen for ChatGenius, th
     - [Sample API Endpoints](#sample-api-endpoints)
   - [Scalability and Performance Considerations](#scalability-and-performance-considerations)
     - [Offline Performance](#offline-performance)
+  - [Security](#security)
 
 ---
 
@@ -47,7 +48,7 @@ This document provides an overview of the technologies chosen for ChatGenius, th
 | Backend      | Node.js, TypeScript, Express       | Type-safe, efficient API handling         |
 | Realtime     | Server-Sent Events (SSE)           | Real-time updates from server to client   |
 | Database     | PostgreSQL on Railway              | Managed, scalable database hosting        |
-| Auth         | Auth0                              | Secure, multi-provider authentication     |
+| Auth         | Passport.js + Sessions            | Secure session-based authentication     |
 | Testing      | Jest, React Testing Library        | Comprehensive test coverage               |
 | Deployment   | Vercel                             | Zero-config deployment, edge functions    |
 
@@ -131,11 +132,12 @@ The database connection system provides secure access to PostgreSQL through SSH 
 
 ### Authentication
 
-- **Auth0**:
-  - Multiple authentication providers
-  - Secure token handling
-  - Easy integration with Express
-  - Built-in security features
+- **Authentication**:
+  - Session-based authentication using Passport.js
+  - Secure cookie handling
+  - Password hashing with bcrypt
+  - CSRF protection
+  - Rate limiting
 
 ### PWA and Offline Support
 
@@ -171,7 +173,7 @@ graph TD
    B -->|REST API| C[Backend - Node.js/Express]
    B -->|SSE| C
    C -->|Queries| D[PostgreSQL]
-   C -->|Auth| E[Auth0]
+   C -->|Auth| E[Session Auth]
    D -->|NOTIFY| C
    C -->|Events| B
 ```
@@ -325,7 +327,7 @@ interface NotificationSettings {
 ### Sample API Endpoints
 
 **Endpoint**: `GET /api/auth/session`  
-**Description**: Gets the current user's session information after Auth0 authentication.  
+**Description**: Gets the current user's session information.  
 **Response**:
 
 ```json
@@ -399,3 +401,34 @@ interface NotificationSettings {
    - Merge strategy for reactions
    - Queue for offline actions
    - Version tracking for edits
+
+---
+
+## Security
+
+1. Authentication & Session Management
+   - Session-based authentication using Passport.js
+   - Secure session storage with Express session
+   - HttpOnly, secure cookies for session management
+   - CSRF protection through SameSite cookie attributes
+   - Session fixation protection
+   - Proper session cleanup and expiration
+
+2. API Security
+   - Rate limiting on authentication endpoints
+   - Helmet.js for secure HTTP headers
+   - CORS configuration with whitelisted origins
+   - Input validation and sanitization
+   - Secure password hashing with bcrypt
+
+3. Database Security
+   - Prepared statements to prevent SQL injection
+   - Connection pooling with proper timeout settings
+   - Encrypted sensitive data at rest
+   - Regular security audits and updates
+
+4. Infrastructure Security
+   - HTTPS/TLS encryption in production
+   - Regular security patches and updates
+   - Proper logging and monitoring
+   - Secure environment variable management

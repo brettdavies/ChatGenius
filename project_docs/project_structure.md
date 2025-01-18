@@ -54,20 +54,37 @@ ChatGenius/
 ├── server/                       # Express backend application
 │   ├── src/                      # Source code
 │   │   ├── controllers/          # Route controllers
-│   │   │   └── channel-controller.ts
+│   │   │   ├── channel-controller.ts
+│   │   │   └── message-controller.ts
 │   │   ├── services/             # Business logic
 │   │   │   ├── channel-service.ts
+│   │   │   ├── message-service.ts
+│   │   │   ├── realtime-service.ts
 │   │   │   └── event-service.ts
 │   │   ├── middleware/           # Express middleware
 │   │   │   ├── auth.ts
-│   │   │   └── async-handler.ts
+│   │   │   ├── async-handler.ts
+│   │   │   ├── channel-rate-limit.ts
+│   │   │   ├── message-rate-limit.ts
+│   │   │   └── event-rate-limit.ts
 │   │   ├── routes/               # API routes
 │   │   │   ├── channel-routes.ts
-│   │   │   └── user-routes.ts
+│   │   │   ├── message-routes.ts
+│   │   │   └── event-routes.ts
+│   │   ├── openapi/              # OpenAPI documentation
+│   │   │   ├── index.ts
+│   │   │   ├── channels.ts
+│   │   │   ├── messages.ts
+│   │   │   └── events.ts
 │   │   ├── types/                # TypeScript types
-│   │   │   └── express.d.ts
+│   │   │   ├── express.d.ts
+│   │   │   ├── channel.ts
+│   │   │   ├── message.ts
+│   │   │   └── event.ts
 │   │   ├── utils/                # Utility functions
-│   │   │   └── errors.ts
+│   │   │   ├── errors.ts
+│   │   │   ├── channel-validation.ts
+│   │   │   └── message-validation.ts
 │   │   ├── db/                   # Database setup
 │   │   │   └── index.ts
 │   │   └── app.ts                # Express application setup
@@ -148,28 +165,29 @@ The frontend package implements the user interface and client-side logic:
 The server package implements the backend API and business logic:
 
 1. **API Layer (`src/routes/, src/controllers/`)**:
-   - RESTful endpoints
-   - Request validation
+   - RESTful endpoints for channels and messages
+   - SSE endpoints for real-time events
+   - Request validation and rate limiting
    - Response formatting
    - Error handling
 
 2. **Business Logic (`src/services/`)**:
    - Channel management
-   - User operations
-   - Event handling
-   - Real-time updates via SSE
+   - Message operations
+   - Real-time event handling
+   - Rate limiting and validation
 
-3. **Database Integration (`src/db/`)**:
-   - PostgreSQL connection management
-   - Query builders
-   - Transaction handling
-   - Migration management
-
-4. **Middleware (`src/middleware/`)**:
-   - Authentication
-   - Request parsing
+3. **Middleware (`src/middleware/`)**:
+   - Authentication and authorization
+   - Rate limiting for different operations
+   - Request validation
    - Error handling
-   - Async operation handling
+
+4. **OpenAPI Documentation (`src/openapi/`)**:
+   - API specifications for all endpoints
+   - Request/response schemas
+   - Error responses
+   - Rate limit documentation
 
 ### Shared Features
 

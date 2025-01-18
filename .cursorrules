@@ -5,7 +5,7 @@
 1. Only work on the feature you are assigned to.
 2. Do not work on features that are not assigned to you.
 3. Do not delete or modify code that is not related to the feature you are working on.
-4. Write code that is clean, readable, and maintainable.'
+4. Write code that is clean, readable, and maintainable.
 5. If you are unsure about the feature or code you are working on, ask the team before coding it.
 6. If you think there needs to be a change outside of the feature you are working on, ask the team before coding it.
 
@@ -14,9 +14,19 @@
 1. **Follow Best Practices**:
    - Use type hints, logging, and docstrings as per global instructions.
    - Ensure your environment variables are managed securely.
-   - Use Auth0 for all authentication functionality.
+   - Use Passport.js with session-based authentication for all authentication functionality.
 
-2. **Naming Conventions**:
+2. **API Development Rules**:
+   - Always create/update OpenAPI specification before implementing routes
+   - Maintain strict alignment between OpenAPI specs and route implementations
+   - Required files for any endpoint change:
+     - OpenAPI spec in `/server/src/openapi/paths/`
+     - Route handler in `/server/src/routes/`
+     - Response types in `/server/src/openapi/schemas/`
+   - Run OpenAPI validation before committing changes
+   - Include both spec and implementation in the same PR
+
+3. **Naming Conventions**:
    - Directory names: Use kebab-case for all directories
    - File extensions: Use `.ts` for TypeScript files, `.tsx` for React components
    - Database:
@@ -172,24 +182,24 @@
    ```
 
 - Include **Feature ID(s)** in the commit summary for all features included in the commit.
-  - Format: `type(scope): message [Feature ID(s): ID-001, ID-002]`
+  - Format: `type(scope): message`
   - Example:
 
     ```plaintext
-    feat(auth): added OAuth login functionality [Feature ID(s): ID-003]
+    feat(auth): added OAuth login functionality
     ```
 
 - For commits with multiple features or significant changes, use this extended format:
 
   ```plaintext
-  type(scope): summary message [Feature ID(s): ID-001, ID-002]
+  type(scope): summary message
 
-  [ID-001] Feature Name:
+  Feature Name:
   - Change 1
   - Change 2
   - Change 3
 
-  [ID-002] Feature Name:
+  Feature Name:
   - Change 1
   - Change 2
   - Change 3
@@ -479,3 +489,125 @@
    - Keep constants organized and grouped logically
    - Remove unused constants during cleanup
    - Consider backwards compatibility when changing constants
+
+## Rate Limiting
+
+1. **Centralized Configuration**:
+   - All rate limits are defined in `src/config/env.ts` under the `RATE_LIMIT` object
+   - Each feature has its own rate limit configuration (e.g., `AUTH`, `TOTP`, `CHANNELS`, etc.)
+   - Rate limits are configurable through environment variables
+   - Default values are provided for development
+
+2. **Rate Limit Structure**:
+   ```typescript
+   RATE_LIMIT: {
+     FEATURE_NAME: {
+       ACTION: {
+         WINDOW_MS: number,  // Time window in milliseconds
+         MAX_REQUESTS: number // Maximum requests in window
+       }
+     }
+   }
+   ```
+
+3. **Middleware Implementation**:
+   - Create feature-specific rate limit files in `src/middleware/`
+   - Use the naming pattern: `{feature}-rate-limit.ts`
+   - Implement using the `createLimiter` helper function
+   - Example:
+     ```typescript
+     export const featureActionLimiter = createLimiter({
+       windowMs: ENV.RATE_LIMIT.FEATURE.ACTION.WINDOW_MS,
+       max: ENV.RATE_LIMIT.FEATURE.ACTION.MAX_REQUESTS,
+       message: {
+         message: 'Rate limit exceeded message',
+         code: 'RATE_LIMIT_EXCEEDED'
+       }
+     });
+     ```
+
+4. **Environment Variables**:
+   - Use the naming pattern: `{FEATURE}_{ACTION}_RATE_LIMIT_WINDOW_MS`
+   - Use the naming pattern: `{FEATURE}_{ACTION}_RATE_LIMIT_MAX_REQUESTS`
+   - Example:
+     ```env
+     TOTP_SETUP_RATE_LIMIT_WINDOW_MS=900000
+     TOTP_SETUP_RATE_LIMIT_MAX_REQUESTS=5
+     ```
+
+5. **Development Mode**:
+   - Rate limits are automatically disabled in development and test modes
+   - Use the `createLimiter` helper to handle this consistently
+
+6. **Error Handling**:
+   - Rate limit errors should return:
+     ```json
+     {
+       "message": "Rate limit exceeded message",
+       "code": "RATE_LIMIT_EXCEEDED"
+     }
+     ```
+   - Include standardized rate limit headers
+   - Use consistent error messages across features
+
+## TypeScript Type Organization
+
+1. **Core Principle**: All types must be defined in dedicated type files, never inline in implementation files.
+
+2. **Type File Structure**:
+   ```
+   src/
+   ├── types/
+   │   ├── stores/              # Store-specific types
+   │   │   ├── channel.store.types.ts
+   │   │   └── message.store.types.ts
+   │   ├── models/             # Domain model types
+   │   │   ├── channel.types.ts
+   │   │   └── message.types.ts
+   │   └── api/               # API-specific types
+       └── common.types.ts    # Shared utility types
+   ```
+
+3. **Store Type Rules**:
+   - ❌ NEVER define types directly in store files
+   - ✅ ALWAYS define store types in dedicated type files:
+     ```typescript
+     // types/stores/channel.store.types.ts
+     import { Channel } from '../models/channel.types';
+     
+     export interface ChannelState {
+       channels: Channel[];
+       loading: boolean;
+     }
+     
+     export interface ChannelActions {
+       addChannel: (channel: Channel) => void;
+       removeChannel: (id: string) => void;
+     }
+     ```
+   - ✅ Import and use types in store files:
+     ```typescript
+     // stores/channel.store.ts
+     import { ChannelState, ChannelActions } from '@/types/stores/channel.store.types';
+     
+     export const useChannelStore = create<ChannelState & ChannelActions>((set) => ({
+       channels: [],
+       loading: false,
+       // ... implementation
+     }));
+     ```
+
+4. **Type Import Rules**:
+   - Use absolute imports with `@/types/` alias
+   - Group imports by type category (models, store, api)
+   - Example:
+     ```typescript
+     // Good
+     import { Channel } from '@/types/models/channel.types';
+     import { ChannelState } from '@/types/stores/channel.store.types';
+     import { ChannelResponse } from '@/types/api/channel.api.types';
+     
+     // Bad
+     import { Channel } from '../../types/models/channel.types';
+     import { ChannelState } from './types';
+     ```
