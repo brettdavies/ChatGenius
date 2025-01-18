@@ -1,12 +1,4 @@
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string;
-}
+export type { User } from './user.types';
 
 export interface LoginCredentials {
   email: string;

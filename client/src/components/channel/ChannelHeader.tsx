@@ -1,14 +1,16 @@
 import { HashtagIcon, LockClosedIcon, UserGroupIcon } from '@heroicons/react/24/outline';
-import type { Channel } from '../../types/store.types';
-import { useUserStore } from '../../stores';
+import { useUserStore, useChannelStore } from '../../stores';
 import SearchInput from '../search/SearchInput';
 
-interface ChannelHeaderProps {
-  channel: Channel;
-}
-
-export default function ChannelHeader({ channel }: ChannelHeaderProps) {
+export default function ChannelHeader() {
   const onlineUsers = useUserStore((state) => state.onlineUsers);
+  const activeChannelId = useChannelStore((state) => state.activeChannelId);
+  const channels = useChannelStore((state) => state.channels);
+  const channel = channels.find(c => c.id === activeChannelId);
+
+  if (!channel) {
+    return null;
+  }
 
   return (
     <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-700">

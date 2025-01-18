@@ -6,21 +6,24 @@ export const sampleUsers: User[] = [
     email: 'sarah@example.com',
     name: 'Sarah Chen',
     status: 'online',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah'
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
+    password: 'password123'
   },
   {
     id: 'user2',
     email: 'alex@example.com',
     name: 'Alex Kim',
     status: 'online',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex'
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
+    password: 'password123'
   },
   {
     id: 'user3',
     email: 'maya@example.com',
     name: 'Maya Patel',
     status: 'away',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya'
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya',
+    password: 'password123'
   }
 ];
 

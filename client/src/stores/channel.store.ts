@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { Channel, ChannelState, ChannelActions } from '../types/store.types';
+import type { Channel } from '../types/channel.types';
+import type { ChannelState, ChannelActions } from '../types/channel-store.types';
+import { getMyChannels } from '../services/channel';
 
 const initialState: ChannelState = {
   channels: [],
@@ -11,31 +13,71 @@ const initialState: ChannelState = {
 
 export const useChannelStore = create<ChannelState & ChannelActions>()(
   devtools(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
 
-      setChannels: (channels) => 
-        set({ channels, error: null }),
+      fetchUserChannels: async () => {
+        console.log('[ChannelStore] Fetching user channels');
+        set({ loading: true, error: null });
+        try {
+          console.log('[ChannelStore] Calling getMyChannels service');
+          const channels = await getMyChannels();
+          console.log('[ChannelStore] Fetched channels:', {
+            count: channels.length,
+            channels,
+            stack: new Error().stack
+          });
+          set({ channels, loading: false });
+        } catch (error) {
+          console.error('[ChannelStore] Error fetching channels:', {
+            error,
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to fetch channels',
+            loading: false 
+          });
+        }
+      },
 
-      addChannel: (channel) =>
-        set((state) => ({
-          channels: [...state.channels, channel],
-          error: null,
-        })),
+      setChannels: (channels: Channel[]) => {
+        console.log('[ChannelStore] Setting channels:', {
+          count: channels.length,
+          channels,
+          stack: new Error().stack
+        });
+        set({ channels, error: null });
+      },
 
-      setActiveChannel: (channelId) =>
-        set({ activeChannelId: channelId, error: null }),
+      setActiveChannel: (channelId: string) => {
+        console.log('[ChannelStore] Setting active channel:', {
+          channelId,
+          previousActiveId: get().activeChannelId,
+          stack: new Error().stack
+        });
+        set({ activeChannelId: channelId, error: null });
+      },
 
-      setLoading: (loading) =>
-        set({ loading }),
+      setLoading: (loading: boolean) => {
+        console.log('[ChannelStore] Setting loading state:', {
+          loading,
+          stack: new Error().stack
+        });
+        set({ loading });
+      },
 
-      setError: (error) =>
-        set({ error, loading: false }),
+      setError: (error: string | null) => {
+        console.log('[ChannelStore] Setting error state:', {
+          error,
+          stack: new Error().stack
+        });
+        set({ error, loading: false });
+      },
 
-      reset: () => set(initialState),
-    }),
-    {
-      name: 'channel-store',
-    }
+      reset: () => {
+        console.log('[ChannelStore] Resetting store to initial state');
+        set(initialState);
+      }
+    })
   )
 ); 

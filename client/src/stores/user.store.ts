@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { User, UserState, UserActions } from '../types/store.types';
+import type { UserState, UserActions } from '../types/user-store.types';
 
 const initialState: UserState = {
   users: [],
@@ -75,7 +75,12 @@ export const useUserStore = create<UserState & UserActions>()(
       setError: (error) =>
         set({ error, loading: false }),
 
-      reset: () => set(initialState),
+      reset: () => {
+        // Clear all user-related state
+        set(initialState);
+        // Clear any local storage items related to user state
+        localStorage.removeItem('userId');
+      },
     }),
     {
       name: 'user-store',

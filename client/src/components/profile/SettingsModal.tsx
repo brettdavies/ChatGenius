@@ -20,40 +20,56 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
 
   const handleActivate2FA = async () => {
+    console.log('[2FA Setup] Initiating 2FA setup');
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      // Simulating API response for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setQrCodeUrl('https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/ChatGenius:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=ChatGenius');
+      const response = await fetch('/api/auth/2fa/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('[2FA Setup] Failed:', error);
+        throw new Error(error.message || 'Failed to initialize 2FA setup');
+      }
+      
+      const data = await response.json();
+      console.log('[2FA Setup] Successfully received QR code and backup codes');
+      setQrCodeUrl(data.qrCodeUrl);
+      setBackupCodes(data.backupCodes);
       setSetupStep('qr');
     } catch (err) {
-      setError('Failed to initialize 2FA setup');
+      console.error('[2FA Setup] Error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to initialize 2FA setup');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleVerify = async () => {
+    console.log('[2FA Verify] Attempting to verify token');
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      // Simulating API response for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (verificationCode.length !== 6) {
-        throw new Error('Invalid verification code');
+      const response = await fetch('/api/auth/2fa/verify', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: verificationCode })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('[2FA Verify] Failed:', error);
+        throw new Error(error.message || 'Failed to verify code');
       }
-      setBackupCodes([
-        'ABCD-EFGH-IJKL',
-        'MNOP-QRST-UVWX',
-        'YZAB-CDEF-GHIJ',
-        'KLMN-OPQR-STUV',
-        'WXYZ-1234-5678'
-      ]);
+      
+      console.log('[2FA Verify] Token verified successfully, showing backup codes');
       setSetupStep('backup');
     } catch (err) {
+      console.error('[2FA Verify] Error:', err);
       setError(err instanceof Error ? err.message : 'Failed to verify code');
     } finally {
       setIsLoading(false);
@@ -62,6 +78,33 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   const copyBackupCodes = () => {
     navigator.clipboard.writeText(backupCodes.join('\n'));
+  };
+
+  const handleConfirm = async () => {
+    console.log('[2FA Confirm] Confirming backup codes saved');
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/auth/2fa/confirm', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('[2FA Confirm] Failed:', error);
+        throw new Error(error.message || 'Failed to complete 2FA setup');
+      }
+      
+      console.log('[2FA Confirm] Successfully completed 2FA setup');
+      onClose();
+    } catch (err) {
+      console.error('[2FA Confirm] Error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to complete 2FA setup');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -152,10 +195,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </button>
                 </div>
                 <button
-                  onClick={onClose}
-                  className="w-full inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  onClick={handleConfirm}
+                  disabled={isLoading}
+                  className="w-full inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50"
                 >
-                  Done
+                  {isLoading ? 'Completing setup...' : 'Done'}
                 </button>
               </div>
             )}

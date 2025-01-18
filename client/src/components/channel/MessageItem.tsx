@@ -1,254 +1,211 @@
 import { useState } from 'react';
 import { useMessageStore, useUserStore } from '../../stores';
-import type { Message, User } from '../../types/store.types';
+import type { Message } from '../../types/message.types';
+import type { User } from '../../types/user.types';
 import { format } from 'date-fns';
 import { ChatBubbleLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { marked, MarkedOptions, Renderer } from 'marked';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/themes/prism-tomorrow.css';
+import { updateMessage, deleteMessage } from '../../services/message';
 import MessageReactions from './MessageReactions';
-import RichTextEditor from '../common/RichTextEditor';
-
-// Configure marked options
-const options: MarkedOptions = {
-  gfm: true, // GitHub Flavored Markdown
-  breaks: true, // Convert line breaks to <br>
-};
-
-// Configure syntax highlighting
-const renderer = new marked.Renderer();
-renderer.code = function({ text, lang }: { text: string, lang?: string }) {
-  if (lang && Prism.languages[lang]) {
-    try {
-      const highlighted = Prism.highlight(text, Prism.languages[lang], lang);
-      return `<pre><code class="language-${lang}">${highlighted}</code></pre>`;
-    } catch (e) {
-      console.error('Error highlighting code:', e);
-    }
-  }
-  return `<pre><code>${text}</code></pre>`;
-};
-
-marked.setOptions({ ...options, renderer });
+import FormattedText from '../common/FormattedText';
 
 interface MessageItemProps {
   message: Message;
-  user?: User;
   isThreadMessage?: boolean;
   isThreadParent?: boolean;
 }
 
-export default function MessageItem({ message, user, isThreadMessage, isThreadParent }: MessageItemProps) {
+// Helper function to format message content
+function formatMessageContent(text: string): string {
+  return text
+    // Convert escaped newlines to real newlines
+    .replace(/\\n/g, '\n')
+    // Remove any triple newlines
+    .replace(/\n{3,}/g, '\n\n')
+    // Trim extra whitespace
+    .trim();
+}
+
+export default function MessageItem({ message, isThreadMessage, isThreadParent }: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const setActiveThread = useMessageStore((state) => state.setActiveThread);
-  const updateMessage = useMessageStore((state) => state.updateMessage);
-  const deleteMessage = useMessageStore((state) => state.deleteMessage);
+  const { updateMessage: updateMessageInStore, deleteMessage: deleteMessageFromStore, setActiveThread } = useMessageStore();
   const currentUser = useUserStore((state) => state.currentUser);
-  const threadMessages = useMessageStore((state) => state.threads[message.id] || []);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleThreadClick = () => {
-    if (!isThreadMessage) {
-      setActiveThread(message.id);
-    }
-  };
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditing(true);
-    setEditContent(message.content);
-  };
-
-  const handleEditSubmit = () => {
-    if (editContent.trim() === message.content.trim()) {
-      setIsEditing(false);
+  const handleEdit = async () => {
+    if (!editContent.trim()) {
+      setError('Message cannot be empty');
       return;
     }
 
-    updateMessage(message.channelId, message.id, editContent.trim(), isThreadMessage);
-    setIsEditing(false);
+    try {
+      const updatedMessage = await updateMessage(message.id, editContent);
+      updateMessageInStore(message.channelId, message.id, updatedMessage.content, isThreadMessage || false);
+      setIsEditing(false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to update message');
+    }
   };
 
-  const handleEditCancel = () => {
-    setIsEditing(false);
-    setEditContent(message.content);
+  const handleDelete = async () => {
+    try {
+      await deleteMessage(message.id);
+      deleteMessageFromStore(message.channelId, message.id, isThreadMessage || false);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete message');
+    }
   };
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteConfirm(true);
+  const handleThreadClick = () => {
+    console.log('[MessageItem] Thread click attempted:', {
+      messageId: message.id,
+      channelId: message.channelId,
+      isThreadMessage,
+      isThreadParent,
+      showThreadButton
+    });
+    
+    if (!message.isThreadMessage) {
+      console.log('[MessageItem] Thread click handler called for message:', message.id);
+      setActiveThread(message.id, message.channelId);
+      console.log('[MessageItem] Active thread set to:', message.id, 'in channel:', message.channelId);
+    } else {
+      console.log('[MessageItem] Thread click ignored - message is already a thread message');
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    deleteMessage(message.channelId, message.id, isThreadMessage);
-    setShowDeleteConfirm(false);
-  };
+  const canEdit = currentUser?.id === message.userId && !message.deletedAt;
+  const canDelete = currentUser?.id === message.userId && !message.deletedAt;
+  const showThreadButton = !message.isThreadMessage && !message.isThreadParent;
+  const hasReplies = typeof message.replyCount === 'number' && message.replyCount > 0;
+  const replyCount = message.replyCount || 0;
 
-  const handleDeleteCancel = () => {
-    setShowDeleteConfirm(false);
-  };
+  console.log('[MessageItem] Message state:', {
+    id: message.id,
+    replyCount: message.replyCount,
+    hasReplies,
+    isThreadMessage,
+    isThreadParent,
+    showThreadButton
+  });
 
-  const isCurrentUser = currentUser?.id === message.userId;
+  if (message.deletedAt) {
+    return (
+      <div className="px-4 py-2 text-gray-500 dark:text-gray-400 italic">
+        This message was deleted
+      </div>
+    );
+  }
 
   return (
-    <div 
-      id={`message-${message.id}`}
-      className="group relative flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
-      onClick={!isThreadMessage ? handleThreadClick : undefined}
-    >
-      {/* Avatar and User Info */}
-      <div className="relative flex-shrink-0">
-        {user?.avatar ? (
+    <div className="flex items-start gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 group">
+      <div className="flex-shrink-0 w-10 h-10 overflow-hidden rounded-full">
+        {message.user?.avatar_url ? (
           <img
-            src={user.avatar}
-            alt={user.name}
-            className="h-10 w-10 rounded-full"
+            src={message.user.avatar_url}
+            alt={message.user.username || 'User'}
+            className="w-full h-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-600">
-            <span className="text-sm font-medium text-white">
-              {user?.name.charAt(0).toUpperCase()}
-            </span>
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+            {(message.user?.username || 'U').charAt(0).toUpperCase()}
           </div>
         )}
-        <span
-          className={`absolute -bottom-0.5 -right-1 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-900 ${
-            user?.status === 'online'
-              ? 'bg-green-400'
-              : user?.status === 'away'
-              ? 'bg-yellow-400'
-              : 'bg-gray-400'
-          }`}
-        />
       </div>
-
-      {/* Message Content Area */}
-      <div className="min-w-0 flex-1">
-        {/* User Info */}
-        <div className="flex items-center space-x-2">
-          <span className="font-medium text-gray-900 dark:text-white">
-            {user?.name || 'Unknown User'}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium dark:text-white">
+            {message.user?.username || 'Unknown User'}
           </span>
-          <span className="text-xs text-gray-500">
-            {format(new Date(message.createdAt), 'h:mm a')}
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {format(new Date(message.createdAt), 'MMM d, h:mm a')}
           </span>
-          {message.updatedAt !== message.createdAt && !message.deletedAt && (
-            <span className="text-xs text-gray-400">(edited)</span>
-          )}
-          {isCurrentUser && !isEditing && !message.deletedAt && (
-            <div className="invisible flex space-x-1 group-hover:visible">
-              <button
-                onClick={handleEditClick}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700"
-              >
-                <PencilIcon className="h-4 w-4" />
-              </button>
-              <button
-                onClick={handleDeleteClick}
-                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500 dark:hover:bg-gray-700"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </button>
-            </div>
+          {message.edited && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">(edited)</span>
           )}
         </div>
 
-        {/* Message Text */}
-        <div className={!isThreadMessage && !isEditing ? 'cursor-pointer' : ''}>
-          {isEditing ? (
-            <div className="mt-2">
-              <RichTextEditor
-                value={editContent}
-                onChange={setEditContent}
-                onSubmit={handleEditSubmit}
-              />
-              <div className="mt-2 flex space-x-2">
-                <button
-                  onClick={handleEditSubmit}
-                  className="rounded-md bg-blue-500 px-3 py-1 text-sm font-medium text-white hover:bg-blue-600"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={handleEditCancel}
-                  className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-              </div>
+        {isEditing ? (
+          <div className="mt-1">
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+              rows={3}
+            />
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleEdit}
+                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
             </div>
-          ) : (
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert [&_pre]:!bg-gray-800 [&_pre]:!p-4 [&_pre]:!rounded-lg [&_code]:!font-mono [&_code]:!text-sm [&_pre]:!whitespace-pre-wrap [&_pre]:!break-words [&_pre]:!overflow-x-auto [&_pre_code]:!whitespace-pre-wrap [&_pre_code]:!break-words [&_a]:!text-blue-500 [&_a]:!font-medium [&_a]:!hover:text-blue-700 [&_a]:!hover:underline dark:[&_a]:!text-blue-400 dark:[&_a]:!hover:text-blue-300 [&_a]:!after:content-['_↗'] [&_a]:!after:ml-0.5"
-            >
-              {message.deletedAt ? (
-                <p className="italic text-gray-500 dark:text-gray-400">
-                  This message has been deleted
-                </p>
+          </div>
+        ) : (
+          <>
+            <div className="mt-1">
+              {!isThreadMessage && !message.isThreadParent && hasReplies ? (
+                <button
+                  onClick={handleThreadClick}
+                  className="w-full text-left"
+                >
+                  <FormattedText text={formatMessageContent(message.content)} />
+                </button>
               ) : (
-                <div dangerouslySetInnerHTML={{ __html: marked.parse(message.content) }} />
+                <FormattedText text={formatMessageContent(message.content)} />
               )}
             </div>
-          )}
-        </div>
-        
-        {/* Message Actions */}
-        <div>
-          <div className="flex items-center space-x-4">
-            {!message.deletedAt && (
-              <MessageReactions message={message} isThreadMessage={isThreadMessage} />
-            )}
-            
-            {/* Thread Indicator */}
-            {!isThreadMessage && threadMessages.length > 0 && (
-              <button 
-                onClick={handleThreadClick}
-                className="mt-1 flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-              >
-                <ChatBubbleLeftIcon className="h-4 w-4" />
-                <span>{threadMessages.length === 1 ? '1 reply' : `${threadMessages.length} replies`}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Delete Confirmation Dialog */}
-        {showDeleteConfirm && (
-          <div className="absolute left-0 top-0 z-10 flex h-full w-full items-center justify-center bg-gray-900/50">
-            <div className="rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Are you sure you want to delete this message?
-                {threadMessages.length > 0 && !isThreadMessage && (
-                  <span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-                    The message will be marked as deleted but remain visible in the thread.
+            <div className="mt-2 flex items-center space-x-2">
+              <MessageReactions message={message} />
+              {!isThreadMessage && (
+                <button
+                  onClick={handleThreadClick}
+                  className="flex items-center space-x-1 rounded px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <ChatBubbleLeftIcon className="h-4 w-4" />
+                  <span>
+                    {hasReplies ? (
+                      `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`
+                    ) : (
+                      'Reply'
+                    )}
                   </span>
-                )}
-              </p>
-              <div className="mt-4 flex justify-end space-x-2">
-                <button
-                  onClick={handleDeleteCancel}
-                  className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                >
-                  Cancel
                 </button>
+              )}
+              {message.isThreadParent && (
                 <button
-                  onClick={handleDeleteConfirm}
-                  className="rounded-md bg-red-500 px-3 py-1 text-sm font-medium text-white hover:bg-red-600"
+                  onClick={handleThreadClick}
+                  className="flex items-center space-x-1 rounded px-2 py-1 text-xs text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  Delete
+                  <ChatBubbleLeftIcon className="h-4 w-4" />
+                  <span>View Thread</span>
                 </button>
-              </div>
+              )}
+              {canEdit && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="hidden rounded p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 group-hover:block"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="hidden rounded p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 group-hover:block"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              )}
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

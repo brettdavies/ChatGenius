@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { AuthState, AuthActions } from '../types/store.types';
+import type { AuthState, AuthActions } from '../types/auth-store.types';
 
 const initialState: AuthState = {
-  isAuthenticated: false,
-  token: null,
+  user: null,
   loading: false,
   error: null,
+  isAuthenticated: false
 };
 
 export const useAuthStore = create<AuthState & AuthActions>()(
@@ -14,26 +14,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
     (set) => ({
       ...initialState,
 
-      login: (token) =>
-        set({
-          isAuthenticated: true,
-          token,
-          error: null,
-        }),
-
-      logout: () =>
-        set({
-          isAuthenticated: false,
-          token: null,
-          error: null,
-        }),
-
-      setLoading: (loading) =>
-        set({ loading }),
-
-      setError: (error) =>
-        set({ error, loading: false }),
-
+      setUser: (user) => set({ user, isAuthenticated: !!user, error: null }),
+      setLoading: (loading) => set({ loading }),
+      setError: (error) => set({ error, loading: false }),
       reset: () => set(initialState),
     }),
     {

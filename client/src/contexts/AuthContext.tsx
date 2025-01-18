@@ -6,7 +6,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<{ requiresTwoFactor?: boolean; userId?: string }>;
+  validate2FA: (userId: string, token: string, isBackupCode?: boolean) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
   logout: () => void;
 }
@@ -36,10 +37,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(credentials: LoginCredentials) {
     try {
       setError(null);
-      const user = await authService.login(credentials.email, credentials.password);
-      setUser(user);
+      const response = await authService.login(credentials.email, credentials.password);
+      
+      if (response.requiresTwoFactor) {
+        return {
+          requiresTwoFactor: true,
+          userId: response.userId
+        };
+      }
+
+      setUser(response.user!);
+      return { requiresTwoFactor: false };
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Login failed');
+      throw error;
+    }
+  }
+
+  async function validate2FA(userId: string, token: string, isBackupCode = false) {
+    try {
+      setError(null);
+      const user = await authService.validate2FA(userId, token, isBackupCode);
+      setUser(user);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : '2FA validation failed');
       throw error;
     }
   }
@@ -69,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     error,
     login,
+    validate2FA,
     register,
     logout,
   };

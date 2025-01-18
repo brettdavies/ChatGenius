@@ -39,33 +39,76 @@ export default function SearchResultsView() {
   };
 
   const handleResultClick = async (channelId: string, messageId: string) => {
-    // First set the active channel and thread if needed
+    // First set the active channel
     setActiveChannel(channelId);
     
+    // Get the clicked message
+    const message = searchResults.find(m => m.id === messageId);
+    if (!message) return;
+
+    console.log('[SearchResultsView] Clicked message:', {
+      id: message.id,
+      isThreadMessage: message.isThreadMessage,
+      threadId: message.threadId,
+      replyCount: message.replyCount,
+      content: message.content.slice(0, 50) // First 50 chars for context
+    });
+
+    // If this is a thread message, we need to open its parent thread
+    // If this is a message with replies, we open its own thread
+    const threadId = message.isThreadMessage ? message.threadId : (message.replyCount ? message.id : null);
+    console.log('[SearchResultsView] Determined threadId:', {
+      threadId,
+      isThreadMessage: message.isThreadMessage,
+      hasReplies: Boolean(message.replyCount)
+    });
+
     // Close the search modal
     handleClose();
 
-    // Wait for channel change to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for the channel to load and render
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Find and scroll to the message
-    const messageElement = document.getElementById(`message-${messageId}`);
-    if (messageElement) {
-      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (threadId) {
+      console.log('[SearchResultsView] Setting active thread:', threadId, 'in channel:', channelId);
+      setActiveThread(threadId, channelId);
       
-      // Add highlight class
-      messageElement.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
-      
-      // Remove highlight after animation
-      setTimeout(() => {
-        messageElement.classList.remove('bg-yellow-100', 'dark:bg-yellow-900/30');
-      }, 2000);
+      // Wait for thread to load
+      await new Promise(resolve => setTimeout(resolve, 200));
+    } else {
+      console.log('[SearchResultsView] No thread to open - regular message');
+    }
 
-      // If message has thread replies, open the thread view
-      const message = searchResults.find(m => m.id === messageId);
-      if (message?.replyCount) {
-        setActiveThread(messageId);
+    // Function to find and highlight message
+    const findAndHighlightMessage = () => {
+      // Try to find message in main message list or thread panel
+      const messageElement = document.getElementById(`message-${messageId}`) || 
+                           document.querySelector(`.thread-panel #message-${messageId}`);
+      
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add highlight class
+        messageElement.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
+        
+        // Remove highlight after animation
+        setTimeout(() => {
+          messageElement.classList.remove('bg-yellow-100', 'dark:bg-yellow-900/30');
+        }, 2000);
+        return true;
       }
+      return false;
+    };
+
+    // Try to find the message immediately
+    if (!findAndHighlightMessage()) {
+      console.log('[SearchResultsView] Message not found, retrying in 500ms...');
+      // If not found, try again after a delay to allow for thread panel to fully load
+      setTimeout(() => {
+        if (!findAndHighlightMessage()) {
+          console.log('[SearchResultsView] Could not find message element to scroll to:', messageId);
+        }
+      }, 500);
     }
   };
 
@@ -100,8 +143,7 @@ export default function SearchResultsView() {
         {/* Results */}
         <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-2">
           {searchResults.map((message) => {
-            const user = users.find((u) => u.id === message.userId);
-            const channel = channels.find((c) => c.id === message.channelId);
+            const channel = channels.find((c: { id: string; name: string }) => c.id === message.channelId);
 
             return (
               <button
@@ -118,7 +160,7 @@ export default function SearchResultsView() {
                 {/* User and Timestamp */}
                 <div className="mb-2 flex items-center space-x-2">
                   <span className="font-medium text-white">
-                    {user?.name || 'Unknown User'}
+                    {message.user?.username || 'Unknown User'}
                   </span>
                   <span className="text-xs text-gray-400">
                     {format(new Date(message.createdAt), 'MMM d, h:mm a')}

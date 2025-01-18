@@ -105,6 +105,32 @@ export function formatText(text: string): FormattedSegment[] {
     }
 
     // Handle links
+    if (text[i] === '[') {
+      const linkTextEnd = text.indexOf(']', i);
+      const linkUrlStart = text.indexOf('(', linkTextEnd);
+      const linkUrlEnd = text.indexOf(')', linkUrlStart);
+      
+      if (linkTextEnd !== -1 && linkUrlStart === linkTextEnd + 1 && linkUrlEnd !== -1) {
+        const linkText = text.slice(i + 1, linkTextEnd);
+        const linkUrl = text.slice(linkUrlStart + 1, linkUrlEnd);
+        
+        if (isValidUrl(linkUrl)) {
+          if (currentText) {
+            segments.push({ text: currentText });
+            currentText = '';
+          }
+          segments.push({
+            text: linkText,
+            isLink: true,
+            href: linkUrl,
+          });
+          i = linkUrlEnd + 1;
+          continue;
+        }
+      }
+    }
+
+    // Handle raw URLs
     if (text[i] === '<' && text.indexOf('>', i) !== -1) {
       const end = text.indexOf('>', i);
       const url = text.slice(i + 1, end);

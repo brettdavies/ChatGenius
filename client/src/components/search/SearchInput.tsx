@@ -1,62 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMessageStore } from '../../stores';
-import { MagnifyingGlassIcon, XMarkIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
-import { useDebounce } from '../../hooks/useDebounce';
+import { XMarkIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 export default function SearchInput() {
   const [query, setQuery] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const debouncedQuery = useDebounce(query, 300);
+  const searchQuery = useMessageStore((state) => state.searchQuery);
+  const searchFilters = useMessageStore((state) => state.searchFilters);
   const searchMessages = useMessageStore((state) => state.searchMessages);
   const clearSearch = useMessageStore((state) => state.clearSearch);
-  const searchFilters = useMessageStore((state) => state.searchFilters);
-
-  useEffect(() => {
-    if (debouncedQuery) {
-      searchMessages(debouncedQuery);
-    } else {
-      clearSearch();
-    }
-  }, [debouncedQuery, searchMessages, clearSearch]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl + K to focus search
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        const searchInput = document.getElementById('message-search');
-        if (searchInput) {
-          searchInput.focus();
-        }
-      }
-
-      // Escape to clear search when focused
-      if (e.key === 'Escape' && isFocused) {
-        e.preventDefault();
-        handleClear();
-        const searchInput = document.getElementById('message-search');
-        if (searchInput) {
-          searchInput.blur();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isFocused]);
-
-  const handleClear = () => {
-    setQuery('');
-    clearSearch();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && query.trim()) {
-      e.preventDefault();
-      searchMessages(query);
-    }
-  };
 
   // Get active filters for display
   const getActiveFilters = () => {
@@ -90,36 +42,43 @@ export default function SearchInput() {
     return filters;
   };
 
+  const handleClear = () => {
+    setQuery('');
+    clearSearch();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && query.trim()) {
+      e.preventDefault();
+      searchMessages(query);
+    }
+  };
+
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-      </div>
-      <input
-        id="message-search"
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        className="block w-full rounded-md border-0 bg-gray-700 py-1.5 pl-10 pr-20 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 sm:text-sm sm:leading-6"
-        placeholder="Search messages... (⌘K)"
-      />
-      <div className="absolute inset-y-0 right-0 flex items-center space-x-1 pr-3">
+      <div className="relative flex items-center">
+        <input
+          id="message-search"
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Search messages..."
+          className="w-full rounded-md bg-gray-700 px-3 py-1.5 text-sm text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
         {query && (
           <button
             onClick={handleClear}
-            className="hover:text-gray-300"
+            className="absolute right-8 text-gray-400 hover:text-gray-300"
           >
-            <XMarkIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+            <XMarkIcon className="h-4 w-4" />
           </button>
         )}
         <button
           onClick={() => setShowHelp(!showHelp)}
-          className="hover:text-gray-300"
+          className="absolute right-2 text-gray-400 hover:text-gray-300"
         >
-          <QuestionMarkCircleIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <QuestionMarkCircleIcon className="h-4 w-4" />
         </button>
       </div>
 

@@ -1,23 +1,41 @@
-import { useEffect, useRef, useMemo } from 'react';
-import { useMessageStore, useUserStore } from '../../stores';
-import type { Message } from '../../types/store.types';
+import { useEffect, useRef } from 'react';
+import { useMessageStore, useUserStore, useChannelStore } from '../../stores';
+import type { Message } from '../../types/message.types';
 import MessageItem from './MessageItem';
+import { getMessages } from '../../services/message';
 
 interface MessageListProps {
-  channelId: string;
+  messages: Message[];
 }
 
-export default function MessageList({ channelId }: MessageListProps) {
+export default function MessageList({ messages }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const messageSelector = useMemo(
-    () => (state: any) => state.messages[channelId] || [],
-    [channelId]
-  );
-  
-  const messages = useMessageStore(messageSelector);
   const loading = useMessageStore((state) => state.loading);
-  const users = useUserStore((state) => state.users);
+  const setMessages = useMessageStore((state) => state.setMessages);
+  const setLoading = useMessageStore((state) => state.setLoading);
+  const setError = useMessageStore((state) => state.setError);
+  const activeChannelId = useChannelStore((state) => state.activeChannelId);
+
+  useEffect(() => {
+    async function fetchMessages() {
+      if (!activeChannelId) return;
+      
+      try {
+        setLoading(true);
+        console.log('[MessageList] Fetching messages for channel:', activeChannelId);
+        const { messages } = await getMessages(activeChannelId);
+        console.log('[MessageList] Received messages:', messages.length);
+        setMessages(activeChannelId, messages);
+      } catch (error) {
+        console.error('[MessageList] Error fetching messages:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch messages');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMessages();
+  }, [activeChannelId, setMessages, setLoading, setError]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -45,7 +63,6 @@ export default function MessageList({ channelId }: MessageListProps) {
         <MessageItem
           key={message.id}
           message={message}
-          user={users.find((u) => u.id === message.userId)}
         />
       ))}
       <div ref={messagesEndRef} />
