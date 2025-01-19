@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useChannelStore, useUserStore } from '../../stores';
+import { useUserStore } from '../../stores';
 import { ChannelList } from '../channel/ChannelList';
 import UserProfile from '../profile/UserProfile';
 import { PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline';

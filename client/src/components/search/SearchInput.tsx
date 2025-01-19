@@ -5,7 +5,6 @@ import { XMarkIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 export default function SearchInput() {
   const [query, setQuery] = useState('');
   const [showHelp, setShowHelp] = useState(false);
-  const searchQuery = useMessageStore((state) => state.searchQuery);
   const searchFilters = useMessageStore((state) => state.searchFilters);
   const searchMessages = useMessageStore((state) => state.searchMessages);
   const clearSearch = useMessageStore((state) => state.clearSearch);

@@ -328,7 +328,7 @@ The backend provides routes for user registration and login:
   Creates a new user with a hashed password.
 
 - **POST** `/api/auth/login`  
-  Logs in an existing user and returns a JWT token (stored in the `Authorization` header or application state).
+  Logs in an existing user and creates a session. The session is maintained through cookies.
 
 See `server/src/routes/auth.js` for details on how the routes are implemented. The database schema includes a `users` table with fields for `username`, `email`, and a hashed `password`.
 

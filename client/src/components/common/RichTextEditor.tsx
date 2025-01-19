@@ -1,19 +1,19 @@
-import { useState, useRef, useEffect, forwardRef } from 'react';
+import { useEffect, forwardRef } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
-import { isValidMarkdown, sanitizeMarkdown } from '../../utils/markdown';
+import Placeholder from '@tiptap/extension-placeholder';
 
 interface RichTextEditorProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit?: () => void;
-  placeholder?: string;
   onKeyDown?: (e: React.KeyboardEvent) => void;
+  placeholder?: string;
 }
 
 const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
-  ({ value, onChange, onSubmit, placeholder, onKeyDown }, ref) => {
+  ({ value, onChange, onSubmit, onKeyDown, placeholder }, ref) => {
     const editor = useEditor({
       extensions: [
         StarterKit,
@@ -22,6 +22,10 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
           HTMLAttributes: {
             class: 'text-blue-500 hover:text-blue-700 hover:underline',
           },
+        }),
+        Placeholder.configure({
+          placeholder: placeholder || 'Type a message...',
+          emptyEditorClass: 'is-editor-empty',
         }),
       ],
       content: value,

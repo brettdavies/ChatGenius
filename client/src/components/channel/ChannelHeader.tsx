@@ -16,7 +16,7 @@ export default function ChannelHeader() {
     <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4 dark:border-gray-700">
       <div className="flex items-center space-x-2">
         <div className="flex items-center">
-          {channel.isPrivate ? (
+          {channel.type === 'private' ? (
             <LockClosedIcon className="h-4 w-4 text-gray-400" />
           ) : (
             <HashtagIcon className="h-4 w-4 text-gray-400" />

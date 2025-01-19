@@ -1,29 +1,39 @@
-import type { Message, User } from '../types/store.types';
+import type { Message } from '../types/message.types';
+import type { User } from '../types/user.types';
 
 export const sampleUsers: User[] = [
   {
     id: 'user1',
     email: 'sarah@example.com',
-    name: 'Sarah Chen',
+    username: 'Sarah Chen',
+    role: 'user',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    totpEnabled: false,
     status: 'online',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-    password: 'password123'
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah'
   },
   {
     id: 'user2',
     email: 'alex@example.com',
-    name: 'Alex Kim',
+    username: 'Alex Kim',
+    role: 'user',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    totpEnabled: false,
     status: 'online',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-    password: 'password123'
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex'
   },
   {
     id: 'user3',
     email: 'maya@example.com',
-    name: 'Maya Patel',
+    username: 'Maya Patel',
+    role: 'user',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    totpEnabled: false,
     status: 'away',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya',
-    password: 'password123'
+    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya'
   }
 ];
 

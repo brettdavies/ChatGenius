@@ -16,7 +16,7 @@ export default function SearchResults() {
 
   const handleResultClick = (channelId: string, messageId: string) => {
     setActiveChannel(channelId);
-    setActiveThread(messageId);
+    setActiveThread(messageId, channelId);
   };
 
   return (
@@ -49,7 +49,7 @@ export default function SearchResults() {
               {/* User and Timestamp */}
               <div className="mb-1 flex items-center space-x-2">
                 <span className="font-medium text-white">
-                  {user?.name || 'Unknown User'}
+                  {user?.username || 'Unknown User'}
                 </span>
                 <span className="text-xs text-gray-400">
                   {format(new Date(message.createdAt), 'MMM d, h:mm a')}

@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { MessageState, MessageActions } from '../types/message-store.types';
-import { useChannelStore } from './channel.store';
 import { searchMessages as searchMessagesApi } from '../services/message';
 
 const initialState: MessageState = {

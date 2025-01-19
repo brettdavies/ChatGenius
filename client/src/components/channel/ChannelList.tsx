@@ -35,7 +35,7 @@ export function ChannelList() {
             channel.id === activeChannelId ? 'bg-gray-700' : ''
           }`}
         >
-          {channel.isPrivate ? (
+          {channel.type === 'private' ? (
             <LockClosedIcon className="w-4 h-4" />
           ) : (
             <HashtagIcon className="w-4 h-4" />

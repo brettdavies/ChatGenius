@@ -1,7 +1,6 @@
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
-import { useUserStore } from '../../stores';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -11,7 +10,6 @@ interface SettingsModalProps {
 type SetupStep = 'initial' | 'qr' | 'verify' | 'backup';
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const currentUser = useUserStore((state) => state.currentUser);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [setupStep, setSetupStep] = useState<SetupStep>('initial');

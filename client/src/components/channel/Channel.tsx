@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useChannelStore, useMessageStore, useUserStore } from '../../stores';
+import { useChannelStore, useMessageStore } from '../../stores';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ChannelHeader from './ChannelHeader';
@@ -14,11 +14,8 @@ export default function Channel() {
   const setChannels = useChannelStore((state) => state.setChannels);
   const setLoading = useChannelStore((state) => state.setLoading);
   const setError = useChannelStore((state) => state.setError);
-  const setMessages = useMessageStore((state) => state.setMessages);
   const activeThreadId = useMessageStore((state) => state.activeThreadId);
-  const messages = useMessageStore((state) => 
-    activeChannelId ? state.messages[activeChannelId] || [] : []
-  );
+  const messages = useMessageStore((state) => activeChannelId ? state.messages[activeChannelId] || [] : []);
   const searchQuery = useMessageStore((state) => state.searchQuery);
   const [threadWidth, setThreadWidth] = useState(384); // Default 384px (w-96)
   const [isResizing, setIsResizing] = useState(false);

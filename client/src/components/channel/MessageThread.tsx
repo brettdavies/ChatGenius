@@ -97,7 +97,7 @@ export default function MessageThread() {
         </div>
       </div>
       <div className="border-t border-gray-200 dark:border-gray-700">
-        <TypingIndicator />
+        {activeChannelId && <TypingIndicator channelId={activeChannelId} />}
         <ThreadMessageInput />
       </div>
     </div>

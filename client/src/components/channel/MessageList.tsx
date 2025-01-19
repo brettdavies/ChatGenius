@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useMessageStore, useUserStore, useChannelStore } from '../../stores';
+import { useMessageStore, useChannelStore } from '../../stores';
 import type { Message } from '../../types/message.types';
 import MessageItem from './MessageItem';
 import { getMessages } from '../../services/message';

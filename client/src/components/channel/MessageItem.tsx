@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useMessageStore, useUserStore } from '../../stores';
 import type { Message } from '../../types/message.types';
-import type { User } from '../../types/user.types';
 import { format } from 'date-fns';
 import { ChatBubbleLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { updateMessage, deleteMessage } from '../../services/message';
@@ -27,19 +26,19 @@ function formatMessageContent(text: string): string {
 
 export default function MessageItem({ message, isThreadMessage, isThreadParent }: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(message.content);
+  const [editedContent, setEditedContent] = useState(message.content);
   const { updateMessage: updateMessageInStore, deleteMessage: deleteMessageFromStore, setActiveThread } = useMessageStore();
   const currentUser = useUserStore((state) => state.currentUser);
-  const [error, setError] = useState<string | null>(null);
+  const setError = useState<string | null>(null)[1];
 
   const handleEdit = async () => {
-    if (!editContent.trim()) {
+    if (!editedContent.trim()) {
       setError('Message cannot be empty');
       return;
     }
 
     try {
-      const updatedMessage = await updateMessage(message.id, editContent);
+      const updatedMessage = await updateMessage(message.id, editedContent);
       updateMessageInStore(message.channelId, message.id, updatedMessage.content, isThreadMessage || false);
       setIsEditing(false);
     } catch (error) {
@@ -128,8 +127,8 @@ export default function MessageItem({ message, isThreadMessage, isThreadParent }
         {isEditing ? (
           <div className="mt-1">
             <textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
               className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white"
               rows={3}
             />

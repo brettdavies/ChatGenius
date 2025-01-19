@@ -68,7 +68,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setLoading(true);
         const user = await getCurrentUser();
         setUser(user);
-        setCurrentUser(user);
+        if (user) {
+          setCurrentUser(user);
+        }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to get current user');
       } finally {

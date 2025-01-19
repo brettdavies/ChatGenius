@@ -51,10 +51,10 @@ export default function TypingIndicator({ channelId, threadId }: TypingIndicator
           <>You are typing...</>
         )}
         {otherTypingUsers.length === 1 && (
-          <>{otherTypingUsers[0]?.name} is typing...</>
+          <>{otherTypingUsers[0]?.username} is typing...</>
         )}
         {otherTypingUsers.length === 2 && (
-          <>{otherTypingUsers[0]?.name} and {otherTypingUsers[1]?.name} are typing...</>
+          <>{otherTypingUsers[0]?.username} and {otherTypingUsers[1]?.username} are typing...</>
         )}
         {otherTypingUsers.length > 2 && (
           <>Several people are typing...</>

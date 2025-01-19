@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useMessageStore, useUserStore, useChannelStore } from '../../stores';
+import { useMessageStore, useChannelStore } from '../../stores';
 import { format } from 'date-fns';
 import { HashtagIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -9,7 +9,6 @@ export default function SearchResultsView() {
   const clearSearch = useMessageStore((state) => state.clearSearch);
   const setActiveChannel = useChannelStore((state) => state.setActiveChannel);
   const setActiveThread = useMessageStore((state) => state.setActiveThread);
-  const users = useUserStore((state) => state.users);
   const channels = useChannelStore((state) => state.channels);
   const modalRef = useRef<HTMLDivElement>(null);
 

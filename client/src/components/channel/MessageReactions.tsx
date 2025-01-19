@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useUserStore } from '../../stores';
-import type { Message } from '../../types/store.types';
+import type { Message } from '../../types/message.types';
 import { addReaction, removeReaction } from '../../services/message';
 
 interface MessageReactionsProps {
