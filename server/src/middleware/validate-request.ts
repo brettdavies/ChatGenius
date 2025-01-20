@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserError } from '../services/user-service.js';
 import * as emoji from 'node-emoji';
+import { validationResult } from 'express-validator';
+import { sendError } from '../utils/response.utils.js';
 
 export function validateRequest(req: Request, res: Response, next: NextFunction): void {
   const path = req.path;
@@ -88,10 +90,38 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
       return next();
     }
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = errors.array()[0];
+      sendError(res, error.msg, 'VALIDATION_ERROR', [{
+        message: error.msg,
+        code: 'VALIDATION_ERROR',
+        path: req.path
+      }], 400);
+      return;
+    }
+
+    // Validate emoji if present in request body
+    if (req.body.emoji) {
+      const emojiStr = req.body.emoji;
+      if (!emoji.find(emojiStr)) {
+        sendError(res, 'Invalid emoji', 'INVALID_EMOJI', [{
+          message: 'Invalid emoji',
+          code: 'INVALID_EMOJI',
+          path: req.path
+        }], 400);
+        return;
+      }
+    }
+
     next();
   } catch (error) {
     if (error instanceof UserError) {
-      res.status(400).json({ message: error.message, code: error.code });
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: req.path
+      }], 400);
     } else {
       next(error);
     }

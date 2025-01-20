@@ -4,13 +4,7 @@ import * as messageQueries from '../db/queries/messages.js';
 import { Message, CreateMessageInput, UpdateMessageInput, GetMessagesOptions, GetThreadMessagesOptions, SearchMessagesOptions } from '../db/queries/messages.js';
 import { CreateReactionInput } from '../db/queries/reactions.js';
 import { ErrorCodes } from '../openapi/schemas/common.js';
-
-export class MessageError extends Error {
-  constructor(public code: typeof ErrorCodes[keyof typeof ErrorCodes], message: string) {
-    super(message);
-    this.name = 'MessageError';
-  }
-}
+import { MessageError } from '../errors/message-error.js';
 
 export class MessageService {
   private realtimeService = RealtimeService.getInstance();

@@ -1,14 +1,8 @@
 import speakeasy from 'speakeasy';
 import QRCode from 'qrcode';
 import crypto from 'crypto';
+import { TOTPError } from '../errors/totp-error.js';
 import { ErrorCodes } from '../openapi/schemas/common.js';
-
-export class TOTPError extends Error {
-  constructor(public code: typeof ErrorCodes[keyof typeof ErrorCodes], message: string) {
-    super(message);
-    this.name = 'TOTPError';
-  }
-}
 
 export class TOTPService {
   private readonly BACKUP_CODE_LENGTH = 8;

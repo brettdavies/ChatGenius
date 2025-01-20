@@ -1,3 +1,4 @@
+import { RealtimeError } from '../errors/realtime-error.js';
 import { ErrorCodes } from '../openapi/schemas/common.js';
 
 export enum ChannelEventType {
@@ -31,13 +32,6 @@ export interface ChannelSubscription {
   channelId: string;
   userId: string;
   res: any;
-}
-
-export class RealtimeError extends Error {
-  constructor(public code: typeof ErrorCodes[keyof typeof ErrorCodes], message: string) {
-    super(message);
-    this.name = 'RealtimeError';
-  }
 }
 
 export class RealtimeService {

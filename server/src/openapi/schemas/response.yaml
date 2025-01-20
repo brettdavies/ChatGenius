@@ -1,0 +1,35 @@
+ApiResponse:
+  type: object
+  required:
+    - message
+    - code
+  properties:
+    message:
+      type: string
+      description: A human-readable message describing the response
+    code:
+      type: string
+      description: A machine-readable code identifying the response type
+    errors:
+      type: array
+      items:
+        $ref: '#/components/schemas/ApiError'
+    data:
+      type: object
+      description: The response payload
+
+ApiError:
+  type: object
+  required:
+    - message
+    - code
+  properties:
+    message:
+      type: string
+      description: A human-readable error message
+    code:
+      type: string
+      description: A machine-readable error code
+    path:
+      type: string
+      description: The path where the error occurred 

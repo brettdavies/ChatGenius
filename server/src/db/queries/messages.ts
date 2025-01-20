@@ -1,4 +1,4 @@
-import pool from '../pool.js';
+import { pool } from '@config/database.js';
 import { ulid } from 'ulid';
 
 export interface Message {

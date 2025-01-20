@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from 'openapi-types';
-import { ErrorResponse } from '../schemas/common.ts';
 
 export const eventPaths: OpenAPIV3.PathsObject = {
   '/api/events/channels/{channelId}/events': {
@@ -26,6 +25,7 @@ export const eventPaths: OpenAPIV3.PathsObject = {
             'text/event-stream': {
               schema: {
                 type: 'object',
+                required: ['type', 'channelId', 'userId', 'timestamp'],
                 properties: {
                   type: {
                     type: 'string',
@@ -67,7 +67,7 @@ export const eventPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -75,7 +75,7 @@ export const eventPaths: OpenAPIV3.PathsObject = {
           description: 'Not authorized to access this channel',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -83,7 +83,15 @@ export const eventPaths: OpenAPIV3.PathsObject = {
           description: 'Too many requests',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -107,14 +115,52 @@ export const eventPaths: OpenAPIV3.PathsObject = {
         }
       ],
       responses: {
-        204: {
-          description: 'Typing indicator started'
+        200: {
+          description: 'Typing indicator started',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message', 'code'],
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Typing indicator started'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'TYPING_STARTED'
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
+            }
+          }
         },
         401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Not authorized to access this channel',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        404: {
+          description: 'Channel not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -122,7 +168,15 @@ export const eventPaths: OpenAPIV3.PathsObject = {
           description: 'Too many requests',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -146,14 +200,52 @@ export const eventPaths: OpenAPIV3.PathsObject = {
         }
       ],
       responses: {
-        204: {
-          description: 'Typing indicator stopped'
+        200: {
+          description: 'Typing indicator stopped',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message', 'code'],
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Typing indicator stopped'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'TYPING_STOPPED'
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
+            }
+          }
         },
         401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Not authorized to access this channel',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        404: {
+          description: 'Channel not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -161,7 +253,15 @@ export const eventPaths: OpenAPIV3.PathsObject = {
           description: 'Too many requests',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -193,7 +293,8 @@ export const eventPaths: OpenAPIV3.PathsObject = {
               required: ['isOnline'],
               properties: {
                 isOnline: {
-                  type: 'boolean'
+                  type: 'boolean',
+                  description: 'Whether the user is online in the channel'
                 }
               }
             }
@@ -201,14 +302,52 @@ export const eventPaths: OpenAPIV3.PathsObject = {
         }
       },
       responses: {
-        204: {
-          description: 'Presence status updated'
+        200: {
+          description: 'Presence status updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message', 'code'],
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Presence status updated'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'PRESENCE_UPDATED'
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
+            }
+          }
         },
         401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Not authorized to access this channel',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        404: {
+          description: 'Channel not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -216,7 +355,15 @@ export const eventPaths: OpenAPIV3.PathsObject = {
           description: 'Too many requests',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }

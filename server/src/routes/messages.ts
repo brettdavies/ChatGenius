@@ -1,54 +1,58 @@
 import express from 'express';
-import { isAuthenticated } from '../middleware/auth.js';
+import { isAuthenticated, validateSession } from '../middleware/auth.js';
 import { validateRequest } from '../middleware/validate-request.js';
 import { MessageService } from '../services/message-service.js';
-import { MessageError } from '../services/message-service.js';
+import { MessageError } from '../errors/message-error.js';
 import {
   messageCreateLimiter,
   messageUpdateLimiter,
   messageDeleteLimiter,
   messageReactionLimiter,
   messageSearchLimiter
-} from '../middleware/message-rate-limit.js';
+} from '../middleware/rate-limit.js';
+import { sendResponse, sendError } from '../utils/response.utils.js';
 
 const router = express.Router();
 const messageService = new MessageService();
 
 // Create a message
-router.post('/', isAuthenticated, messageCreateLimiter, validateRequest, async (req, res, next) => {
+router.post('/', isAuthenticated, validateSession, messageCreateLimiter, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Creating message:', {
-    userId: req.user?.id,
     channelId: req.body.channelId,
-    threadId: req.body.threadId,
-    contentLength: req.body.content?.length
+    userId: req.user?.id,
+    content: req.body.content
   });
   
   try {
     const message = await messageService.createMessage(req.user!.id, {
-      userId: req.user!.id,
       channelId: req.body.channelId,
       content: req.body.content,
-      threadId: req.body.threadId
+      threadId: req.body.threadId,
+      userId: req.user!.id
     });
-    console.log('[MessageRoutes] Message created successfully:', { messageId: message.id });
-    res.status(201).json(message);
+    console.log('[MessageRoutes] Message created successfully:', message.id);
+    sendResponse(res, 'Message created successfully', 'MESSAGE_CREATED', message, 201);
   } catch (error) {
     console.error('[MessageRoutes] Error creating message:', error);
     if (error instanceof MessageError) {
-      const status = error.code.includes('NOT_CHANNEL_MEMBER') ? 403 : 400;
-      console.log('[MessageRoutes] Sending error response:', { status, code: error.code });
-      res.status(status).json({
+      const status = error.code === 'CHANNEL_NOT_FOUND' ? 404 : 400;
+      sendError(res, error.message, error.code, [{
         message: error.message,
-        code: error.code
-      });
+        code: error.code,
+        path: '/messages'
+      }], status);
     } else {
-      next(error);
+      sendError(res, 'Failed to create message', 'MESSAGE_CREATE_ERROR', [{
+        message: 'Failed to create message',
+        code: 'MESSAGE_CREATE_ERROR',
+        path: '/messages'
+      }], 500);
     }
   }
 });
 
 // Search messages
-router.get('/search', isAuthenticated, messageSearchLimiter, validateRequest, async (req, res, next) => {
+router.get('/search', isAuthenticated, validateSession, messageSearchLimiter, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Searching messages:', {
     userId: req.user?.id,
     query: {
@@ -72,10 +76,22 @@ router.get('/search', isAuthenticated, messageSearchLimiter, validateRequest, as
       messageCount: result.messages.length,
       total: result.total
     });
-    res.json(result);
+    sendResponse(res, 'Messages searched successfully', 'MESSAGES_SEARCHED', result);
   } catch (error) {
     console.error('[MessageRoutes] Error searching messages:', error);
-    next(error);
+    if (error instanceof MessageError) {
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: '/messages/search'
+      }], 400);
+    } else {
+      sendError(res, 'Failed to search messages', 'MESSAGE_SEARCH_ERROR', [{
+        message: 'Failed to search messages',
+        code: 'MESSAGE_SEARCH_ERROR',
+        path: '/messages/search'
+      }], 500);
+    }
   }
 });
 
@@ -102,15 +118,23 @@ router.get('/channel/:channelId', isAuthenticated, validateRequest, async (req, 
       messageCount: result.messages.length,
       total: result.total
     });
-    res.json(result);
+    sendResponse(res, 'Messages retrieved successfully', 'MESSAGES_RETRIEVED', result);
   } catch (error) {
     console.error('[MessageRoutes] Error getting channel messages:', error);
-    next(error);
+    if (error instanceof MessageError) {
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: `/messages/channel/${req.params.channelId}`
+      }], 400);
+    } else {
+      next(error);
+    }
   }
 });
 
 // Get messages in a thread
-router.get('/thread/:threadId', isAuthenticated, validateRequest, async (req, res, next) => {
+router.get('/thread/:threadId', isAuthenticated, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Getting thread messages:', {
     threadId: req.params.threadId,
     userId: req.user?.id,
@@ -130,29 +154,53 @@ router.get('/thread/:threadId', isAuthenticated, validateRequest, async (req, re
       messageCount: result.messages.length,
       total: result.total
     });
-    res.json(result);
+    sendResponse(res, 'Thread messages retrieved successfully', 'THREAD_MESSAGES_RETRIEVED', result);
   } catch (error) {
     console.error('[MessageRoutes] Error getting thread messages:', error);
-    next(error);
+    if (error instanceof MessageError) {
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: `/messages/thread/${req.params.threadId}`
+      }], 400);
+    } else {
+      sendError(res, 'Failed to get thread messages', 'THREAD_MESSAGES_ERROR', [{
+        message: 'Failed to get thread messages',
+        code: 'THREAD_MESSAGES_ERROR',
+        path: `/messages/thread/${req.params.threadId}`
+      }], 500);
+    }
   }
 });
 
 // Get a message by ID
-router.get('/:messageId', isAuthenticated, validateRequest, async (req, res, next) => {
+router.get('/:messageId', isAuthenticated, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Getting message:', { messageId: req.params.messageId, userId: req.user?.id });
   
   try {
     const message = await messageService.getMessage(req.user!.id, req.params.messageId);
     console.log('[MessageRoutes] Message retrieved successfully');
-    res.json(message);
+    sendResponse(res, 'Message retrieved successfully', 'MESSAGE_RETRIEVED', { message });
   } catch (error) {
     console.error('[MessageRoutes] Error getting message:', error);
-    next(error);
+    if (error instanceof MessageError) {
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: `/messages/${req.params.messageId}`
+      }], 400);
+    } else {
+      sendError(res, 'Failed to get message', 'MESSAGE_GET_ERROR', [{
+        message: 'Failed to get message',
+        code: 'MESSAGE_GET_ERROR',
+        path: `/messages/${req.params.messageId}`
+      }], 500);
+    }
   }
 });
 
 // Update a message
-router.put('/:messageId', isAuthenticated, messageUpdateLimiter, validateRequest, async (req, res, next) => {
+router.put('/:messageId', isAuthenticated, validateSession, messageUpdateLimiter, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Updating message:', {
     messageId: req.params.messageId,
     userId: req.user?.id,
@@ -164,51 +212,55 @@ router.put('/:messageId', isAuthenticated, messageUpdateLimiter, validateRequest
       content: req.body.content
     });
     console.log('[MessageRoutes] Message updated successfully');
-    res.json(message);
+    sendResponse(res, 'Message updated successfully', 'MESSAGE_UPDATED', { message });
   } catch (error) {
     console.error('[MessageRoutes] Error updating message:', error);
     if (error instanceof MessageError) {
       const status = error.code === 'NOT_MESSAGE_OWNER' ? 403 
         : error.code === 'MESSAGE_NOT_FOUND' ? 404 
         : 400;
-      console.log('[MessageRoutes] Sending error response:', { status, code: error.code });
-      res.status(status).json({
+      sendError(res, error.message, error.code, [{
         message: error.message,
-        code: error.code
-      });
+        code: error.code,
+        path: `/messages/${req.params.messageId}`
+      }], status);
     } else {
-      next(error);
+      sendError(res, 'Failed to update message', 'MESSAGE_UPDATE_ERROR', [{
+        message: 'Failed to update message',
+        code: 'MESSAGE_UPDATE_ERROR',
+        path: `/messages/${req.params.messageId}`
+      }], 500);
     }
   }
 });
 
 // Delete a message
-router.delete('/:messageId', isAuthenticated, messageDeleteLimiter, validateRequest, async (req, res, next) => {
+router.delete('/:messageId', isAuthenticated, validateSession, messageDeleteLimiter, validateRequest, async (req, res) => {
   console.log('[MessageRoutes] Deleting message:', { messageId: req.params.messageId, userId: req.user?.id });
   
   try {
-    await messageService.deleteMessage(req.user!.id, req.params.messageId);
-    console.log('[MessageRoutes] Message deleted successfully');
-    res.status(204).end();
+    await messageService.deleteMessage(req.params.messageId, req.user!.id);
+    sendResponse(res, 'Message deleted successfully', 'MESSAGE_DELETED');
   } catch (error) {
-    console.error('[MessageRoutes] Error deleting message:', error);
+    console.error('Message deletion error:', error);
     if (error instanceof MessageError) {
-      const status = error.code === 'NOT_MESSAGE_OWNER' ? 403 
-        : error.code === 'MESSAGE_NOT_FOUND' ? 404 
-        : 400;
-      console.log('[MessageRoutes] Sending error response:', { status, code: error.code });
-      res.status(status).json({
+      sendError(res, error.message, error.code, [{
         message: error.message,
-        code: error.code
-      });
+        code: error.code,
+        path: `/messages/${req.params.messageId}`
+      }], 400);
     } else {
-      next(error);
+      sendError(res, 'Failed to delete message', 'MESSAGE_DELETE_ERROR', [{
+        message: 'Failed to delete message',
+        code: 'MESSAGE_DELETE_ERROR',
+        path: `/messages/${req.params.messageId}`
+      }], 500);
     }
   }
 });
 
 // Add a reaction to a message
-router.post('/:messageId/reactions', isAuthenticated, messageReactionLimiter, validateRequest, async (req, res, next) => {
+router.post('/:messageId/reactions', isAuthenticated, validateSession, messageReactionLimiter, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Adding reaction:', {
     messageId: req.params.messageId,
     userId: req.user?.id,
@@ -222,33 +274,34 @@ router.post('/:messageId/reactions', isAuthenticated, messageReactionLimiter, va
       emoji: req.body.emoji
     });
     console.log('[MessageRoutes] Reaction added successfully');
-    res.status(201).json({
-      message: 'Reaction added successfully',
-      data: {
-        messageId: req.params.messageId,
-        userId: req.user!.id,
-        emoji: req.body.emoji
-      }
-    });
+    sendResponse(res, 'Reaction added successfully', 'REACTION_ADDED', {
+      messageId: req.params.messageId,
+      userId: req.user!.id,
+      emoji: req.body.emoji
+    }, 201);
   } catch (error) {
     console.error('[MessageRoutes] Error adding reaction:', error);
     if (error instanceof MessageError) {
       const status = error.code === 'REACTION_EXISTS' ? 409 
         : error.code === 'MESSAGE_NOT_FOUND' ? 404 
         : 400;
-      console.log('[MessageRoutes] Sending error response:', { status, code: error.code });
-      res.status(status).json({
+      sendError(res, error.message, error.code, [{
         message: error.message,
-        code: error.code
-      });
+        code: error.code,
+        path: `/messages/${req.params.messageId}/reactions`
+      }], status);
     } else {
-      next(error);
+      sendError(res, 'Failed to add reaction', 'REACTION_ADD_ERROR', [{
+        message: 'Failed to add reaction',
+        code: 'REACTION_ADD_ERROR',
+        path: `/messages/${req.params.messageId}/reactions`
+      }], 500);
     }
   }
 });
 
 // Remove a reaction from a message
-router.delete('/:messageId/reactions/:emoji', isAuthenticated, messageReactionLimiter, validateRequest, async (req, res, next) => {
+router.delete('/:messageId/reactions/:emoji', isAuthenticated, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Removing reaction:', {
     messageId: req.params.messageId,
     userId: req.user?.id,
@@ -258,15 +311,27 @@ router.delete('/:messageId/reactions/:emoji', isAuthenticated, messageReactionLi
   try {
     await messageService.removeReaction(req.user!.id, req.params.messageId, req.params.emoji);
     console.log('[MessageRoutes] Reaction removed successfully');
-    res.status(204).end();
+    sendResponse(res, 'Reaction removed successfully', 'REACTION_REMOVED');
   } catch (error) {
     console.error('[MessageRoutes] Error removing reaction:', error);
-    next(error);
+    if (error instanceof MessageError) {
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: `/messages/${req.params.messageId}/reactions/${req.params.emoji}`
+      }], 400);
+    } else {
+      sendError(res, 'Failed to remove reaction', 'REACTION_REMOVE_ERROR', [{
+        message: 'Failed to remove reaction',
+        code: 'REACTION_REMOVE_ERROR',
+        path: `/messages/${req.params.messageId}/reactions/${req.params.emoji}`
+      }], 500);
+    }
   }
 });
 
 // Get reactions for a message
-router.get('/:messageId/reactions', isAuthenticated, validateRequest, async (req, res, next) => {
+router.get('/:messageId/reactions', isAuthenticated, validateRequest, async (req, res, _next) => {
   console.log('[MessageRoutes] Getting message reactions:', {
     messageId: req.params.messageId,
     userId: req.user?.id
@@ -277,10 +342,22 @@ router.get('/:messageId/reactions', isAuthenticated, validateRequest, async (req
     console.log('[MessageRoutes] Message reactions retrieved successfully:', {
       reactionCount: reactions.length
     });
-    res.json(reactions);
+    sendResponse(res, 'Message reactions retrieved successfully', 'MESSAGE_REACTIONS_RETRIEVED', { reactions });
   } catch (error) {
     console.error('[MessageRoutes] Error getting message reactions:', error);
-    next(error);
+    if (error instanceof MessageError) {
+      sendError(res, error.message, error.code, [{
+        message: error.message,
+        code: error.code,
+        path: `/messages/${req.params.messageId}/reactions`
+      }], 400);
+    } else {
+      sendError(res, 'Failed to get message reactions', 'MESSAGE_REACTIONS_ERROR', [{
+        message: 'Failed to get message reactions',
+        code: 'MESSAGE_REACTIONS_ERROR',
+        path: `/messages/${req.params.messageId}/reactions`
+      }], 500);
+    }
   }
 });
 
