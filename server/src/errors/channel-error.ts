@@ -1,6 +1,7 @@
-export class ChannelError extends Error {
-  constructor(public code: string, message: string) {
-    super(message);
-    this.name = 'ChannelError';
+import { BaseError, ErrorCode } from './base-error.js';
+
+export class ChannelError extends BaseError {
+  constructor(code: ErrorCode, message: string) {
+    super(code, message);
   }
 } 

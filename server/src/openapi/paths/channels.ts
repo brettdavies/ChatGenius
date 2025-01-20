@@ -1,13 +1,4 @@
 import { OpenAPIV3 } from 'openapi-types';
-import {
-  ChannelResponse,
-  ChannelMemberResponse,
-  CreateChannelRequest,
-  UpdateChannelRequest,
-  AddChannelMemberRequest,
-  UpdateChannelMemberRequest,
-  ErrorResponse
-} from '../schemas/channels.js';
 
 export const channelPaths: OpenAPIV3.PathsObject = {
   '/api/channels/my': {
@@ -22,24 +13,29 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  channels: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/ChannelResponse'
-                    }
-                  },
-                  total: {
-                    type: 'number'
-                  },
                   message: {
-                    type: 'string'
+                    type: 'string',
+                    example: 'Channels retrieved successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNELS_RETRIEVED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      channels: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ChannelResponse' }
+                      },
+                      total: { type: 'integer' }
+                    }
                   },
                   errors: {
                     type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/ErrorResponse'
-                    }
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -50,9 +46,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: {
-                $ref: '#/components/schemas/ErrorResponse'
-              }
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -69,7 +79,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
         required: true,
         content: {
           'application/json': {
-            schema: CreateChannelRequest
+            schema: { $ref: '#/components/schemas/CreateChannelRequest' }
           }
         }
       },
@@ -80,9 +90,25 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  channel: {
-                    $ref: '#/components/schemas/ChannelResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Channel created successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_CREATED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      channel: { $ref: '#/components/schemas/ChannelResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -90,10 +116,10 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           }
         },
         400: {
-          description: 'Invalid request data',
+          description: 'Invalid request',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -101,27 +127,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
         429: {
-          description: 'Too many requests. Please try again later.',
+          description: 'Too many requests',
           content: {
             'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  message: {
-                    type: 'string',
-                    example: 'Too many channel creation attempts. Please try again later.'
-                  },
-                  code: {
-                    type: 'string',
-                    example: 'RATE_LIMIT_EXCEEDED'
-                  }
-                }
-              }
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -136,36 +158,36 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           name: 'name',
           in: 'query',
           schema: {
-            type: 'string',
-            description: 'Channel name to search for'
-          }
+            type: 'string'
+          },
+          description: 'Channel name to search for'
         },
         {
           name: 'type',
           in: 'query',
           schema: {
             type: 'string',
-            enum: ['public', 'private', 'dm'],
-            description: 'Channel type to filter by'
-          }
+            enum: ['public', 'private', 'dm']
+          },
+          description: 'Channel type to filter by'
         },
         {
           name: 'userId',
           in: 'query',
           schema: {
             type: 'string',
-            format: 'ulid',
-            description: 'Filter by channels where user is a member'
-          }
+            format: 'ulid'
+          },
+          description: 'Filter by channels the user is a member of'
         },
         {
           name: 'includeArchived',
           in: 'query',
           schema: {
             type: 'boolean',
-            description: 'Whether to include archived channels',
             default: false
-          }
+          },
+          description: 'Include archived channels in results'
         },
         {
           name: 'limit',
@@ -174,8 +196,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             type: 'integer',
             minimum: 1,
             maximum: 100,
-            default: 10,
-            description: 'Number of channels to return'
+            default: 50
           }
         },
         {
@@ -184,8 +205,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           schema: {
             type: 'integer',
             minimum: 0,
-            default: 0,
-            description: 'Number of channels to skip'
+            default: 0
           }
         }
       ],
@@ -196,16 +216,29 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  channels: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/ChannelResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Channels retrieved successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNELS_RETRIEVED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      channels: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ChannelResponse' }
+                      },
+                      total: { type: 'integer' }
                     }
                   },
-                  total: {
-                    type: 'integer',
-                    description: 'Total number of channels matching the query'
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -216,15 +249,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        404: {
-          description: 'Channel not found',
+        429: {
+          description: 'Too many requests',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -255,9 +296,25 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  channel: {
-                    $ref: '#/components/schemas/ChannelResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Channel retrieved successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_RETRIEVED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      channel: { $ref: '#/components/schemas/ChannelResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -268,7 +325,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -276,7 +333,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -290,7 +363,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
         required: true,
         content: {
           'application/json': {
-            schema: UpdateChannelRequest
+            schema: { $ref: '#/components/schemas/UpdateChannelRequest' }
           }
         }
       },
@@ -301,9 +374,25 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  channel: {
-                    $ref: '#/components/schemas/ChannelResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Channel updated successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_UPDATED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      channel: { $ref: '#/components/schemas/ChannelResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -311,10 +400,10 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           }
         },
         400: {
-          description: 'Invalid request data',
+          description: 'Invalid request',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -322,7 +411,15 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -330,7 +427,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -341,14 +454,44 @@ export const channelPaths: OpenAPIV3.PathsObject = {
       summary: 'Delete channel',
       security: [{ session: [] }],
       responses: {
-        204: {
-          description: 'Channel deleted successfully'
+        200: {
+          description: 'Channel deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message', 'code'],
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Channel deleted successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_DELETED'
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
+            }
+          }
         },
         401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -356,7 +499,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -387,9 +546,25 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  channel: {
-                    $ref: '#/components/schemas/ChannelResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Channel archived successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_ARCHIVED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      channel: { $ref: '#/components/schemas/ChannelResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -400,7 +575,15 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -408,7 +591,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -429,7 +628,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
       }
     ],
     get: {
-      tags: ['Channel Members'],
+      tags: ['Channels'],
       summary: 'Get channel members',
       security: [{ session: [] }],
       parameters: [
@@ -440,8 +639,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             type: 'integer',
             minimum: 1,
             maximum: 100,
-            default: 10,
-            description: 'Number of members to return'
+            default: 50
           }
         },
         {
@@ -450,8 +648,7 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           schema: {
             type: 'integer',
             minimum: 0,
-            default: 0,
-            description: 'Number of members to skip'
+            default: 0
           }
         }
       ],
@@ -462,16 +659,29 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  members: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/ChannelMemberResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Channel members retrieved successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_MEMBERS_RETRIEVED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      members: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/ChannelMemberResponse' }
+                      },
+                      total: { type: 'integer' }
                     }
                   },
-                  total: {
-                    type: 'integer',
-                    description: 'Total number of members'
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -482,7 +692,15 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -490,21 +708,51 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
       }
     },
     post: {
-      tags: ['Channel Members'],
+      tags: ['Channels'],
       summary: 'Add channel member',
       security: [{ session: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: AddChannelMemberRequest
+            schema: {
+              type: 'object',
+              required: ['userId'],
+              properties: {
+                userId: {
+                  type: 'string',
+                  format: 'ulid'
+                },
+                role: {
+                  type: 'string',
+                  enum: ['admin', 'member'],
+                  default: 'member'
+                }
+              }
+            }
           }
         }
       },
@@ -515,9 +763,25 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  member: {
-                    $ref: '#/components/schemas/ChannelMemberResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Member added successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_MEMBER_ADDED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      member: { $ref: '#/components/schemas/ChannelMemberResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -525,10 +789,10 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           }
         },
         400: {
-          description: 'Invalid request data or user already a member',
+          description: 'Invalid request',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -536,7 +800,15 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -544,7 +816,31 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        409: {
+          description: 'User is already a member',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
@@ -574,14 +870,14 @@ export const channelPaths: OpenAPIV3.PathsObject = {
       }
     ],
     put: {
-      tags: ['Channel Members'],
+      tags: ['Channels'],
       summary: 'Update channel member',
       security: [{ session: [] }],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: UpdateChannelMemberRequest
+            schema: { $ref: '#/components/schemas/UpdateChannelMemberRequest' }
           }
         }
       },
@@ -592,9 +888,25 @@ export const channelPaths: OpenAPIV3.PathsObject = {
             'application/json': {
               schema: {
                 type: 'object',
+                required: ['message', 'code', 'data'],
                 properties: {
-                  member: {
-                    $ref: '#/components/schemas/ChannelMemberResponse'
+                  message: {
+                    type: 'string',
+                    example: 'Member updated successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_MEMBER_UPDATED'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      member: { $ref: '#/components/schemas/ChannelMemberResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
@@ -602,10 +914,10 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           }
         },
         400: {
-          description: 'Invalid request data or insufficient permissions',
+          description: 'Invalid request',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -613,7 +925,15 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -621,25 +941,55 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel or member not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }
       }
     },
     delete: {
-      tags: ['Channel Members'],
+      tags: ['Channels'],
       summary: 'Remove channel member',
       security: [{ session: [] }],
       responses: {
-        204: {
-          description: 'Member removed successfully'
-        },
-        400: {
-          description: 'Cannot remove owner or insufficient permissions',
+        200: {
+          description: 'Member removed successfully',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: {
+                type: 'object',
+                required: ['message', 'code'],
+                properties: {
+                  message: {
+                    type: 'string',
+                    example: 'Member removed successfully'
+                  },
+                  code: {
+                    type: 'string',
+                    example: 'CHANNEL_MEMBER_REMOVED'
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
             }
           }
         },
@@ -647,7 +997,15 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Not authenticated',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
@@ -655,7 +1013,23 @@ export const channelPaths: OpenAPIV3.PathsObject = {
           description: 'Channel or member not found',
           content: {
             'application/json': {
-              schema: ErrorResponse
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         }

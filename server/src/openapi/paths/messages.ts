@@ -3,8 +3,8 @@ import { OpenAPIV3 } from 'openapi-types';
 export const messagePaths: OpenAPIV3.PathsObject = {
   '/api/messages': {
     post: {
-      summary: 'Create a new message',
       tags: ['Messages'],
+      summary: 'Create a new message',
       security: [{ session: [] }],
       requestBody: {
         required: true,
@@ -36,23 +36,39 @@ export const messagePaths: OpenAPIV3.PathsObject = {
         }
       },
       responses: {
-        '201': {
+        201: {
           description: 'Message created successfully',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' }
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      message: { $ref: '#/components/schemas/MessageResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
             }
           }
         },
-        '400': {
-          description: 'Invalid request data',
+        400: {
+          description: 'Invalid request',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -60,16 +76,32 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to post in this channel',
+        403: {
+          description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '404': {
-          description: 'Parent message not found',
+        404: {
+          description: 'Channel or thread not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -79,6 +111,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     }
   },
+
   '/api/messages/{messageId}': {
     parameters: [
       {
@@ -92,19 +125,35 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     ],
     get: {
-      summary: 'Get a message by ID',
       tags: ['Messages'],
+      summary: 'Get message by ID',
       security: [{ session: [] }],
       responses: {
-        '200': {
-          description: 'Message found',
+        200: {
+          description: 'Message retrieved successfully',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' }
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      message: { $ref: '#/components/schemas/MessageResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -112,16 +161,32 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to view this message',
+        403: {
+          description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '404': {
+        404: {
           description: 'Message not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -131,8 +196,8 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     },
     put: {
-      summary: 'Update a message',
       tags: ['Messages'],
+      summary: 'Update message',
       security: [{ session: [] }],
       requestBody: {
         required: true,
@@ -146,7 +211,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
                   type: 'string',
                   minLength: 1,
                   maxLength: 4000,
-                  description: 'New message content'
+                  description: 'Updated message content'
                 }
               }
             }
@@ -154,23 +219,39 @@ export const messagePaths: OpenAPIV3.PathsObject = {
         }
       },
       responses: {
-        '200': {
+        200: {
           description: 'Message updated successfully',
           content: {
             'application/json': {
-              schema: { $ref: '#/components/schemas/MessageResponse' }
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      message: { $ref: '#/components/schemas/MessageResponse' }
+                    }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
             }
           }
         },
-        '400': {
-          description: 'Invalid request data',
+        400: {
+          description: 'Invalid request',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -178,16 +259,32 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to edit this message',
+        403: {
+          description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '404': {
+        404: {
           description: 'Message not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -197,14 +294,30 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     },
     delete: {
-      summary: 'Delete a message',
       tags: ['Messages'],
+      summary: 'Delete message',
       security: [{ session: [] }],
       responses: {
-        '204': {
-          description: 'Message deleted successfully'
+        200: {
+          description: 'Message deleted successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: { type: 'object' },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
+            }
+          }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -212,16 +325,32 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to delete this message',
+        403: {
+          description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '404': {
+        404: {
           description: 'Message not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -231,6 +360,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     }
   },
+
   '/api/messages/channel/{channelId}': {
     parameters: [
       {
@@ -241,63 +371,70 @@ export const messagePaths: OpenAPIV3.PathsObject = {
           type: 'string',
           format: 'ulid'
         }
+      },
+      {
+        name: 'limit',
+        in: 'query',
+        schema: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 100,
+          default: 50
+        }
+      },
+      {
+        name: 'before',
+        in: 'query',
+        schema: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Get messages created before this timestamp'
+        }
+      },
+      {
+        name: 'after',
+        in: 'query',
+        schema: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Get messages created after this timestamp'
+        }
       }
     ],
     get: {
-      summary: 'Get messages in a channel',
       tags: ['Messages'],
+      summary: 'Get messages in a channel',
       security: [{ session: [] }],
-      parameters: [
-        {
-          name: 'before',
-          in: 'query',
-          schema: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Get messages before this timestamp'
-          }
-        },
-        {
-          name: 'after',
-          in: 'query',
-          schema: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Get messages after this timestamp'
-          }
-        },
-        {
-          name: 'limit',
-          in: 'query',
-          schema: {
-            type: 'integer',
-            minimum: 1,
-            maximum: 100,
-            default: 50,
-            description: 'Maximum number of messages to return'
-          }
-        }
-      ],
       responses: {
-        '200': {
+        200: {
           description: 'Messages retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  messages: {
-                    type: 'array',
-                    items: {
-                      $ref: '#/components/schemas/MessageResponse'
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      messages: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/MessageResponse' }
+                      },
+                      total: { type: 'integer' }
                     }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -305,16 +442,32 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to view this channel',
+        403: {
+          description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '404': {
+        404: {
           description: 'Channel not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -324,6 +477,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     }
   },
+
   '/api/messages/thread/{threadId}': {
     parameters: [
       {
@@ -337,8 +491,8 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     ],
     get: {
-      summary: 'Get messages in a thread',
       tags: ['Messages'],
+      summary: 'Get messages in a thread',
       security: [{ session: [] }],
       parameters: [
         {
@@ -361,28 +515,35 @@ export const messagePaths: OpenAPIV3.PathsObject = {
         }
       ],
       responses: {
-        '200': {
+        200: {
           description: 'Thread messages retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['messages', 'total'],
                 properties: {
-                  messages: {
-                    type: 'array',
-                    items: { $ref: '#/components/schemas/MessageResponse' }
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      messages: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/MessageResponse' }
+                      },
+                      total: { type: 'integer' }
+                    }
                   },
-                  total: {
-                    type: 'integer',
-                    description: 'Total number of messages in the thread'
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -390,16 +551,32 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to view this thread',
+        403: {
+          description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '404': {
+        404: {
           description: 'Thread not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -409,10 +586,11 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     }
   },
+
   '/api/messages/search': {
     get: {
-      summary: 'Search messages',
       tags: ['Messages'],
+      summary: 'Search messages',
       security: [{ session: [] }],
       parameters: [
         {
@@ -461,36 +639,43 @@ export const messagePaths: OpenAPIV3.PathsObject = {
         }
       ],
       responses: {
-        '200': {
+        200: {
           description: 'Search results retrieved successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['messages', 'total'],
                 properties: {
-                  messages: {
-                    type: 'array',
-                    items: { $ref: '#/components/schemas/MessageResponse' }
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      messages: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/MessageResponse' }
+                      },
+                      total: { type: 'integer' }
+                    }
                   },
-                  total: {
-                    type: 'integer',
-                    description: 'Total number of messages matching the search'
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
             }
           }
         },
-        '400': {
-          description: 'Invalid search parameters',
+        400: {
+          description: 'Invalid request',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -498,8 +683,24 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '403': {
-          description: 'Not authorized to search in specified channels',
+        403: {
+          description: 'Insufficient permissions',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -509,6 +710,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     }
   },
+
   '/api/messages/{messageId}/reactions': {
     parameters: [
       {
@@ -522,8 +724,8 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     ],
     post: {
-      summary: 'Add a reaction to a message',
       tags: ['Messages'],
+      summary: 'Add reaction to message',
       security: [{ session: [] }],
       requestBody: {
         required: true,
@@ -535,9 +737,9 @@ export const messagePaths: OpenAPIV3.PathsObject = {
               properties: {
                 emoji: {
                   type: 'string',
-                  description: 'The emoji reaction to add',
                   minLength: 1,
-                  maxLength: 8
+                  maxLength: 2,
+                  description: 'Single emoji character'
                 }
               }
             }
@@ -545,50 +747,39 @@ export const messagePaths: OpenAPIV3.PathsObject = {
         }
       },
       responses: {
-        '201': {
+        201: {
           description: 'Reaction added successfully',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
-                required: ['message', 'data'],
                 properties: {
-                  message: { 
-                    type: 'string',
-                    example: 'Reaction added successfully'
-                  },
+                  message: { type: 'string' },
+                  code: { type: 'string' },
                   data: {
                     type: 'object',
-                    required: ['messageId', 'userId', 'emoji'],
                     properties: {
-                      messageId: {
-                        type: 'string',
-                        format: 'ulid'
-                      },
-                      userId: {
-                        type: 'string',
-                        format: 'ulid'
-                      },
-                      emoji: {
-                        type: 'string',
-                        description: 'The emoji that was added'
-                      }
+                      reaction: { $ref: '#/components/schemas/ReactionResponse' }
                     }
+                  },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
                   }
                 }
               }
             }
           }
         },
-        '400': {
-          description: 'Invalid request data',
+        400: {
+          description: 'Invalid request',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
             }
           }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -596,7 +787,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '404': {
+        404: {
           description: 'Message not found',
           content: {
             'application/json': {
@@ -604,8 +795,24 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '409': {
+        409: {
           description: 'Reaction already exists',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -615,6 +822,7 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     }
   },
+
   '/api/messages/{messageId}/reactions/{emoji}': {
     parameters: [
       {
@@ -637,14 +845,30 @@ export const messagePaths: OpenAPIV3.PathsObject = {
       }
     ],
     delete: {
-      summary: 'Remove a reaction from a message',
       tags: ['Messages'],
+      summary: 'Remove reaction from message',
       security: [{ session: [] }],
       responses: {
-        '204': {
-          description: 'Reaction removed successfully'
+        200: {
+          description: 'Reaction removed successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string' },
+                  code: { type: 'string' },
+                  data: { type: 'object' },
+                  errors: {
+                    type: 'array',
+                    items: { $ref: '#/components/schemas/ErrorResponse' }
+                  }
+                }
+              }
+            }
+          }
         },
-        '401': {
+        401: {
           description: 'Not authenticated',
           content: {
             'application/json': {
@@ -652,8 +876,24 @@ export const messagePaths: OpenAPIV3.PathsObject = {
             }
           }
         },
-        '404': {
+        404: {
           description: 'Message or reaction not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        429: {
+          description: 'Too many requests',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        500: {
+          description: 'Internal server error',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }

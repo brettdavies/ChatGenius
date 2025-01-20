@@ -1,6 +1,7 @@
 import express from 'express';
 import passport from './auth/passport.js';
-import session, { MemoryStore } from 'express-session';
+import session from 'express-session';
+import pgSession from 'connect-pg-simple';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,8 +10,9 @@ import { ENV } from './config/env.js';
 import swaggerUi from 'swagger-ui-express';
 import { middleware as openApiValidator } from 'express-openapi-validator';
 import openApiConfig from './openapi/index.js';
-import { cleanupExpiredSessions } from './services/session-cleanup.js';
 import { customFormats } from './openapi/formats.js';
+import { pool, connectWithRetry } from '@config/database.js';
+import { sendResponse, sendError } from './utils/response.utils.js';
 
 // Route imports
 import authRoutes from './routes/auth.js';
@@ -55,24 +57,26 @@ if (ENV.NODE_ENV === 'production') {
 }
 
 // Session store setup
-// TODO: Replace MemoryStore with Redis or PostgreSQL session store for production
-const store = new MemoryStore();
-if (ENV.NODE_ENV === 'production') {
-  console.warn('Warning: Using MemoryStore in production is not recommended');
-}
+const PostgresqlStore = pgSession(session);
+const sessionStore = new PostgresqlStore({
+  pool,
+  tableName: 'sessions',
+  createTableIfMissing: true,
+  pruneSessionInterval: ENV.AUTH.SESSION_MAX_AGE / (1000 * 60) // Convert from ms to minutes
+});
 
 // Session configuration
 const sessionMiddleware = session({
-  store,
+  store: sessionStore,
   secret: ENV.AUTH.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   name: 'sessionId',
   cookie: {
-    secure: ENV.NODE_ENV === 'production',
+    secure: false,
     httpOnly: true,
     sameSite: 'lax',
-    domain: ENV.AUTH.COOKIE_DOMAIN,
+    domain: undefined,
     maxAge: ENV.AUTH.SESSION_MAX_AGE
   }
 });
@@ -81,19 +85,9 @@ app.use(sessionMiddleware);
 
 // Initialize session cleanup (not in test mode)
 if (ENV.NODE_ENV !== 'test') {
-  // Run cleanup every hour
-  const CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
-  const cleanup = () => {
-    cleanupExpiredSessions(store, ENV.AUTH.SESSION_MAX_AGE)
-      .catch(err => console.error('Session cleanup failed:', err));
-  };
-  
-  const cleanupInterval = setInterval(cleanup, CLEANUP_INTERVAL);
-  cleanup(); // Run initial cleanup
-  
   // Cleanup on graceful shutdown
   process.on('SIGTERM', () => {
-    clearInterval(cleanupInterval);
+    sessionStore.close();
   });
 }
 
@@ -105,9 +99,12 @@ app.use(passport.session());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiConfig));
 
 // Health check endpoint
-app.get('/api/health', (_req: express.Request, res: express.Response) => {
-  console.log('[DEBUG] Health check endpoint called');
-  res.status(200).json({ status: 'ok' });
+app.get('/api/health', (_req, res) => {
+  sendResponse(res, 'Service is healthy', 'HEALTH_CHECK_OK', {
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
 });
 
 // OpenAPI validation
@@ -141,36 +138,50 @@ app.use('/api/channels', channelRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/messages', messageRoutes);
 
-// Error handling
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  // OpenAPI validation errors
-  if (err.status === 400 && err.errors) {
-    return res.status(400).json({
-      message: 'Invalid request data',
-      errors: err.errors
-    });
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  
+  if (err instanceof SyntaxError && 'status' in err && err.status === 400) {
+    return sendError(res, 'Invalid JSON payload', 'INVALID_JSON', [{
+      message: 'Invalid JSON payload',
+      code: 'INVALID_JSON',
+      path: req.path
+    }], 400);
   }
 
-  // JWT authentication errors
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({
-      message: 'Invalid token'
-    });
+  if (err instanceof Error && err.name === 'UnauthorizedError') {
+    return sendError(res, 'Invalid or expired token', 'INVALID_TOKEN', [{
+      message: 'Invalid or expired token',
+      code: 'INVALID_TOKEN',
+      path: req.path
+    }], 401);
   }
 
-  // Default error
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal server error'
-  });
+  sendError(res, 'Internal server error', 'INTERNAL_SERVER_ERROR', [{
+    message: 'Internal server error',
+    code: 'INTERNAL_SERVER_ERROR',
+    path: req.path
+  }], 500);
 });
 
 // Add server startup code
 const PORT = ENV.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Wait for database connection before starting server
+const startServer = async () => {
+  try {
+    await connectWithRetry();
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app;
 export const viteNodeApp = app; 

@@ -1,7 +1,7 @@
 import { ulid } from 'ulid';
 import { hashPassword, comparePassword } from '../utils/hashPassword.js';
 import { findUserByEmail } from '../db/queries/users.js';
-import pool from '../db/pool.js';
+import { pool } from '@config/database.js';
 import { User, UserDB, toUser } from './types.js';
 import { USER_ROLES } from '../constants/auth.constants.js';
 import { ErrorCodes } from '../openapi/schemas/common.js';

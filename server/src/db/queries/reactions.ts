@@ -1,4 +1,4 @@
-import pool from '../pool.js';
+import { pool } from '@config/database.js';
 import { ulid } from 'ulid';
 
 export interface Reaction {
@@ -49,7 +49,7 @@ export async function removeReaction(messageId: string, userId: string, emoji: s
      WHERE message_id = $1 AND user_id = $2 AND emoji = $3`,
     [messageId, userId, emoji]
   );
-  return rowCount > 0;
+  return (rowCount ?? 0) > 0;
 }
 
 export async function getReactionsByMessageId(messageId: string): Promise<Reaction[]> {

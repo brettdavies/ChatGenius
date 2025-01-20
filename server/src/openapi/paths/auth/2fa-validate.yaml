@@ -1,0 +1,76 @@
+post:
+  summary: Validate 2FA token during login
+  operationId: validate2FA
+  tags:
+    - Authentication
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - userId
+            - token
+          properties:
+            userId:
+              type: string
+              description: The ID of the user attempting to validate 2FA
+            token:
+              type: string
+              description: The 6-digit TOTP token or backup code
+            isBackupCode:
+              type: boolean
+              description: Whether the token is a backup code
+              default: false
+  responses:
+    '200':
+      description: 2FA validation successful
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+              - code
+              - data
+            properties:
+              message:
+                type: string
+                example: "Two-factor authentication successful"
+              code:
+                type: string
+                example: "TOTP_VALIDATED"
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiError'
+              data:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+    '400':
+      description: Invalid request or 2FA not enabled
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    '401':
+      description: Invalid token or backup code
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    '404':
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse' 

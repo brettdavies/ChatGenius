@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import 'module-alias/register';
-import { pool } from '@db/pool';
+import { pool } from '@config/database.js';
 import app from '@/app';
 import { ENV } from './config/env.js';
 

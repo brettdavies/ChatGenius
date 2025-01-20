@@ -2,7 +2,10 @@ export const API_BASE = '/api';
 
 export const API_ROUTES = {
   AUTH: `${API_BASE}/auth`,
-  COUNTER: `${API_BASE}/counter`,
+  USERS: `${API_BASE}/users`,
+  CHANNELS: `${API_BASE}/channels`,
+  MESSAGES: `${API_BASE}/messages`,
+  EVENTS: `${API_BASE}/events`,
 } as const;
 
 // Sub-routes for each feature

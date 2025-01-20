@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { RealtimeService } from '../services/realtime-service.js';
+import { sendError } from '../utils/response.utils.js';
 
 export function setupSSE(req: Request, res: Response, next: NextFunction): void {
   // Set headers for SSE
@@ -40,9 +41,10 @@ export async function handleChannelEvents(req: Request, res: Response): Promise<
     });
   } catch (error) {
     console.error('Error handling channel events:', error);
-    res.status(500).json({
+    sendError(res, 'Failed to subscribe to channel events', 'EVENT_SUBSCRIPTION_FAILED', [{
       message: 'Failed to subscribe to channel events',
-      code: 'EVENT_SUBSCRIPTION_FAILED'
-    });
+      code: 'EVENT_SUBSCRIPTION_FAILED',
+      path: `/channels/${channelId}/events`
+    }], 500);
   }
 } 

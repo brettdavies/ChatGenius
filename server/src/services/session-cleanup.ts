@@ -1,12 +1,6 @@
 import { Store } from 'express-session';
+import { SessionError } from '../errors/session-error.js';
 import { ErrorCodes } from '../openapi/schemas/common.js';
-
-export class SessionError extends Error {
-  constructor(public code: typeof ErrorCodes[keyof typeof ErrorCodes], message: string) {
-    super(message);
-    this.name = 'SessionError';
-  }
-}
 
 /**
  * Cleans up expired sessions from the session store

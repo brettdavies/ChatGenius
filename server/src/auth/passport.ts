@@ -2,27 +2,27 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { comparePassword } from '../utils/hashPassword.js';
 import { findUserByEmail, findUserById } from '../db/queries/users.js';
-import { User } from './types.js';
+import { User, toUser } from './types.js';
 import { AUTH_MESSAGES } from '../constants/auth.constants.js';
 
 // Configure Passport's Local Strategy
 passport.use(new LocalStrategy({
-  usernameField: 'email',
+  usernameField: 'login',
   passwordField: 'password'
-}, async (email: string, password: string, done) => {
+}, async (login: string, password: string, done) => {
   try {
-    const user = await findUserByEmail(email);
+    const userDB = await findUserByEmail(login);
     
-    if (!user) {
+    if (!userDB) {
       return done(null, false, { message: AUTH_MESSAGES.USER_NOT_FOUND });
     }
 
-    const isValidPassword = await comparePassword(password, user.password);
+    const isValidPassword = await comparePassword(password, userDB.password);
     if (!isValidPassword) {
       return done(null, false, { message: AUTH_MESSAGES.INVALID_CREDENTIALS });
     }
 
-    return done(null, user);
+    return done(null, toUser(userDB));
   } catch (error) {
     return done(error);
   }

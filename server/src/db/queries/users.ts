@@ -1,4 +1,4 @@
-import pool from '../pool.js';
+import { pool } from '@config/database.js';
 import { User, UserDB, toUser } from '../../auth/types.js';
 import { normalizeEmail } from '../../utils/email.js';
 

@@ -1,15 +1,21 @@
 import express from 'express';
-import { isAuthenticated } from '../middleware/auth.js';
+import { validateSession, isAuthenticated } from '../middleware/auth.js';
 import { setupSSE, handleChannelEvents } from '../middleware/sse.js';
-import { eventSubscriptionLimiter, typingIndicatorLimiter, presenceUpdateLimiter } from '../middleware/event-rate-limit.js';
+import { 
+  eventSubscriptionLimiter,
+  typingIndicatorLimiter,
+  presenceUpdateLimiter 
+} from '../middleware/rate-limit.js';
 import { RealtimeService } from '../services/realtime-service.js';
+import { sendResponse, sendError } from '../utils/response.utils.js';
 
 const router = express.Router();
 const realtimeService = RealtimeService.getInstance();
 
 // Subscribe to channel events
-router.get('/channels/:channelId/events',
-  isAuthenticated,
+router.get('/channels/:channelId/events', 
+  isAuthenticated, 
+  validateSession, 
   eventSubscriptionLimiter,
   setupSSE,
   handleChannelEvents
@@ -22,18 +28,20 @@ router.post('/channels/:channelId/typing/start',
   async (req, res) => {
     try {
       if (!req.user) {
-        return res.status(401).json({
+        return sendError(res, 'Unauthorized', 'UNAUTHORIZED', [{
           message: 'Unauthorized',
-          code: 'UNAUTHORIZED'
-        });
+          code: 'UNAUTHORIZED',
+          path: `/channels/${req.params.channelId}/typing/start`
+        }], 401);
       }
       await realtimeService.startTyping(req.params.channelId, req.user.id);
-      res.sendStatus(204);
+      sendResponse(res, 'Typing indicator started', 'TYPING_STARTED');
     } catch (error) {
-      res.status(500).json({
+      sendError(res, 'Failed to start typing indicator', 'TYPING_START_FAILED', [{
         message: 'Failed to start typing indicator',
-        code: 'TYPING_START_FAILED'
-      });
+        code: 'TYPING_START_FAILED',
+        path: `/channels/${req.params.channelId}/typing/start`
+      }], 500);
     }
   }
 );
@@ -45,18 +53,20 @@ router.post('/channels/:channelId/typing/stop',
   async (req, res) => {
     try {
       if (!req.user) {
-        return res.status(401).json({
+        return sendError(res, 'Unauthorized', 'UNAUTHORIZED', [{
           message: 'Unauthorized',
-          code: 'UNAUTHORIZED'
-        });
+          code: 'UNAUTHORIZED',
+          path: `/channels/${req.params.channelId}/typing/stop`
+        }], 401);
       }
       await realtimeService.stopTyping(req.params.channelId, req.user.id);
-      res.sendStatus(204);
+      sendResponse(res, 'Typing indicator stopped', 'TYPING_STOPPED');
     } catch (error) {
-      res.status(500).json({
+      sendError(res, 'Failed to stop typing indicator', 'TYPING_STOP_FAILED', [{
         message: 'Failed to stop typing indicator',
-        code: 'TYPING_STOP_FAILED'
-      });
+        code: 'TYPING_STOP_FAILED',
+        path: `/channels/${req.params.channelId}/typing/stop`
+      }], 500);
     }
   }
 );
@@ -68,19 +78,21 @@ router.post('/channels/:channelId/presence',
   async (req, res) => {
     try {
       if (!req.user) {
-        return res.status(401).json({
+        return sendError(res, 'Unauthorized', 'UNAUTHORIZED', [{
           message: 'Unauthorized',
-          code: 'UNAUTHORIZED'
-        });
+          code: 'UNAUTHORIZED',
+          path: `/channels/${req.params.channelId}/presence`
+        }], 401);
       }
       const { isOnline } = req.body;
       await realtimeService.updatePresence(req.params.channelId, req.user.id, isOnline);
-      res.sendStatus(204);
+      sendResponse(res, 'Presence status updated', 'PRESENCE_UPDATED');
     } catch (error) {
-      res.status(500).json({
+      sendError(res, 'Failed to update presence status', 'PRESENCE_UPDATE_FAILED', [{
         message: 'Failed to update presence status',
-        code: 'PRESENCE_UPDATE_FAILED'
-      });
+        code: 'PRESENCE_UPDATE_FAILED',
+        path: `/channels/${req.params.channelId}/presence`
+      }], 500);
     }
   }
 );

@@ -1,147 +1,146 @@
 import { config } from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { envSchema } from './env.schema.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const envPath = join(__dirname, '../../.env.dev');
 
+// Load environment file based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' 
+  ? '.env.production'
+  : process.env.NODE_ENV === 'test'
+    ? '.env.test'
+    : '.env.development';
+
+const envPath = join(__dirname, '../../', envFile);
 config({ path: envPath });
 
+// Parse and validate environment variables
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  console.error('❌ Invalid environment variables:', parsedEnv.error.format());
+  process.exit(1);
+}
+
+const env = parsedEnv.data;
+
+// Structured environment configuration
 export const ENV = {
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  PORT: parseInt(process.env.PORT || '5000', 10),
+  NODE_ENV: env.NODE_ENV,
+  PORT: env.PORT,
   
   // URLs
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
-  API_URL: process.env.API_URL || 'http://localhost:5000',
-  
-  // CORS
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  CLIENT_URL: env.CLIENT_URL,
+  API_URL: env.API_URL,
+  CORS_ORIGIN: env.CORS_ORIGIN,
   
   // Database
   DB: {
-    HOST: process.env.DB_HOST || 'localhost',
-    PORT: parseInt(process.env.DB_PORT || '5432', 10),
-    NAME: process.env.DB_NAME || 'chatgenius',
-    USER: process.env.DB_USER || 'postgres',
-    PASSWORD: process.env.DB_PASSWORD || 'postgres',
-    TEST_NAME: process.env.DB_TEST_NAME || 'chatgenius_test',
-    SCHEMA: process.env.DB_SCHEMA || 'public',
-    TEST_SCHEMA: process.env.DB_TEST_SCHEMA || 'test'
+    HOST: env.DB_HOST,
+    PORT: env.DB_PORT,
+    NAME: env.DB_NAME,
+    USER: env.DB_USER,
+    PASSWORD: env.DB_PASSWORD,
+    TEST_NAME: env.DB_TEST_NAME,
+    SCHEMA: env.DB_SCHEMA,
+    TEST_SCHEMA: env.DB_TEST_SCHEMA
   },
 
   // Authentication
   AUTH: {
-    SESSION_SECRET: process.env.SESSION_SECRET || 'dev-session-secret-key',
-    COOKIE_DOMAIN: process.env.COOKIE_DOMAIN || 'localhost',
-    SESSION_MAX_AGE: parseInt(process.env.SESSION_MAX_AGE || '86400000', 10), // 24 hours in milliseconds
+    SESSION_SECRET: env.SESSION_SECRET,
+    COOKIE_DOMAIN: env.COOKIE_DOMAIN,
+    SESSION_MAX_AGE: env.SESSION_MAX_AGE,
   },
 
   // Rate Limiting
   RATE_LIMIT: {
     AUTH: {
-      WINDOW_MS: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
-      MAX_REQUESTS: parseInt(process.env.AUTH_RATE_LIMIT_MAX_REQUESTS || '5', 10)
+      WINDOW_MS: env.AUTH_RATE_LIMIT_WINDOW_MS,
+      MAX_REQUESTS: env.AUTH_RATE_LIMIT_MAX_REQUESTS
     },
     API: {
-      WINDOW_MS: parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
-      MAX_REQUESTS: parseInt(process.env.API_RATE_LIMIT_MAX_REQUESTS || '100', 10)
+      WINDOW_MS: env.API_RATE_LIMIT_WINDOW_MS,
+      MAX_REQUESTS: env.API_RATE_LIMIT_MAX_REQUESTS
     },
     TOTP: {
       SETUP: {
-        WINDOW_MS: parseInt(process.env.TOTP_SETUP_RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
-        MAX_REQUESTS: parseInt(process.env.TOTP_SETUP_RATE_LIMIT_MAX_REQUESTS || '5', 10)
+        WINDOW_MS: env.TOTP_SETUP_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.TOTP_SETUP_RATE_LIMIT_MAX_REQUESTS
       },
       VERIFY: {
-        WINDOW_MS: parseInt(process.env.TOTP_VERIFY_RATE_LIMIT_WINDOW_MS || '300000', 10), // 5 minutes
-        MAX_REQUESTS: parseInt(process.env.TOTP_VERIFY_RATE_LIMIT_MAX_REQUESTS || '3', 10)
+        WINDOW_MS: env.TOTP_VERIFY_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.TOTP_VERIFY_RATE_LIMIT_MAX_REQUESTS
       },
       VALIDATE: {
-        WINDOW_MS: 5 * 60 * 1000, // 5 minutes
-        MAX_REQUESTS: 3 // Stricter limit for login attempts
+        WINDOW_MS: env.TOTP_VALIDATE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.TOTP_VALIDATE_RATE_LIMIT_MAX_REQUESTS
       }
     },
     CHANNELS: {
       CREATE: {
-        WINDOW_MS: parseInt(process.env.CHANNEL_CREATE_RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour
-        MAX_REQUESTS: parseInt(process.env.CHANNEL_CREATE_RATE_LIMIT_MAX_REQUESTS || '10', 10)
+        WINDOW_MS: env.CHANNEL_CREATE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.CHANNEL_CREATE_RATE_LIMIT_MAX_REQUESTS
       },
       UPDATE: {
-        WINDOW_MS: parseInt(process.env.CHANNEL_UPDATE_RATE_LIMIT_WINDOW_MS || '60000', 10), // 1 minute
-        MAX_REQUESTS: parseInt(process.env.CHANNEL_UPDATE_RATE_LIMIT_MAX_REQUESTS || '30', 10)
+        WINDOW_MS: env.CHANNEL_UPDATE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.CHANNEL_UPDATE_RATE_LIMIT_MAX_REQUESTS
       },
       MEMBERS: {
-        WINDOW_MS: parseInt(process.env.CHANNEL_MEMBERS_RATE_LIMIT_WINDOW_MS || '300000', 10), // 5 minutes
-        MAX_REQUESTS: parseInt(process.env.CHANNEL_MEMBERS_RATE_LIMIT_MAX_REQUESTS || '50', 10)
+        WINDOW_MS: env.CHANNEL_MEMBERS_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.CHANNEL_MEMBERS_RATE_LIMIT_MAX_REQUESTS
       },
       DELETE: {
-        WINDOW_MS: parseInt(process.env.CHANNEL_DELETE_RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour
-        MAX_REQUESTS: parseInt(process.env.CHANNEL_DELETE_RATE_LIMIT_MAX_REQUESTS || '10', 10)
+        WINDOW_MS: env.CHANNEL_DELETE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.CHANNEL_DELETE_RATE_LIMIT_MAX_REQUESTS
       },
       ARCHIVE: {
-        WINDOW_MS: parseInt(process.env.CHANNEL_ARCHIVE_RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour
-        MAX_REQUESTS: parseInt(process.env.CHANNEL_ARCHIVE_RATE_LIMIT_MAX_REQUESTS || '10', 10)
+        WINDOW_MS: env.CHANNEL_ARCHIVE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.CHANNEL_ARCHIVE_RATE_LIMIT_MAX_REQUESTS
       },
       READ: {
-        WINDOW_MS: parseInt(process.env.CHANNEL_READ_RATE_LIMIT_WINDOW_MS || '60000', 10), // 1 minute
-        MAX_REQUESTS: parseInt(process.env.CHANNEL_READ_RATE_LIMIT_MAX_REQUESTS || '100', 10)
+        WINDOW_MS: env.CHANNEL_READ_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.CHANNEL_READ_RATE_LIMIT_MAX_REQUESTS
       }
     },
     EVENTS: {
       SUBSCRIPTION: {
-        WINDOW_MS: 60 * 60 * 1000, // 1 hour
-        MAX_REQUESTS: 1 // 1 connection per channel per user
+        WINDOW_MS: env.EVENT_SUBSCRIPTION_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.EVENT_SUBSCRIPTION_RATE_LIMIT_MAX_REQUESTS
       },
       TYPING: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 30 // 30 updates per minute
+        WINDOW_MS: env.EVENT_TYPING_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.EVENT_TYPING_RATE_LIMIT_MAX_REQUESTS
       },
       PRESENCE: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 60 // 60 updates per minute
+        WINDOW_MS: env.EVENT_PRESENCE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.EVENT_PRESENCE_RATE_LIMIT_MAX_REQUESTS
       }
     },
     MESSAGES: {
       CREATE: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 30 // 30 messages per minute
+        WINDOW_MS: env.MESSAGE_CREATE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.MESSAGE_CREATE_RATE_LIMIT_MAX_REQUESTS
       },
       UPDATE: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 30 // 30 updates per minute
+        WINDOW_MS: env.MESSAGE_UPDATE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.MESSAGE_UPDATE_RATE_LIMIT_MAX_REQUESTS
       },
       DELETE: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 20 // 20 deletes per minute
+        WINDOW_MS: env.MESSAGE_DELETE_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.MESSAGE_DELETE_RATE_LIMIT_MAX_REQUESTS
       },
       REACTIONS: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 60 // 60 reactions per minute
+        WINDOW_MS: env.MESSAGE_REACTIONS_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.MESSAGE_REACTIONS_RATE_LIMIT_MAX_REQUESTS
       },
       SEARCH: {
-        WINDOW_MS: 60 * 1000, // 1 minute
-        MAX_REQUESTS: 30 // 30 searches per minute
+        WINDOW_MS: env.MESSAGE_SEARCH_RATE_LIMIT_WINDOW_MS,
+        MAX_REQUESTS: env.MESSAGE_SEARCH_RATE_LIMIT_MAX_REQUESTS
       }
     }
   }
 } as const;
-
-// Type checking to ensure all required environment variables are present
-const requiredEnvVars = [
-  'DB_HOST',
-  'DB_PORT',
-  'DB_NAME',
-  'DB_USER',
-  'DB_PASSWORD',
-  'SESSION_SECRET'
-] as const;
-
-// Check for missing required environment variables in production
-if (ENV.NODE_ENV === 'production') {
-  const missingVars = requiredEnvVars.filter(key => !process.env[key]);
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-  }
-}
 
 export type EnvConfig = typeof ENV; 
