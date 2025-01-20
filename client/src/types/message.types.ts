@@ -27,4 +27,12 @@ export interface Message {
   isThreadParent?: boolean;
   /** Whether the message has been edited */
   edited?: boolean;
+}
+
+export interface MessageReaction {
+  id: string;
+  messageId: string;
+  userId: string;
+  emoji: string;
+  createdAt: string;
 } 

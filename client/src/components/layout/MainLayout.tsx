@@ -96,7 +96,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
         {authView === 'login' ? (
           <LoginForm onRegister={() => setAuthView('register')} />
         ) : (
@@ -107,7 +107,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-white dark:bg-gray-900">
       <div 
         className="flex-shrink-0 overflow-hidden relative"
         style={{ width: `${sidebarWidth}px` }}

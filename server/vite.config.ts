@@ -33,10 +33,13 @@ export default defineConfig({
         'cookie-parser',
         'cors',
         'helmet',
-        'jsonwebtoken',
         'bcryptjs',
         'pg',
-        'dotenv'
+        'dotenv',
+        'pg-native',
+        'speakeasy',
+        'qrcode',
+        'node-emoji'
       ]
     }
   },

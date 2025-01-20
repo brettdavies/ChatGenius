@@ -1,17 +1,32 @@
-import { Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/error/ErrorBoundary';
+import { FeatureErrorBoundary } from './components/error/FeatureErrorBoundary';
 import MainLayout from './components/layout/MainLayout';
 import Channel from './components/channel/Channel';
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-white text-gray-900 antialiased dark:bg-gray-900 dark:text-white">
-      <Routes>
-        <Route path="/" element={
-          <MainLayout>
-            <Channel />
-          </MainLayout>
-        } />
-      </Routes>
-    </div>
+    <ErrorBoundary>
+      <MainLayout>
+        <div className="h-full flex">
+          <FeatureErrorBoundary featureName="Channel List">
+            <div className="w-64 flex-shrink-0">
+              {/* Channel list component */}
+            </div>
+          </FeatureErrorBoundary>
+
+          <div className="flex-1 flex flex-col">
+            <FeatureErrorBoundary featureName="Chat">
+              <Channel />
+            </FeatureErrorBoundary>
+          </div>
+
+          <FeatureErrorBoundary featureName="User List">
+            <div className="w-64 flex-shrink-0">
+              {/* User list component */}
+            </div>
+          </FeatureErrorBoundary>
+        </div>
+      </MainLayout>
+    </ErrorBoundary>
   );
 } 

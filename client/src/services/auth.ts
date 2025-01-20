@@ -3,37 +3,7 @@ import { useAuthStore } from '../stores/auth.store';
 import { useChannelStore } from '../stores/channel.store';
 import { useUserStore } from '../stores/user.store';
 import { useMessageStore } from '../stores/message.store';
-
-async function handleResponse(response: Response) {
-  if (!response.ok) {
-    try {
-      const data = await response.json();
-      // Check for standardized error format
-      if (data.errors && data.errors.length > 0) {
-        const error = data.errors[0];
-        throw new Error(error.message);
-      }
-      // Fallback to message or status
-      throw new Error(data.message || `${response.status} ${response.statusText}`);
-    } catch (e) {
-      // If JSON parsing fails, throw the status text
-      throw new Error(`${response.status} ${response.statusText}`);
-    }
-  }
-
-  // Return undefined for 204 No Content responses
-  if (response.status === 204) {
-    return undefined;
-  }
-
-  try {
-    const data = await response.json();
-    return data;
-  } catch (e) {
-    // If JSON parsing fails for a successful response, throw an error
-    throw new Error('Invalid JSON response from server');
-  }
-}
+import { handleResponse } from './utils';
 
 export interface LoginResponse {
   user?: User;
@@ -50,28 +20,16 @@ export async function login(email: string, password: string): Promise<LoginRespo
       'Content-Type': 'application/json',
     },
     credentials: 'include',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ login: email, password }),
   });
 
-  const data = await handleResponse(response);
+  const data = await handleResponse<{ message: string; code: string; data: LoginResponse }>(response);
   console.log('[Auth] Login response:', { 
-    requiresTwoFactor: data.requiresTwoFactor, 
-    hasUser: !!data.user,
-    userId: data.userId 
+    requiresTwoFactor: data.data.requiresTwoFactor, 
+    hasUser: !!data.data.user,
+    userId: data.data.userId 
   });
-  
-  // If 2FA is required, return the response without logging user info
-  if (data.requiresTwoFactor) {
-    console.log('[Auth] 2FA required for user:', data.userId);
-    return data;
-  }
-  
-  // Only log user info if 2FA is not required and user is present
-  if (data.user) {
-    console.log('[Auth] Login successful for user:', data.user.id);
-  }
-  
-  return data;
+  return data.data;
 }
 
 export interface ValidateTOTPResponse {
@@ -90,9 +48,9 @@ export async function validate2FA(userId: string, token: string, isBackupCode = 
     body: JSON.stringify({ userId, token, isBackupCode })
   });
 
-  const data = await handleResponse(response);
-  console.log('[Auth] 2FA validation response:', { hasUser: !!data.user });
-  return data;
+  const data = await handleResponse<{ message: string; code: string; data: ValidateTOTPResponse }>(response);
+  console.log('[Auth] 2FA validation response:', { hasUser: !!data.data.user });
+  return data.data;
 }
 
 export async function register(username: string, email: string, password: string): Promise<User> {
@@ -103,38 +61,45 @@ export async function register(username: string, email: string, password: string
     body: JSON.stringify({ email, password, username })
   });
 
-  const data = await response.json();
-  
-  if (!response.ok) {
-    // Check if we have errors in the response
-    if (data.errors && data.errors.length > 0) {
-      const error = data.errors[0];
-      throw new Error(error.message);
-    }
-    // Fallback error
-    throw new Error('Registration failed');
-  }
-
-  return data.user;
+  const data = await handleResponse<{ message: string; code: string; data: { user: User } }>(response);
+  return data.data.user;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const response = await fetch('/api/auth/me', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-  });
+  try {
+    // Set loading state
+    useUserStore.getState().setLoading(true);
 
-  if (response.status === 401) {
-    console.log('No authenticated user found');
+    const response = await fetch('/api/auth/me', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (response.status === 401) {
+      console.log('No authenticated user found');
+      return null;
+    }
+
+    const data = await handleResponse<{ message: string; code: string; data: { user: User } }>(response);
+    const user = data.data.user;
+    console.log('Current User ULID:', user.id);
+    
+    // Update both stores with the user data
+    useAuthStore.getState().setUser(user);
+    useUserStore.getState().setCurrentUser(user);
+    
+    return user;
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    useUserStore.getState().setError(error instanceof Error ? error.message : 'Failed to fetch user');
     return null;
+  } finally {
+    // Clear loading state
+    useUserStore.getState().setLoading(false);
   }
-
-  const data = await handleResponse(response);
-  console.log('Current User ULID:', data.user.id);
-  return data.user;
 }
 
 export async function logout(): Promise<void> {
@@ -147,7 +112,7 @@ export async function logout(): Promise<void> {
     credentials: 'include',
   });
 
-  await handleResponse(response);
+  await handleResponse<{ message: string; code: string }>(response);
 
   // Clear all application state
   useAuthStore.getState().reset();

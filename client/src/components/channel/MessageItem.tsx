@@ -97,115 +97,36 @@ export default function MessageItem({ message, isThreadMessage, isThreadParent }
   }
 
   return (
-    <div className="flex items-start gap-3 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 group">
-      <div className="flex-shrink-0 w-10 h-10 overflow-hidden rounded-full">
-        {message.user?.avatar_url ? (
-          <img
-            src={message.user.avatar_url}
-            alt={message.user.username || 'User'}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-            {(message.user?.username || 'U').charAt(0).toUpperCase()}
-          </div>
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium dark:text-white">
-            {message.user?.username || 'Unknown User'}
-          </span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {format(new Date(message.createdAt), 'MMM d, h:mm a')}
-          </span>
-          {message.edited && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">(edited)</span>
+    <div className="group w-full hover:bg-gray-50 dark:hover:bg-gray-800/50">
+      <div className="flex items-start gap-3 px-4 py-2">
+        <div className="flex-shrink-0">
+          {message.user.avatar_url ? (
+            <img
+              src={message.user.avatar_url}
+              alt={`${message.user.username}'s avatar`}
+              className="h-8 w-8 rounded-full"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-600">
+              <span className="text-sm font-medium text-white">
+                {message.user.username.charAt(0).toUpperCase()}
+              </span>
+            </div>
           )}
         </div>
-
-        {isEditing ? (
-          <div className="mt-1">
-            <textarea
-              value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
-              className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              rows={3}
-            />
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={handleEdit}
-                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-            </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2">
+            <span className="font-medium text-gray-900 dark:text-white">
+              {message.user.username}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {format(new Date(message.createdAt), 'MMM d, h:mm a')}
+            </span>
           </div>
-        ) : (
-          <>
-            <div className="mt-1">
-              {!isThreadMessage && !message.isThreadParent && hasReplies ? (
-                <button
-                  onClick={handleThreadClick}
-                  className="w-full text-left"
-                >
-                  <FormattedText text={formatMessageContent(message.content)} />
-                </button>
-              ) : (
-                <FormattedText text={formatMessageContent(message.content)} />
-              )}
-            </div>
-            <div className="mt-2 flex items-center space-x-2">
-              <MessageReactions message={message} />
-              {!isThreadMessage && (
-                <button
-                  onClick={handleThreadClick}
-                  className="flex items-center space-x-1 rounded px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <ChatBubbleLeftIcon className="h-4 w-4" />
-                  <span>
-                    {hasReplies ? (
-                      `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`
-                    ) : (
-                      'Reply'
-                    )}
-                  </span>
-                </button>
-              )}
-              {message.isThreadParent && (
-                <button
-                  onClick={handleThreadClick}
-                  className="flex items-center space-x-1 rounded px-2 py-1 text-xs text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  <ChatBubbleLeftIcon className="h-4 w-4" />
-                  <span>View Thread</span>
-                </button>
-              )}
-              {canEdit && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="hidden rounded p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 group-hover:block"
-                >
-                  <PencilIcon className="h-4 w-4" />
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  onClick={handleDelete}
-                  className="hidden rounded p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 group-hover:block"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </>
-        )}
+          <div className="mt-0.5 text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words">
+            {message.content}
+          </div>
+        </div>
       </div>
     </div>
   );

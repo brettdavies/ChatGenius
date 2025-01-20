@@ -102,18 +102,18 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
     return (
       <form onSubmit={handle2FASubmit} className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Two-Factor Authentication</h2>
-          <p className="text-gray-400">Enter the code from your authenticator app</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Two-Factor Authentication</h2>
+          <p className="text-gray-600 dark:text-gray-400">Enter the code from your authenticator app</p>
         </div>
 
         {error && (
-          <div className="bg-red-900/50 text-red-200 px-4 py-3 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/50 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="token" className="block text-sm font-medium text-gray-200">
+          <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Authentication Code
           </label>
           <input
@@ -122,7 +122,7 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
             value={token}
             onChange={(e) => setToken(e.target.value)}
             required
-            className="mt-1 block w-full rounded-lg bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="mt-1 block w-full rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             placeholder="Enter 6-digit code"
           />
         </div>
@@ -133,9 +133,9 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
             type="checkbox"
             checked={isBackupCode}
             onChange={(e) => setIsBackupCode(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-indigo-600 focus:ring-indigo-500"
           />
-          <label htmlFor="backup-code" className="ml-2 block text-sm text-gray-200">
+          <label htmlFor="backup-code" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
             Use backup code
           </label>
         </div>
@@ -143,7 +143,7 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+          className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-800"
         >
           {loading ? 'Verifying...' : 'Verify'}
         </button>
@@ -154,18 +154,18 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
   return (
     <form onSubmit={handleCredentialsSubmit} className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Sign in to ChatGenius</h2>
-        <p className="text-gray-400">Or <a href="#" className="text-indigo-400 hover:text-indigo-300" onClick={handleCreateAccount}>create a new account</a></p>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sign in to ChatGenius</h2>
+        <p className="text-gray-600 dark:text-gray-400">Or <a href="#" className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300" onClick={handleCreateAccount}>create a new account</a></p>
       </div>
 
       {error && (
-        <div className="bg-red-900/50 text-red-200 px-4 py-3 rounded-lg">
+        <div className="bg-red-50 dark:bg-red-900/50 text-red-800 dark:text-red-200 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-200">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Email
         </label>
         <input
@@ -174,12 +174,12 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full rounded-lg bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+          className="mt-1 block w-full rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-200">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Password
         </label>
         <div className="relative mt-1">
@@ -189,7 +189,7 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="block w-full rounded-lg bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-10"
+            className="block w-full rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-10"
           />
           <button
             type="button"
@@ -212,14 +212,14 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500"
+            className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-indigo-600 focus:ring-indigo-500"
           />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-200">
+          <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
             Remember me
           </label>
         </div>
 
-        <a href="#" className="text-sm text-indigo-400 hover:text-indigo-300">
+        <a href="#" className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
           Forgot password?
         </a>
       </div>
@@ -227,7 +227,7 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+        className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-800"
       >
         {loading ? 'Signing in...' : 'Sign in'}
       </button>

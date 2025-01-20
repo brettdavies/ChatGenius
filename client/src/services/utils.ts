@@ -1,4 +1,4 @@
-export async function handleResponse(response: Response) {
+export async function handleResponse<T = any>(response: Response): Promise<T> {
   if (!response.ok) {
     try {
       const error = await response.json();
@@ -8,15 +8,15 @@ export async function handleResponse(response: Response) {
         headers: Object.fromEntries(response.headers.entries())
       });
       
-      // Handle OpenAPI error schema
-      if (error.code && error.message) {
-        throw new Error(`${error.code}: ${error.message}`);
-      }
-      
       // Handle array of errors
       if (error.errors && error.errors.length > 0) {
         const firstError = error.errors[0];
         throw new Error(`${firstError.code}: ${firstError.message}`);
+      }
+      
+      // Handle standardized error format
+      if (error.code && error.message) {
+        throw new Error(`${error.code}: ${error.message}`);
       }
       
       // Fallback
@@ -37,9 +37,20 @@ export async function handleResponse(response: Response) {
 
   // Return undefined for 204 No Content responses
   if (response.status === 204) {
-    return undefined;
+    return undefined as T;
   }
 
-  const data = await response.json();
-  return data;
+  const responseData = await response.json();
+  console.log('[API] Success response:', {
+    status: response.status,
+    data: responseData,
+    headers: Object.fromEntries(response.headers.entries())
+  });
+  
+  // Handle standardized response format
+  if (responseData.data !== undefined) {
+    return responseData as T;
+  }
+  
+  return responseData as T;
 } 

@@ -55,7 +55,11 @@ if (ENV.NODE_ENV === 'production') {
 }
 
 // Session store setup
+// TODO: Replace MemoryStore with Redis or PostgreSQL session store for production
 const store = new MemoryStore();
+if (ENV.NODE_ENV === 'production') {
+  console.warn('Warning: Using MemoryStore in production is not recommended');
+}
 
 // Session configuration
 const sessionMiddleware = session({
