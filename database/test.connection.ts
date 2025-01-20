@@ -1,6 +1,14 @@
 import pkg, { PoolClient as IPoolClient, QueryResult as IQueryResult } from 'pg';
 const { Pool } = pkg;
-import pool from './db.js';
+
+// Create a new pool with the correct configuration
+const pool = new Pool({
+  host: 'localhost',
+  port: 5438,  // Match the exposed port in docker-compose
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
+});
 
 async function testConnection(): Promise<void> {
   let client: IPoolClient | null = null;

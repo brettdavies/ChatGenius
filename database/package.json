@@ -8,7 +8,6 @@
   "scripts": {
     "build": "tsc",
     "test:connection": "npm run build && node dist/test.connection.js",
-    "test:init-db": "npm run build && node dist/init.test.db.js",
     "clean": "rm -rf dist"
   },
   "dependencies": {
