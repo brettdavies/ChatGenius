@@ -1,6 +1,7 @@
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import { useAuthStore } from '../../stores/auth.store';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [verificationCode, setVerificationCode] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const { user } = useAuthStore();
 
   const handleActivate2FA = async () => {
     console.log('[2FA Setup] Initiating 2FA setup');
@@ -46,29 +48,39 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   };
 
-  const handleVerify = async () => {
-    console.log('[2FA Verify] Attempting to verify token');
+  const handleValidate = async () => {
+    console.log('[2FA Setup] Attempting to validate token');
+    if (!user?.id) {
+      console.error('[2FA Setup] No user ID available');
+      setError('User ID not found');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/auth/2fa/verify', {
+      const response = await fetch('/api/auth/2fa/validate', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: verificationCode })
+        body: JSON.stringify({ 
+          userId: user.id,
+          token: verificationCode,
+          isBackupCode: false
+        })
       });
       
       if (!response.ok) {
         const error = await response.json();
-        console.error('[2FA Verify] Failed:', error);
-        throw new Error(error.message || 'Failed to verify code');
+        console.error('[2FA Setup] Validation failed:', error);
+        throw new Error(error.message || 'Failed to validate code');
       }
       
-      console.log('[2FA Verify] Token verified successfully, showing backup codes');
+      console.log('[2FA Setup] Token validated successfully, showing backup codes');
       setSetupStep('backup');
     } catch (err) {
-      console.error('[2FA Verify] Error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to verify code');
+      console.error('[2FA Setup] Validation error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to validate code');
     } finally {
       setIsLoading(false);
     }
@@ -165,11 +177,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     className="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-white dark:bg-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
                   />
                   <button
-                    onClick={handleVerify}
+                    onClick={handleValidate}
                     disabled={isLoading}
                     className="w-full inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Verifying...' : 'Verify Code'}
+                    {isLoading ? 'Validating...' : 'Validate Code'}
                   </button>
                 </div>
               </div>

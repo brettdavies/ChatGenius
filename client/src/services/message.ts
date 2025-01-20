@@ -1,187 +1,172 @@
-import type { Message } from '../types/message.types';
+import { Message, MessageReaction } from '../types/message.types';
 import { handleResponse } from './utils';
 
-export async function getMessages(channelId: string, options?: { before?: Date; after?: Date; limit?: number }): Promise<{ messages: Message[]; total: number }> {
-  console.log('[MessageService] Getting messages for channel:', channelId, 'with options:', options);
-  const params = new URLSearchParams();
-  if (options?.before) params.append('before', options.before.toISOString());
-  if (options?.after) params.append('after', options.after.toISOString());
-  if (options?.limit) params.append('limit', options.limit.toString());
-
-  const url = `/api/messages/channel/${channelId}?${params.toString()}`;
-  console.log('[MessageService] Fetching messages from URL:', url);
-  
-  try {
-    const response = await fetch(url, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log('[MessageService] Response status:', response.status);
-    const data = await handleResponse(response);
-    console.log('[MessageService] Received messages:', data.messages?.length, 'Total:', data.total);
-    return data;
-  } catch (error) {
-    console.error('[MessageService] Error fetching messages:', error);
-    throw error;
-  }
+export interface GetMessagesResponse {
+  messages: Message[];
+  total: number;
 }
 
-export async function getThreadMessages(threadId: string, options?: { before?: Date; limit?: number }): Promise<{ messages: Message[]; total: number }> {
-  console.log('[MessageService] Getting thread messages for:', threadId, 'with options:', options);
+export interface SearchMessagesResponse {
+  messages: Message[];
+  total: number;
+}
+
+export async function getMessages(
+  channelId: string,
+  limit = 50,
+  before?: Date,
+  after?: Date,
+  threadId?: string
+): Promise<GetMessagesResponse> {
   const params = new URLSearchParams();
-  if (options?.before) params.append('before', options.before.toISOString());
-  if (options?.limit) params.append('limit', options.limit.toString());
+  params.append('limit', limit.toString());
+  if (before) params.append('before', before.toISOString());
+  if (after) params.append('after', after.toISOString());
+  if (threadId) params.append('threadId', threadId);
 
-  const url = `/api/messages/thread/${threadId}?${params.toString()}`;
-  console.log('[MessageService] Fetching thread messages from URL:', url);
+  const url = `/api/messages/channel/${channelId}?${params.toString()}`;
+  console.log('[Messages] Fetching messages:', url);
 
-  try {
-    const response = await fetch(url, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log('[MessageService] Response status:', response.status);
-    const data = await handleResponse(response);
-    console.log('[MessageService] Received thread messages:', data.messages?.length, 'Total:', data.total);
-    return data;
-  } catch (error) {
-    console.error('[MessageService] Error fetching thread messages:', error);
-    throw error;
-  }
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: GetMessagesResponse }>(response);
+  return data.data;
+}
+
+export async function searchMessages(
+  query: string,
+  channelId?: string,
+  limit = 50,
+  offset = 0
+): Promise<SearchMessagesResponse> {
+  const params = new URLSearchParams();
+  params.append('query', query);
+  params.append('limit', limit.toString());
+  params.append('offset', offset.toString());
+  if (channelId) params.append('channelIds', channelId);
+
+  const url = `/api/messages/search?${params.toString()}`;
+  console.log('[Messages] Searching messages:', url);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: SearchMessagesResponse }>(response);
+  return data.data;
+}
+
+export async function getMessage(messageId: string): Promise<Message> {
+  const response = await fetch(`/api/messages/${messageId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: { message: Message } }>(response);
+  return data.data.message;
 }
 
 export async function createMessage(channelId: string, content: string, threadId?: string): Promise<Message> {
-  console.log('[MessageService] Creating message:', { channelId, content, threadId });
-  try {
-    const response = await fetch('/api/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        channelId,
-        content,
-        threadId,
-      }),
-    });
-    console.log('[MessageService] Response status:', response.status);
-    const message = await handleResponse(response);
-    console.log('[MessageService] Created message:', message);
-    return message;
-  } catch (error) {
-    console.error('[MessageService] Error creating message:', error);
-    throw error;
-  }
+  const response = await fetch('/api/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ channelId, content, threadId }),
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: { message: Message } }>(response);
+  return data.data.message;
 }
 
 export async function updateMessage(messageId: string, content: string): Promise<Message> {
-  console.log('[MessageService] Updating message:', messageId, 'with content:', content);
-  try {
-    const response = await fetch(`/api/messages/${messageId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ content }),
-    });
-    console.log('[MessageService] Response status:', response.status);
-    const message = await handleResponse(response);
-    console.log('[MessageService] Updated message:', message);
-    return message;
-  } catch (error) {
-    console.error('[MessageService] Error updating message:', error);
-    throw error;
-  }
+  const response = await fetch(`/api/messages/${messageId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ content }),
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: { message: Message } }>(response);
+  return data.data.message;
 }
 
 export async function deleteMessage(messageId: string): Promise<void> {
-  console.log('[MessageService] Deleting message:', messageId);
-  try {
-    const response = await fetch(`/api/messages/${messageId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log('[MessageService] Response status:', response.status);
-    await handleResponse(response);
-    console.log('[MessageService] Message deleted successfully');
-  } catch (error) {
-    console.error('[MessageService] Error deleting message:', error);
-    throw error;
-  }
+  const response = await fetch(`/api/messages/${messageId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  await handleResponse<void>(response);
 }
 
-export async function addReaction(messageId: string, emoji: string): Promise<void> {
-  console.log('[MessageService] Adding reaction:', emoji, 'to message:', messageId);
-  try {
-    const response = await fetch(`/api/messages/${messageId}/reactions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ emoji }),
-    });
-    console.log('[MessageService] Response status:', response.status);
-    await handleResponse(response);
-    console.log('[MessageService] Reaction added successfully');
-  } catch (error) {
-    console.error('[MessageService] Error adding reaction:', error);
-    throw error;
-  }
+export async function addReaction(messageId: string, emoji: string): Promise<MessageReaction> {
+  const response = await fetch(`/api/messages/${messageId}/reactions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ emoji }),
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: { reaction: MessageReaction } }>(response);
+  return data.data.reaction;
 }
 
 export async function removeReaction(messageId: string, emoji: string): Promise<void> {
-  console.log('[MessageService] Removing reaction:', emoji, 'from message:', messageId);
-  try {
-    const response = await fetch(`/api/messages/${messageId}/reactions/${encodeURIComponent(emoji)}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log('[MessageService] Response status:', response.status);
-    await handleResponse(response);
-    console.log('[MessageService] Reaction removed successfully');
-  } catch (error) {
-    console.error('[MessageService] Error removing reaction:', error);
-    throw error;
-  }
+  const response = await fetch(`/api/messages/${messageId}/reactions/${emoji}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  await handleResponse<void>(response);
 }
 
-export async function searchMessages(query: string, options?: { channelIds?: string[]; userId?: string; limit?: number; offset?: number }): Promise<{ messages: Message[]; total: number }> {
-  console.log('[MessageService] Searching messages with query:', query, 'options:', options);
-  const params = new URLSearchParams({ query });
-  if (options?.channelIds) params.append('channelIds', options.channelIds.join(','));
-  if (options?.userId) params.append('userId', options.userId);
-  if (options?.limit) params.append('limit', options.limit.toString());
-  if (options?.offset) params.append('offset', options.offset.toString());
+export async function getReactions(messageId: string): Promise<MessageReaction[]> {
+  const response = await fetch(`/api/messages/${messageId}/reactions`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
 
-  const url = `/api/messages/search?${params.toString()}`;
-  console.log('[MessageService] Searching messages at URL:', url);
+  const data = await handleResponse<{ message: string; code: string; data: { reactions: MessageReaction[] } }>(response);
+  return data.data.reactions;
+}
 
-  try {
-    const response = await fetch(url, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    console.log('[MessageService] Response status:', response.status);
-    const data = await handleResponse(response);
-    console.log('[MessageService] Search results:', data.messages?.length, 'Total:', data.total);
-    return data;
-  } catch (error) {
-    console.error('[MessageService] Error searching messages:', error);
-    throw error;
-  }
+export async function getThreadMessages(threadId: string): Promise<GetMessagesResponse> {
+  const response = await fetch(`/api/messages/thread/${threadId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  const data = await handleResponse<{ message: string; code: string; data: GetMessagesResponse }>(response);
+  return data.data;
 } 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, LoginCredentials, RegisterCredentials } from '../types/auth';
 import * as authService from '../services/auth';
+import { useAuthStore } from '../stores/auth.store';
 
 interface AuthContextType {
   user: User | null;
@@ -15,9 +16,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuthStore((state) => ({ 
+    user: state.user
+  }));
 
   useEffect(() => {
     loadUser();
@@ -25,8 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loadUser() {
     try {
-      const user = await authService.getCurrentUser();
-      setUser(user);
+      await authService.getCurrentUser();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to load user');
     } finally {
@@ -46,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         };
       }
 
-      setUser(response.user!);
       return { requiresTwoFactor: false };
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Login failed');
@@ -57,8 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function validate2FA(userId: string, token: string, isBackupCode = false) {
     try {
       setError(null);
-      const user = await authService.validate2FA(userId, token, isBackupCode);
-      setUser(user);
+      await authService.validate2FA(userId, token, isBackupCode);
     } catch (error) {
       setError(error instanceof Error ? error.message : '2FA validation failed');
       throw error;
@@ -68,12 +68,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function register(credentials: RegisterCredentials) {
     try {
       setError(null);
-      const user = await authService.register(
+      await authService.register(
         credentials.username,
         credentials.email,
         credentials.password
       );
-      setUser(user);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Registration failed');
       throw error;
@@ -82,7 +81,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function logout() {
     authService.logout();
-    setUser(null);
   }
 
   const value = {

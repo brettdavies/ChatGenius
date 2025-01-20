@@ -133,20 +133,20 @@ export const useMessageStore = create<MessageState & MessageActions>()(
       });
     },
 
-    searchMessages: async (query) => {
+    searchMessages: async (query: string) => {
       console.log('[MessageStore] Searching messages with query:', query);
       set({ loading: true, error: null });
       
       try {
-        const options: { channelIds?: string[] } = {};
+        const options: { channelId?: string } = {};
         const state = useMessageStore.getState();
         
         // Add channel filters if specified
         if (state.searchFilters.channels.include.length > 0) {
-          options.channelIds = state.searchFilters.channels.include;
+          options.channelId = state.searchFilters.channels.include[0];
         }
         
-        const { messages, total } = await searchMessagesApi(query, options);
+        const { messages, total } = await searchMessagesApi(query, options.channelId);
         console.log('[MessageStore] Search results:', messages.length, 'Total:', total);
         set({ 
           searchQuery: query,
