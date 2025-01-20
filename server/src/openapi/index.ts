@@ -1,4 +1,3 @@
-import { OpenAPIV3 } from 'openapi-types';
 import { authPaths } from './paths/auth.js';
 import { channelPaths } from './paths/channels.js';
 import { eventPaths } from './paths/events.js';
@@ -25,6 +24,7 @@ import {
   AddChannelMemberRequest,
   UpdateChannelMemberRequest
 } from './schemas/channels.js';
+import { health } from './paths/health.js';
 
 const openApiConfig = {
   openapi: '3.0.0',
@@ -83,7 +83,8 @@ const openApiConfig = {
     ...authPaths,
     ...channelPaths,
     ...eventPaths,
-    ...messagePaths
+    ...messagePaths,
+    '/api/health': health
   },
   tags: [
     {

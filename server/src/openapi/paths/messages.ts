@@ -1,5 +1,4 @@
 import { OpenAPIV3 } from 'openapi-types';
-import { ErrorResponse } from '../schemas/common.js';
 
 export const messagePaths: OpenAPIV3.PathsObject = {
   '/api/messages': {
@@ -501,6 +500,160 @@ export const messagePaths: OpenAPIV3.PathsObject = {
         },
         '403': {
           description: 'Not authorized to search in specified channels',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        }
+      }
+    }
+  },
+  '/api/messages/{messageId}/reactions': {
+    parameters: [
+      {
+        name: 'messageId',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'string',
+          format: 'ulid'
+        }
+      }
+    ],
+    post: {
+      summary: 'Add a reaction to a message',
+      tags: ['Messages'],
+      security: [{ session: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['emoji'],
+              properties: {
+                emoji: {
+                  type: 'string',
+                  description: 'The emoji reaction to add',
+                  minLength: 1,
+                  maxLength: 8
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        '201': {
+          description: 'Reaction added successfully',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message', 'data'],
+                properties: {
+                  message: { 
+                    type: 'string',
+                    example: 'Reaction added successfully'
+                  },
+                  data: {
+                    type: 'object',
+                    required: ['messageId', 'userId', 'emoji'],
+                    properties: {
+                      messageId: {
+                        type: 'string',
+                        format: 'ulid'
+                      },
+                      userId: {
+                        type: 'string',
+                        format: 'ulid'
+                      },
+                      emoji: {
+                        type: 'string',
+                        description: 'The emoji that was added'
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        '400': {
+          description: 'Invalid request data',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        '401': {
+          description: 'Not authenticated',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        '404': {
+          description: 'Message not found',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        '409': {
+          description: 'Reaction already exists',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        }
+      }
+    }
+  },
+  '/api/messages/{messageId}/reactions/{emoji}': {
+    parameters: [
+      {
+        name: 'messageId',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'string',
+          format: 'ulid'
+        }
+      },
+      {
+        name: 'emoji',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'string'
+        },
+        description: 'The emoji reaction to remove'
+      }
+    ],
+    delete: {
+      summary: 'Remove a reaction from a message',
+      tags: ['Messages'],
+      security: [{ session: [] }],
+      responses: {
+        '204': {
+          description: 'Reaction removed successfully'
+        },
+        '401': {
+          description: 'Not authenticated',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+            }
+          }
+        },
+        '404': {
+          description: 'Message or reaction not found',
           content: {
             'application/json': {
               schema: { $ref: '#/components/schemas/ErrorResponse' }

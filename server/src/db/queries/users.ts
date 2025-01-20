@@ -1,12 +1,17 @@
 import pool from '../pool.js';
 import { User, UserDB, toUser } from '../../auth/types.js';
+import { normalizeEmail } from '../../utils/email.js';
 
-export async function findUserByEmail(email: string): Promise<User | null> {
+export async function findUserByEmail(email: string): Promise<UserDB | null> {
+  if (!email) return null;
+  
+  const normalizedEmail = normalizeEmail(email);
   const result = await pool.query<UserDB>(
-    'SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL',
-    [email]
+    `SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL`,
+    [normalizedEmail]
   );
-  return result.rows[0] ? toUser(result.rows[0]) : null;
+
+  return result.rows[0] || null;
 }
 
 export async function findUserById(id: string): Promise<User | null> {

@@ -29,6 +29,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Add debug logging only in development
+if (ENV.NODE_ENV === 'development') {
+  app.use((req, _res, next) => {
+    console.log(`[DEBUG] ${req.method} ${req.path}`);
+    next();
+  });
+}
+
 // Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -93,7 +101,8 @@ app.use(passport.session());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiConfig));
 
 // Health check endpoint
-app.get('/health', (_req, res) => {
+app.get('/api/health', (_req: express.Request, res: express.Response) => {
+  console.log('[DEBUG] Health check endpoint called');
   res.status(200).json({ status: 'ok' });
 });
 
@@ -129,7 +138,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/messages', messageRoutes);
 
 // Error handling
-app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   // OpenAPI validation errors
   if (err.status === 400 && err.errors) {
     return res.status(400).json({
@@ -150,6 +159,13 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
   res.status(err.status || 500).json({
     message: err.message || 'Internal server error'
   });
+});
+
+// Add server startup code
+const PORT = ENV.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 export default app;

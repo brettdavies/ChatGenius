@@ -216,13 +216,20 @@ router.post('/:messageId/reactions', isAuthenticated, messageReactionLimiter, va
   });
   
   try {
-    const reaction = await messageService.addReaction(req.user!.id, {
+    await messageService.addReaction(req.user!.id, {
       userId: req.user!.id,
       messageId: req.params.messageId,
       emoji: req.body.emoji
     });
     console.log('[MessageRoutes] Reaction added successfully');
-    res.status(201).json(reaction);
+    res.status(201).json({
+      message: 'Reaction added successfully',
+      data: {
+        messageId: req.params.messageId,
+        userId: req.user!.id,
+        emoji: req.body.emoji
+      }
+    });
   } catch (error) {
     console.error('[MessageRoutes] Error adding reaction:', error);
     if (error instanceof MessageError) {

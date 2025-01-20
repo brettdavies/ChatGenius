@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserError } from '../services/user-service.js';
+import * as emoji from 'node-emoji';
 
 export function validateRequest(req: Request, res: Response, next: NextFunction): void {
   const path = req.path;
@@ -30,6 +31,9 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
       if (!channelId || !content) {
         throw new UserError('MISSING_FIELDS', 'Channel ID and content are required');
       }
+      if (!content.trim()) {
+        throw new UserError('INVALID_CONTENT', 'Message content cannot be empty');
+      }
       if (content.length > 4000) {
         throw new UserError('CONTENT_TOO_LONG', 'Message content cannot exceed 4000 characters');
       }
@@ -42,6 +46,9 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
       if (!content) {
         throw new UserError('MISSING_CONTENT', 'Message content is required');
       }
+      if (!content.trim()) {
+        throw new UserError('INVALID_CONTENT', 'Message content cannot be empty');
+      }
       if (content.length > 4000) {
         throw new UserError('CONTENT_TOO_LONG', 'Message content cannot exceed 4000 characters');
       }
@@ -50,11 +57,11 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
 
     // Message reaction validation
     if (path.match(/^\/[^/]+\/reactions$/) && method === 'POST') {
-      const { emoji } = req.body;
-      if (!emoji) {
+      const { emoji: emojiInput } = req.body;
+      if (!emojiInput) {
         throw new UserError('MISSING_EMOJI', 'Emoji is required');
       }
-      if (!emoji.match(/^[\u{1F300}-\u{1F9FF}]$/u)) {
+      if (!emoji.has(emojiInput)) {
         throw new UserError('INVALID_EMOJI', 'Invalid emoji format');
       }
       return next();
@@ -62,9 +69,21 @@ export function validateRequest(req: Request, res: Response, next: NextFunction)
 
     // Search validation
     if (path === '/search' && method === 'GET') {
-      const { query } = req.query;
-      if (!query) {
-        throw new UserError('MISSING_QUERY', 'Search query is required');
+      const { query, limit, offset } = req.query;
+      if (!query || !query.toString().trim()) {
+        throw new UserError('INVALID_QUERY', 'Search query cannot be empty');
+      }
+      if (limit) {
+        const limitNum = parseInt(limit.toString(), 10);
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 100) {
+          throw new UserError('INVALID_LIMIT', 'Limit must be between 1 and 100');
+        }
+      }
+      if (offset) {
+        const offsetNum = parseInt(offset.toString(), 10);
+        if (isNaN(offsetNum) || offsetNum < 0) {
+          throw new UserError('INVALID_OFFSET', 'Offset cannot be negative');
+        }
       }
       return next();
     }

@@ -45,7 +45,15 @@ export interface CreateMessageInput {
 }
 
 export interface UpdateMessageInput {
-  content: string;
+  content?: string;
+  edited?: boolean;
+  reactions?: Record<string, string[]>;
+}
+
+export interface Reaction {
+  messageId: string;
+  userId: string;
+  emoji: string;
 }
 
 function toMessage(message: MessageDB): Message {
@@ -102,15 +110,15 @@ export async function updateMessage(messageId: string, input: UpdateMessageInput
   const { rows } = await pool.query<MessageDB>(
     `WITH updated_message AS (
       UPDATE messages 
-      SET content = $1, edited = true, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2 AND deleted_at IS NULL
+      SET content = $1, edited = $2, reactions = $3::jsonb, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $4 AND deleted_at IS NULL
       RETURNING *
     )
     SELECT m.*, u.username as user_username, u.avatar_url as user_avatar_url,
            (SELECT COUNT(*) FROM messages replies WHERE replies.thread_id = m.id AND replies.deleted_at IS NULL) as reply_count
     FROM updated_message m
     LEFT JOIN users u ON m.user_id = u.id`,
-    [input.content, messageId]
+    [input.content, input.edited, JSON.stringify(input.reactions || {}), messageId]
   );
   return rows.length > 0 ? toMessage(rows[0]) : null;
 }

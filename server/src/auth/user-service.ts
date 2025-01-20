@@ -6,6 +6,7 @@ import { User, UserDB, toUser } from './types.js';
 import { USER_ROLES } from '../constants/auth.constants.js';
 import { ErrorCodes } from '../openapi/schemas/common.js';
 import { getAvatarUrl } from '../utils/avatar.js';
+import { normalizeEmail } from '../utils/email.js';
 
 export class UserError extends Error {
   constructor(public code: typeof ErrorCodes[keyof typeof ErrorCodes], message: string) {
@@ -21,8 +22,10 @@ interface RegisterInput {
 }
 
 export async function createUser(input: RegisterInput): Promise<User> {
+  const normalizedEmail = normalizeEmail(input.email);
+  
   // Check if user already exists
-  const existingUser = await findUserByEmail(input.email);
+  const existingUser = await findUserByEmail(normalizedEmail);
   if (existingUser) {
     throw new UserError(ErrorCodes.EMAIL_ALREADY_EXISTS, 'Email already registered');
   }
@@ -30,14 +33,14 @@ export async function createUser(input: RegisterInput): Promise<User> {
   const hashedPassword = await hashPassword(input.password);
   const id = ulid();
   const now = new Date();
-  const avatarUrl = await getAvatarUrl(input.email, input.username);
+  const avatarUrl = await getAvatarUrl(normalizedEmail, input.username);
 
   try {
     const result = await pool.query<UserDB>(
       `INSERT INTO users (id, email, password, username, role, created_at, updated_at, avatar_url)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [id, input.email, hashedPassword, input.username, USER_ROLES.USER, now, now, avatarUrl]
+      [id, normalizedEmail, hashedPassword, input.username, USER_ROLES.USER, now, now, avatarUrl]
     );
 
     return toUser(result.rows[0]);
@@ -48,7 +51,8 @@ export async function createUser(input: RegisterInput): Promise<User> {
 }
 
 export async function validateCredentials(email: string, password: string): Promise<User> {
-  const user = await findUserByEmail(email);
+  const normalizedEmail = normalizeEmail(email);
+  const user = await findUserByEmail(normalizedEmail);
   if (!user) {
     throw new UserError(ErrorCodes.INVALID_CREDENTIALS, 'Invalid email or password');
   }
@@ -58,16 +62,17 @@ export async function validateCredentials(email: string, password: string): Prom
     throw new UserError(ErrorCodes.INVALID_CREDENTIALS, 'Invalid email or password');
   }
 
-  return user;
+  return toUser(user);
 }
 
 export async function updateUser(id: string, updates: Partial<User>): Promise<User> {
-  const user = await findUserByEmail(updates.email || '');
+  const normalizedEmail = updates.email ? normalizeEmail(updates.email) : undefined;
+  const user = await findUserByEmail(normalizedEmail || '');
   if (!user) {
     throw new UserError(ErrorCodes.USER_NOT_FOUND, 'User not found');
   }
 
-  if (updates.email && user.id !== id) {
+  if (normalizedEmail && user.id !== id) {
     throw new UserError(ErrorCodes.EMAIL_ALREADY_EXISTS, 'Email already taken');
   }
 
@@ -79,7 +84,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
            updated_at = NOW()
        WHERE id = $3
        RETURNING *`,
-      [updates.email, updates.username, id]
+      [normalizedEmail, updates.username, id]
     );
 
     if (!result.rows[0]) {

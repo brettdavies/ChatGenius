@@ -1,7 +1,8 @@
--- Enable necessary extensions
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "citext";
+-- Set timezone to UTC for consistent timestamp handling
+SET timezone = 'UTC';
 
--- Set timezone to UTC
-SET timezone = 'UTC'; 
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS channel_members CASCADE;
+DROP TABLE IF EXISTS channels CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
