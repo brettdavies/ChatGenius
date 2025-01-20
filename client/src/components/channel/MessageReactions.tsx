@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useUserStore } from '../../stores';
+import { useUserStore, useMessageStore } from '../../stores';
 import type { Message } from '../../types/message.types';
 import { addReaction, removeReaction } from '../../services/message';
 
@@ -11,18 +11,41 @@ export default function MessageReactions({ message }: MessageReactionsProps) {
   const [showPicker, setShowPicker] = useState(false);
   const currentUser = useUserStore((state) => state.currentUser);
   const setError = useUserStore((state) => state.setError);
+  const updateMessageReactions = useMessageStore((state) => state.updateMessageReactions);
 
   const handleReactionClick = async (emoji: string) => {
     if (!currentUser) return;
 
     try {
-      const hasReacted = message.reactions?.[emoji]?.includes(currentUser.id);
+      const currentReactions = message.reactions || {};
+      const hasReacted = currentReactions[emoji]?.includes(currentUser.id);
+      const newReactions = { ...currentReactions };
+
       if (hasReacted) {
+        // Remove reaction
         await removeReaction(message.id, emoji);
+        // Update local state optimistically
+        if (newReactions[emoji]) {
+          newReactions[emoji] = newReactions[emoji].filter(id => id !== currentUser.id);
+          if (newReactions[emoji].length === 0) {
+            delete newReactions[emoji];
+          }
+        }
       } else {
+        // Add reaction
         await addReaction(message.id, emoji);
+        // Update local state optimistically
+        if (!newReactions[emoji]) {
+          newReactions[emoji] = [];
+        }
+        newReactions[emoji] = [...newReactions[emoji], currentUser.id];
       }
+
+      console.log('[MessageReactions] Updating reactions:', { messageId: message.id, newReactions });
+      // Update store with new reactions
+      updateMessageReactions(message.channelId, message.id, newReactions, message.isThreadMessage || false);
     } catch (error) {
+      console.error('[MessageReactions] Error updating reaction:', error);
       setError(error instanceof Error ? error.message : 'Failed to update reaction');
     }
   };
@@ -32,7 +55,7 @@ export default function MessageReactions({ message }: MessageReactionsProps) {
   return (
     <div className="relative">
       <div className="flex flex-wrap gap-1">
-        {message.reactions && Object.entries(message.reactions).map(([emoji, users]) => (
+        {Object.entries(message.reactions || {}).map(([emoji, users]) => (
           <button
             key={emoji}
             onClick={() => handleReactionClick(emoji)}

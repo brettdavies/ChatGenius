@@ -21,13 +21,22 @@ export const useChannelStore = create<ChannelState & ChannelActions>()(
         set({ loading: true, error: null });
         try {
           console.log('[ChannelStore] Calling getMyChannels service');
-          const channels = await getMyChannels();
+          const data = await getMyChannels();
           console.log('[ChannelStore] Fetched channels:', {
-            count: channels.length,
-            channels,
+            count: data.length,
+            channels: data,
             stack: new Error().stack
           });
-          set({ channels, loading: false });
+          
+          // Set channels
+          set({ channels: data, loading: false });
+          
+          // If we have channels and no active channel, set the first one as active
+          const state = get();
+          if (data.length > 0 && !state.activeChannelId) {
+            console.log('[ChannelStore] Setting first channel as active:', data[0].id);
+            set({ activeChannelId: data[0].id });
+          }
         } catch (error) {
           console.error('[ChannelStore] Error fetching channels:', {
             error,

@@ -53,10 +53,14 @@ export async function deleteChannel(channelId: string): Promise<void> {
 }
 
 export async function getMyChannels(): Promise<Channel[]> {
-  const response = await fetch('/api/channels/my');
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to fetch channels');
-  }
-  return response.json();
+  const response = await fetch('/api/channels/my', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  const data = await handleResponse(response);
+  return data.channels;
 } 

@@ -17,6 +17,7 @@ export interface MessageActions {
   setMessages: (channelId: string, messages: Message[]) => void;
   addMessage: (channelId: string, message: Message) => void;
   updateMessage: (channelId: string, messageId: string, content: string, isThreadMessage: boolean) => void;
+  updateMessageReactions: (channelId: string, messageId: string, reactions: Record<string, string[]>, isThreadMessage: boolean) => void;
   deleteMessage: (channelId: string, messageId: string, isThreadMessage: boolean) => void;
   setThreadMessages: (threadId: string, messages: Message[]) => void;
   addThreadMessage: (threadId: string, message: Message) => void;

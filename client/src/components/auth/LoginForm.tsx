@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import { useAuthStore } from '@/stores/auth.store';
-import { useUserStore } from '@/stores/user.store';
-import { useChannelStore } from '@/stores/channel.store';
-import { login, validate2FA } from '@/services/auth';
-import { getChannels } from '@/services/channel';
+import { useAuthStore } from '../../stores';
+import { login, validate2FA } from '../../services/auth';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 interface LoginFormProps {
@@ -27,8 +24,6 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
   const [token, setToken] = useState('');
   const [isBackupCode, setIsBackupCode] = useState(false);
   const { setUser } = useAuthStore();
-  const { setCurrentUser } = useUserStore();
-  const { setChannels, setActiveChannel } = useChannelStore();
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,31 +32,26 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
     setLoading(true);
 
     try {
-      const response = await login(email, password);
+      const { user, requiresTwoFactor, userId } = await login(email, password);
       console.log('[LoginForm] Login response received:', { 
-        requiresTwoFactor: response.requiresTwoFactor,
-        hasUser: !!response.user,
-        userId: response.userId
+        requiresTwoFactor,
+        hasUser: !!user,
+        userId
       });
       
-      if (response.requiresTwoFactor) {
+      if (requiresTwoFactor) {
+        if (!userId) {
+          throw new Error('Server did not provide userId for 2FA');
+        }
         console.log('[LoginForm] 2FA required, switching to 2FA step');
-        setUserId(response.userId!);
+        setUserId(userId);
         setCurrentStep('2fa');
       } else {
-        console.log('[LoginForm] Login successful, setting user and fetching channels');
-        setUser(response.user!);
-        setCurrentUser(response.user!);
-
-        // Fetch channels after successful login
-        const { channels } = await getChannels();
-        setChannels(channels);
-        
-        // Set the first channel as active if available
-        if (channels.length > 0) {
-          setActiveChannel(channels[0].id);
+        if (!user) {
+          throw new Error('Server did not provide user data');
         }
-
+        console.log('[LoginForm] Login successful, setting user');
+        setUser(user);
         onClose?.();
       }
     } catch (err) {
@@ -79,28 +69,16 @@ export default function LoginForm({ onClose, onRegister }: LoginFormProps) {
     setLoading(true);
 
     try {
-      const user = await validate2FA(userId, token, isBackupCode);
+      const response = await validate2FA(userId, token, isBackupCode);
       console.log('[LoginForm] 2FA validation successful');
       
-      // Check if we received a valid user object
-      if (!user) {
+      if (!response.user) {
         console.error('[LoginForm] No user data received after 2FA validation');
         throw new Error('Failed to validate 2FA: No user data received');
       }
       
-      console.log('[LoginForm] Setting user and fetching channels');
-      setUser(user);
-      setCurrentUser(user);
-
-      // Fetch channels after successful 2FA validation
-      const { channels } = await getChannels();
-      setChannels(channels);
-      
-      // Set the first channel as active if available
-      if (channels.length > 0) {
-        setActiveChannel(channels[0].id);
-      }
-
+      console.log('[LoginForm] Setting user');
+      setUser(response.user);
       onClose?.();
     } catch (err) {
       console.error('[LoginForm] 2FA validation error:', err);

@@ -66,6 +66,28 @@ export const useMessageStore = create<MessageState & MessageActions>()(
         };
       }),
 
+    updateMessageReactions: (channelId, messageId, reactions, isThreadMessage) =>
+      set((state) => {
+        if (isThreadMessage && state.activeThreadId) {
+          return {
+            threads: {
+              ...state.threads,
+              [state.activeThreadId]: state.threads[state.activeThreadId].map((m) =>
+                m.id === messageId ? { ...m, reactions } : m
+              ),
+            },
+          };
+        }
+        return {
+          messages: {
+            ...state.messages,
+            [channelId]: state.messages[channelId].map((m) =>
+              m.id === messageId ? { ...m, reactions } : m
+            ),
+          },
+        };
+      }),
+
     deleteMessage: (channelId, messageId, isThreadMessage) =>
       set((state) => {
         if (isThreadMessage && state.activeThreadId) {

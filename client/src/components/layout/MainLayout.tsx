@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useAuthStore, useUserStore } from '../../stores';
+import { useAuthStore, useUserStore, useChannelStore } from '../../stores';
 import Sidebar from '../navigation/Sidebar';
 import LoginForm from '../auth/LoginForm';
 import RegisterForm from '../auth/RegisterForm';
@@ -18,6 +18,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
   const setLoading = useAuthStore((state) => state.setLoading);
   const setError = useAuthStore((state) => state.setError);
+  const fetchUserChannels = useChannelStore((state) => state.fetchUserChannels);
   const [sidebarWidth, setSidebarWidth] = useState(window.innerWidth * 0.15); // 15% default
   const [isResizing, setIsResizing] = useState(false);
   const [authView, setAuthView] = useState<AuthView>('login');
@@ -70,6 +71,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setUser(user);
         if (user) {
           setCurrentUser(user);
+          await fetchUserChannels();
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to get current user');
@@ -79,7 +81,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }
 
     checkAuth();
-  }, [setUser, setCurrentUser, setLoading, setError]);
+  }, [setUser, setCurrentUser, setLoading, setError, fetchUserChannels]);
 
   if (loading) {
     return (

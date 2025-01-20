@@ -3,17 +3,17 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Install dependencies and generate fresh package-lock.json
-COPY package.json ./
+COPY package*.json ./
 RUN npm install
 
 # Copy source code
 COPY . .
 
-# Build with Vite
+# Build the app
 RUN npm run build
 
 # Serve stage
-FROM nginx:stable-alpine
+FROM nginx:alpine
 # Copy Nginx config
 COPY nginx.conf /etc/nginx/nginx.conf
 # Copy the build output from Vite's default dist directory

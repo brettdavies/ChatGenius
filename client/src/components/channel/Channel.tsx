@@ -1,24 +1,42 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useChannelStore, useMessageStore } from '../../stores';
+import { getMessages } from '../../services/message';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import ChannelHeader from './ChannelHeader';
 import MessageThread from './MessageThread';
 import SearchResultsView from '../search/SearchResultsView';
 import TypingIndicator from './TypingIndicator';
-import { getChannels } from '../../services/channel';
 
 export default function Channel() {
   const activeChannelId = useChannelStore((state) => state.activeChannelId);
   const channels = useChannelStore((state) => state.channels);
-  const setChannels = useChannelStore((state) => state.setChannels);
-  const setLoading = useChannelStore((state) => state.setLoading);
-  const setError = useChannelStore((state) => state.setError);
   const activeThreadId = useMessageStore((state) => state.activeThreadId);
   const messages = useMessageStore((state) => activeChannelId ? state.messages[activeChannelId] || [] : []);
   const searchQuery = useMessageStore((state) => state.searchQuery);
+  const setMessages = useMessageStore((state) => state.setMessages);
   const [threadWidth, setThreadWidth] = useState(384); // Default 384px (w-96)
   const [isResizing, setIsResizing] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Load messages when channel changes
+  useEffect(() => {
+    if (!activeChannelId) return;
+
+    const loadMessages = async () => {
+      setLoading(true);
+      try {
+        const { messages } = await getMessages(activeChannelId);
+        setMessages(activeChannelId, messages);
+      } catch (error) {
+        console.error('[Channel] Error loading messages:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMessages();
+  }, [activeChannelId, setMessages]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,22 +82,6 @@ export default function Channel() {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
-  useEffect(() => {
-    async function fetchChannels() {
-      try {
-        setLoading(true);
-        const { channels } = await getChannels();
-        setChannels(channels || []);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to fetch channels');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchChannels();
-  }, [setChannels, setLoading, setError]);
-
   if (!activeChannelId || !Array.isArray(channels) || !channels.find(c => c.id === activeChannelId)) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -94,7 +96,13 @@ export default function Channel() {
       <div className="flex flex-1 min-h-0">
         <div id="main-message-panel" className="flex flex-1 flex-col min-h-0">
           <div className="flex-1 overflow-y-auto">
-            <MessageList messages={messages} />
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-gray-500">Loading messages...</p>
+              </div>
+            ) : (
+              <MessageList messages={messages} />
+            )}
           </div>
           <div className="flex-shrink-0">
             <TypingIndicator channelId={activeChannelId} />

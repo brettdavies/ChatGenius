@@ -6,14 +6,19 @@ import { useMessageStore } from '../stores/message.store';
 
 async function handleResponse(response: Response) {
   if (!response.ok) {
-    const data = await response.json();
-    // Check for standardized error format
-    if (data.errors && data.errors.length > 0) {
-      const error = data.errors[0];
-      throw new Error(error.message);
+    try {
+      const data = await response.json();
+      // Check for standardized error format
+      if (data.errors && data.errors.length > 0) {
+        const error = data.errors[0];
+        throw new Error(error.message);
+      }
+      // Fallback to message or status
+      throw new Error(data.message || `${response.status} ${response.statusText}`);
+    } catch (e) {
+      // If JSON parsing fails, throw the status text
+      throw new Error(`${response.status} ${response.statusText}`);
     }
-    // Fallback to message or status
-    throw new Error(data.message || `${response.status} ${response.statusText}`);
   }
 
   // Return undefined for 204 No Content responses
@@ -21,8 +26,13 @@ async function handleResponse(response: Response) {
     return undefined;
   }
 
-  const data = await response.json();
-  return data;
+  try {
+    const data = await response.json();
+    return data;
+  } catch (e) {
+    // If JSON parsing fails for a successful response, throw an error
+    throw new Error('Invalid JSON response from server');
+  }
 }
 
 export interface LoginResponse {
@@ -64,7 +74,12 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return data;
 }
 
-export async function validate2FA(userId: string, token: string, isBackupCode = false): Promise<User> {
+export interface ValidateTOTPResponse {
+  user: User;
+  message?: string;
+}
+
+export async function validate2FA(userId: string, token: string, isBackupCode = false): Promise<ValidateTOTPResponse> {
   console.log('[Auth] Validating 2FA...', { userId, isBackupCode });
   const response = await fetch('/api/auth/2fa/validate', {
     method: 'POST',
@@ -77,7 +92,7 @@ export async function validate2FA(userId: string, token: string, isBackupCode = 
 
   const data = await handleResponse(response);
   console.log('[Auth] 2FA validation response:', { hasUser: !!data.user });
-  return data.user;
+  return data;
 }
 
 export async function register(username: string, email: string, password: string): Promise<User> {
